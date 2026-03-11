@@ -1,0 +1,8 @@
+/**
+ * React Query 常數設定
+ */
+export const QUERY_CONFIG = {
+    STALE_TIME: 1000 * 60 * 5, // 5 分鐘
+    LONG_STALE_TIME: 1000 * 60 * 10, // 10 分鐘
+    CACHE_TIME: 1000 * 60 * 30, // 30 分鐘
+};

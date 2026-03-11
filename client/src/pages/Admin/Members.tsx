@@ -40,7 +40,7 @@ const Members: React.FC = () => {
         queryKey: ['members'],
         queryFn: async () => {
             console.log("Fetching members...");
-            const result = await executeSQL<Member>("SELECT * FROM user ORDER BY create_at DESC");
+            const result = await executeSQL<Member>("SELECT * FROM member ORDER BY create_at DESC");
             console.log("Fetch result:", result);
             return result;
         },
@@ -52,7 +52,7 @@ const Members: React.FC = () => {
     // 使用 Mutation 處理狀態更新
     const toggleStatusMutation = useMutation({
         mutationFn: async ({ uid, newStatus }: { uid: string, newStatus: number }) => {
-            const success = await executeNonQuery(`UPDATE user SET status = ${newStatus} WHERE uid = '${uid}'`);
+            const success = await executeNonQuery(`UPDATE member SET status = ${newStatus} WHERE uid = '${uid}'`);
             if (!success) throw new Error('更新失敗');
             return { uid, newStatus };
         },
