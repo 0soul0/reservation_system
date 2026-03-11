@@ -1,75 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, Mail, Calendar, ShieldCheck, Phone, MapPin, Power } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Filter, X, Mail, Calendar, ShieldCheck, Phone, MapPin, Power, Loader2, RefreshCcw, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { executeSQL, executeNonQuery } from '../../utils/database';
 
 interface Member {
-    id: number;
+    uid: string;
     name: string;
+    line_uid: string;
+    phone: number;
     email: string;
-    level: string;
-    date: string;
-    status: string;
-    phone?: string;
-    address?: string;
-    totalBookings?: number;
-    lastVisit?: string;
+    questionnaire: string;
+    create_at: string;
+    update_at: string;
+    status: number; // 0 = 活躍, 1 = 休眠
 }
 
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+const STATUS_MAP: Record<number, string> = {
+    0: '休眠',
+    1: '活躍'
+};
+
 const Members: React.FC = () => {
+    const queryClient = useQueryClient();
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-    const [memberList, setMemberList] = useState<Member[]>([
-        {
-            id: 1,
-            name: '王小明',
-            email: 'ming@example.com',
-            level: '黃金會員',
-            date: '2025-01-15',
-            status: '活躍',
-            phone: '0912-345-678',
-            address: '台北市大安區新生南路三段',
-            totalBookings: 12,
-            lastVisit: '2025-03-05'
-        },
-        {
-            id: 2,
-            name: '李華',
-            email: 'hua@example.com',
-            level: '普通會員',
-            date: '2025-02-10',
-            status: '活躍',
-            phone: '0922-111-222',
-            address: '台中市南屯區公益路二段',
-            totalBookings: 3,
-            lastVisit: '2025-03-01'
-        },
-        {
-            id: 3,
-            name: '張三',
-            email: 'san@example.com',
-            level: '白金會員',
-            date: '2024-12-05',
-            status: '休眠',
-            phone: '0988-777-666',
-            address: '高雄市左營區博愛二路',
-            totalBookings: 45,
-            lastVisit: '2025-01-20'
-        },
-    ]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
-    // Close selected member if needed (optional, keeping useEffect structure for now)
-    useEffect(() => {
-        // No-op for menu closing since operations column was removed
-    }, []);
+    // 使用 TanStack Query 取得會員列表
+    const {
+        data: memberList = [],
+        isLoading,
+        isFetching,
+        error,
+        refetch,
+        dataUpdatedAt
+    } = useQuery({
+        queryKey: ['members'],
+        queryFn: async () => {
+            console.log("Fetching members...");
+            const result = await executeSQL<Member>("SELECT * FROM user ORDER BY create_at DESC");
+            console.log("Fetch result:", result);
+            return result;
+        },
+        staleTime: 1000 * 60 * 5,
+    });
 
-    const toggleStatus = (id: number) => {
-        setMemberList(prev => prev.map(m => {
-            if (m.id === id) {
-                const newStatus = m.status === '活躍' ? '休眠' : '活躍';
-                const updatedMember = { ...m, status: newStatus };
-                if (selectedMember?.id === id) setSelectedMember(updatedMember);
-                return updatedMember;
+    if (error) console.error("TanStack Query Error:", error);
+
+    // 使用 Mutation 處理狀態更新
+    const toggleStatusMutation = useMutation({
+        mutationFn: async ({ uid, newStatus }: { uid: string, newStatus: number }) => {
+            const success = await executeNonQuery(`UPDATE user SET status = ${newStatus} WHERE uid = '${uid}'`);
+            if (!success) throw new Error('更新失敗');
+            return { uid, newStatus };
+        },
+        onSuccess: (data) => {
+            // 讓 members 緩存失效，觸發背後重抓
+            queryClient.invalidateQueries({ queryKey: ['members'] });
+
+            // 同步更新彈窗內的狀態
+            if (selectedMember?.uid === data.uid) {
+                setSelectedMember(prev => prev ? { ...prev, status: data.newStatus } : null);
             }
-            return m;
-        }));
+        },
+        onError: (error: any) => {
+            alert(error.message);
+        }
+    });
+
+    const toggleStatus = (uid: string) => {
+        const currentMember = memberList.find(m => m.uid === uid);
+        if (!currentMember) return;
+        const newStatus = currentMember.status === 0 ? 1 : 0;
+        toggleStatusMutation.mutate({ uid, newStatus });
+    };
+
+    // 分頁邏輯
+    const totalPages = Math.ceil(memberList.length / itemsPerPage);
+    const paginatedMembers = memberList.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        // 切換分頁時回到頂部或做其他體驗優化
     };
 
     return (
@@ -77,8 +94,33 @@ const Members: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
                 <div>
                     <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: '#09090b', letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>會員管理</h1>
-                    <p style={{ color: '#71717a', fontSize: '1rem' }}>管理系統內的所有註冊會員資料</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <p style={{ color: '#71717a', fontSize: '1rem' }}>管理系統內的所有註冊會員資料</p>
+                        {dataUpdatedAt > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#94a3b8', fontSize: '0.8125rem', paddingLeft: '1rem', borderLeft: '1px solid #e2e8f0' }}>
+                                <Clock size={14} />
+                                最後更新：{new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </div>
+                        )}
+                    </div>
                 </div>
+                <button
+                    onClick={() => refetch()}
+                    disabled={isFetching}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        background: '#fff',
+                        border: '1px solid #e2e8f0',
+                        color: '#475569',
+                        padding: '0.625rem 1rem',
+                        fontSize: '0.875rem'
+                    }}
+                >
+                    <RefreshCcw size={16} className={isFetching ? "animate-spin" : ""} />
+                    {isFetching ? '更新中...' : '手動刷新'}
+                </button>
             </div>
 
             <div className="admin-card" style={{ marginBottom: '1.5rem' }}>
@@ -102,34 +144,127 @@ const Members: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {memberList.map(member => (
-                            <tr
-                                key={member.id}
-                                onClick={() => setSelectedMember(member)}
-                                style={{ cursor: 'pointer', transition: 'background 0.2s' }}
-                                onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
-                                onMouseLeave={(e) => (e.currentTarget.style.background = 'white')}
-                            >
-                                <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{member.name}</td>
-                                <td style={{ color: '#64748b' }}>{member.phone}</td>
-                                <td>{member.date}</td>
-                                <td>
-                                    <span style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.375rem',
-                                        color: member.status === '活躍' ? '#22c55e' : '#94a3b8',
-                                        fontWeight: 500
-                                    }}>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor' }} />
-                                        {member.status}
-                                    </span>
+                        {isLoading ? (
+                            <tr>
+                                <td colSpan={4} style={{ textAlign: 'center', padding: '4rem 0' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#64748b' }}>
+                                        <Loader2 className="animate-spin" size={32} />
+                                        <span>正在讀取資料...</span>
+                                    </div>
                                 </td>
-
                             </tr>
-                        ))}
+                        ) : error ? (
+                            <tr>
+                                <td colSpan={4} style={{ textAlign: 'center', padding: '4rem 0', color: '#ef4444' }}>
+                                    讀取失敗: {(error as Error).message}
+                                </td>
+                            </tr>
+                        ) : memberList.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} style={{ textAlign: 'center', padding: '4rem 0', color: '#64748b' }}>
+                                    尚無資料
+                                </td>
+                            </tr>
+                        ) : (
+                            paginatedMembers.map(member => (
+                                <tr
+                                    key={member.uid}
+                                    onClick={() => setSelectedMember(member)}
+                                    style={{ cursor: 'pointer', transition: 'background 0.2s' }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.background = 'white')}
+                                >
+                                    <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{member.name}</td>
+                                    <td style={{ color: '#64748b' }}>{member.phone}</td>
+                                    <td>{member.create_at.split('T')[0]}</td>
+                                    <td>
+                                        <span style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.375rem',
+                                            color: member.status === 1 ? '#22c55e' : '#ef4444',
+                                            fontWeight: 500
+                                        }}>
+                                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor' }} />
+                                            {STATUS_MAP[member.status] || '未知'}
+                                        </span>
+                                    </td>
+
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
+
+                {/* Pagination Footer */}
+                {!isLoading && !error && memberList.length > 0 && (
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginTop: '1.5rem',
+                        paddingTop: '1.5rem',
+                        borderTop: '1px solid #f1f5f9'
+                    }}>
+                        <div style={{ color: '#64748b', fontSize: '0.875rem' }}>
+                            顯示第 {(currentPage - 1) * itemsPerPage + 1} 至 {Math.min(currentPage * itemsPerPage, memberList.length)} 筆，共 {memberList.length} 筆
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                style={{
+                                    padding: '0.5rem',
+                                    background: '#fff',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '0.5rem',
+                                    color: currentPage === 1 ? '#cbd5e1' : '#475569',
+                                    display: 'flex',
+                                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+
+                            {[...Array(totalPages)].map((_, i) => (
+                                <button
+                                    key={i + 1}
+                                    onClick={() => handlePageChange(i + 1)}
+                                    style={{
+                                        minWidth: '2.25rem',
+                                        height: '2.25rem',
+                                        padding: '0',
+                                        background: currentPage === i + 1 ? 'var(--primary-gradient)' : '#fff',
+                                        border: '1px solid',
+                                        borderColor: currentPage === i + 1 ? 'transparent' : '#e2e8f0',
+                                        borderRadius: '0.5rem',
+                                        color: currentPage === i + 1 ? '#fff' : '#475569',
+                                        fontWeight: 600,
+                                        fontSize: '0.875rem'
+                                    }}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                style={{
+                                    padding: '0.5rem',
+                                    background: '#fff',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '0.5rem',
+                                    color: currentPage === totalPages ? '#cbd5e1' : '#475569',
+                                    display: 'flex',
+                                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Member Details Dialog */}
@@ -175,18 +310,9 @@ const Members: React.FC = () => {
                                             background: '#f1f5f9',
                                             color: '#64748b'
                                         }}>
-                                            ID: #{selectedMember.id.toString().padStart(4, '0')}
+                                            ID: #{selectedMember.uid.toString().padStart(4, '0')}
                                         </span>
-                                        <span style={{
-                                            padding: '0.125rem 0.625rem',
-                                            borderRadius: '2rem',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600,
-                                            background: selectedMember.level === '白金會員' ? '#fef3c7' : selectedMember.level === '黃金會員' ? '#f1f5f9' : '#f0f9ff',
-                                            color: selectedMember.level === '白金會員' ? '#92400e' : selectedMember.level === '黃金會員' ? '#1e293b' : '#0369a1'
-                                        }}>
-                                            {selectedMember.level}
-                                        </span>
+
                                     </div>
                                 </div>
                             </div>
@@ -208,7 +334,7 @@ const Members: React.FC = () => {
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>
                                         <Calendar size={16} /> 加入日期
                                     </label>
-                                    <div style={{ fontWeight: 500, color: '#1e293b' }}>{selectedMember.date}</div>
+                                    <div style={{ fontWeight: 500, color: '#1e293b' }}>{selectedMember.create_at.split('T')[0]}</div>
                                 </div>
                                 <div className="info-group">
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>
@@ -216,40 +342,16 @@ const Members: React.FC = () => {
                                     </label>
                                     <div style={{
                                         fontWeight: 600,
-                                        color: selectedMember.status === '活躍' ? '#22c55e' : '#ef4444',
+                                        color: selectedMember.status === 1 ? '#22c55e' : '#ef4444',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '0.375rem'
                                     }}>
-                                        {selectedMember.status}
+                                        {STATUS_MAP[selectedMember.status] || '未知'}
                                     </div>
-                                </div>
-                                <div className="info-group" style={{ gridColumn: 'span 2' }}>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>
-                                        <MapPin size={16} /> 通訊地址
-                                    </label>
-                                    <div style={{ fontWeight: 500, color: '#1e293b' }}>{selectedMember.address}</div>
                                 </div>
                             </div>
 
-                            <div style={{
-                                marginTop: '2rem',
-                                padding: '1.25rem',
-                                background: '#f8fafc',
-                                borderRadius: '1rem',
-                                display: 'flex',
-                                justifyContent: 'space-around'
-                            }}>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>總預約次數</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)' }}>{selectedMember.totalBookings}</div>
-                                </div>
-                                <div style={{ width: '1px', background: '#e2e8f0' }} />
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>最後到訪</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>{selectedMember.lastVisit}</div>
-                                </div>
-                            </div>
                         </div>
                         <div className="modal-footer">
                             <button
@@ -261,16 +363,16 @@ const Members: React.FC = () => {
                             <button
                                 className="primary"
                                 style={{
-                                    background: selectedMember.status === '活躍' ? '#f1f5f9' : 'var(--primary-gradient)',
-                                    color: selectedMember.status === '活躍' ? '#475569' : 'white',
+                                    background: selectedMember.status === 0 ? '#f1f5f9' : 'var(--primary-gradient)',
+                                    color: selectedMember.status === 0 ? '#475569' : 'white',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '0.5rem'
                                 }}
-                                onClick={() => toggleStatus(selectedMember.id)}
+                                onClick={() => toggleStatus(selectedMember.uid)}
                             >
                                 <Power size={16} />
-                                {selectedMember.status === '活躍' ? '切換為休眠' : '切換為活躍'}
+                                {selectedMember.status === 0 ? '切換為休眠' : '切換為活躍'}
                             </button>
                         </div>
                     </div>

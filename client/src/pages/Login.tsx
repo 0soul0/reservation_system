@@ -45,14 +45,16 @@ const Login: React.FC = () => {
                     <div style={{ position: 'relative' }}>
                         <User size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                         <input
+                            name='account'
                             type="text"
-                            placeholder="帳號 / 電子郵件"
+                            placeholder="帳號"
                             style={{ width: '100%', paddingLeft: '2.75rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '0.5rem', padding: '0.75rem 0.75rem 0.75rem 2.75rem', color: 'white' }}
                         />
                     </div>
                     <div style={{ position: 'relative' }}>
                         <Lock size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                         <input
+                            name='password'
                             type="password"
                             placeholder="密碼"
                             style={{ width: '100%', paddingLeft: '2.75rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '0.5rem', padding: '0.75rem 0.75rem 0.75rem 2.75rem', color: 'white' }}
@@ -76,9 +78,6 @@ const Login: React.FC = () => {
                     </button>
                 </form>
 
-                <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                    <a href="#" style={{ color: 'var(--primary)', textDecoration: 'none' }}>忘記密碼？</a>
-                </div>
             </div>
         </div>
     );
