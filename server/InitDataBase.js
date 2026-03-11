@@ -5,10 +5,11 @@ function initAllTables() {
     initManagerTable();
     initUserTable();
     initBookingTable();
-    initBusinessHoursTable();
+    initScheduleHoursTable();
     initScheduleOverrideTable();
     initEventTable();
     initLogTable();
+    initScheduleMenuTable();
 }
 
 /**
@@ -163,19 +164,33 @@ function initBookingTable() {
 }
 
 /**
- * 營業時間 (business_hours)
+ * 營業時間 (schedule_times)
  */
-function initBusinessHoursTable() {
+function initScheduleHoursTable() {
     const headers = [
         'uid',
-        'manager_uid',
+        'schedule_menu_uid',
         'time_range',    // 營業時間
         'day_of_week',   // 星期
         'max_capacity',  // 可預約人數
         'create_at',
         'update_at'
     ];
-    createTableIfNotExists('business_hours', headers);
+    createTableIfNotExists('schedule_times', headers);
+}
+
+/**
+ * 營業時間 (schedule_menu)
+ */
+function initScheduleMenuTable() {
+    const headers = [
+        'uid',
+        'manager_uid',
+        'name',    // 營業時間
+        'create_at',
+        'update_at'
+    ];
+    createTableIfNotExists('schedule_menu', headers);
 }
 
 /**
@@ -184,8 +199,7 @@ function initBusinessHoursTable() {
 function initScheduleOverrideTable() {
     const headers = [
         'uid',
-        'manager_uid',
-        'business_hours_uid',
+        'schedule_menu_uid',
         'override_time', // 覆蓋時間
         'override_date', // 覆蓋日期
         'max_capacity',  // 可預約人數
