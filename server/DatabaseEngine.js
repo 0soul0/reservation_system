@@ -26,8 +26,53 @@ const Database = {
                     throw new Error('未支援的 SQL 命令: ' + command);
             }
         } catch (e) {
-            console.error('SQL 執行錯誤:', e);
+            logError('SQL 執行錯誤:'+e);
+            // 避免無限遞迴：如果錯誤發生在 logs 表本身，不重複紀錄
+            if (!sql.includes('INSERT INTO logs')) {
+                logError('error', `SQL Error: ${e.message} | Query: ${sql}`);
+            }
             return { success: false, error: e.message };
+        }
+    },
+
+    /**
+     * 紀錄 Log 到 logs 資料表
+     * @param {string} status 'info' | 'warn' | 'error'
+     * @param {string} msg 訊息內容
+     */
+    log: function (status, msg) {
+        const uid = Utilities.getUuid();
+        const now = new Date();
+        const timeStr = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+        const safeMsg = String(msg).replace(/'/g, "''");
+        const sql = `INSERT INTO logs (uid, time, status, msg) VALUES ('${uid}', '${timeStr}', '${status}', '${safeMsg}')`;
+        const res = this.query(sql);
+
+        // 每次寫入後有 10% 機率觸發清理，避免效能影響
+        if (Math.random() < 0.1) {
+            this.rotateLogs(1000);
+        }
+        return res;
+    },
+
+    /**
+     * 清理舊日誌，保留最近的 N 筆
+     * @param {number} keepCount 保留數量 (預設 1000)
+     */
+    rotateLogs: function (keepCount = 1000) {
+        try {
+            const ss = getSpreadsheetApp();
+            const sheet = ss.getSheetByName('logs');
+            if (!sheet) return;
+
+            const lastRow = sheet.getLastRow();
+            if (lastRow <= keepCount + 1) return; // 第一行是標題
+
+            const numToDelete = lastRow - keepCount - 1;
+            sheet.deleteRows(2, numToDelete); // 從第二行開始刪除
+            console.log(`Rotated logs: Deleted ${numToDelete} old entries.`);
+        } catch (e) {
+            console.error('Log rotation failed:', e);
         }
     },
 
@@ -273,3 +318,18 @@ const Database = {
         }
     }
 };
+
+/**
+ * 全域 Log 輔助函數
+ */
+function logInfo(msg) {
+    return Database.log('info', msg);
+}
+
+function logWarn(msg) {
+    return Database.log('warn', msg);
+}
+
+function logError(msg) {
+    return Database.log('error', msg);
+}

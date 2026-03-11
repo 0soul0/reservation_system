@@ -8,7 +8,7 @@ function initAllTables() {
     initBusinessHoursTable();
     initScheduleOverrideTable();
     initEventTable();
-    initServiceItemTable();
+    initLogTable();
 }
 
 /**
@@ -26,18 +26,74 @@ function createTableIfNotExists(tableName, headers) {
         sheet.setFrozenRows(1);
         console.log(`Table "${tableName}" created successfully.`);
     } else {
-        console.log(`Table "${tableName}" already exists. Checking for missing columns...`);
+        console.log(`Table "${tableName}" already exists. Syncing columns...`);
         // 取得現有標題
-        const currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-        const missingHeaders = headers.filter(h => !currentHeaders.includes(h));
+        const currentHeaders = sheet.getRange(1, 1, 1, Math.max(1, sheet.getLastColumn())).getValues()[0];
 
+        // 1. 新增缺失欄位
+        const missingHeaders = headers.filter(h => !currentHeaders.includes(h));
         if (missingHeaders.length > 0) {
             const nextCol = sheet.getLastColumn() + 1;
             sheet.getRange(1, nextCol, 1, missingHeaders.length).setValues([missingHeaders]);
             console.log(`Updated "${tableName}": Added columns [${missingHeaders.join(', ')}]`);
         }
+
+        // 2. 標記多餘欄位 (不主動刪除資料，僅在 console 提醒或改名)
+        const extraHeaders = currentHeaders.filter(h => h && !headers.includes(h));
+        if (extraHeaders.length > 0) {
+            console.warn(`Table "${tableName}" has extra columns: [${extraHeaders.join(', ')}]`);
+        }
     }
     return sheet;
+}
+
+/**
+ * 遷移工具：比對並更新資料表結構
+ * 包含：更名、刪除、及欄位同步
+ */
+function migrateDatabaseStructure() {
+    const ss = getSpreadsheetApp();
+
+    // 1. 處理更名：user -> member
+    const userSheet = ss.getSheetByName('user');
+    const memberSheet = ss.getSheetByName('member');
+    if (userSheet && !memberSheet) {
+        userSheet.setName('member');
+        console.log('Renamed table "user" to "member"');
+    }
+
+    // 2. 處理刪除：刪除 service_item
+    const serviceItemSheet = ss.getSheetByName('service_item');
+    if (serviceItemSheet) {
+        ss.deleteSheet(serviceItemSheet);
+        console.log('Deleted table "service_item"');
+    }
+
+    // 3. 處理欄位更名需求 (手動對應)
+    const renameMaps = [
+        { sheet: 'business_hours', old: 'userUid', new: 'manager_uid' },
+        { sheet: 'schedule_override', old: 'userUid', new: 'manager_uid' },
+        { sheet: 'event', old: 'userUid', new: 'manager_uid' },
+        { sheet: 'event', old: 'service_menu_id', new: 'options' },
+        { sheet: 'event', old: 'service_menu_name', new: 'options' }
+    ];
+
+    renameMaps.forEach(map => {
+        const sheet = ss.getSheetByName(map.sheet);
+        if (sheet) {
+            const range = sheet.getRange(1, 1, 1, sheet.getLastColumn());
+            const headers = range.getValues()[0];
+            const idx = headers.indexOf(map.old);
+            if (idx > -1 && !headers.includes(map.new)) {
+                sheet.getRange(1, idx + 1).setValue(map.new);
+                console.log(`Renamed column "${map.old}" to "${map.new}" in "${map.sheet}"`);
+            }
+        }
+    });
+
+    // 4. 最後跑一次全量同步，確保所有新欄位都補齊
+    initAllTables();
+    console.log('Database migration completed.');
 }
 
 
@@ -70,15 +126,17 @@ function initManagerTable() {
 function initUserTable() {
     const headers = [
         'uid',
+        'managerUid',
         'name',
         'line_uid',
         'phone',
+        'email',
         'questionnaire',
         'status',
         'create_at',
         'update_at'
     ];
-    createTableIfNotExists('user', headers);
+    createTableIfNotExists('member', headers);
 }
 
 /**
@@ -87,6 +145,7 @@ function initUserTable() {
 function initBookingTable() {
     const headers = [
         'uid',
+        'manager_uid',
         'name',
         'line_uid',
         'phone',
@@ -109,7 +168,7 @@ function initBookingTable() {
 function initBusinessHoursTable() {
     const headers = [
         'uid',
-        'userUid',
+        'manager_uid',
         'time_range',    // 營業時間
         'day_of_week',   // 星期
         'max_capacity',  // 可預約人數
@@ -125,7 +184,8 @@ function initBusinessHoursTable() {
 function initScheduleOverrideTable() {
     const headers = [
         'uid',
-        'userUid',
+        'manager_uid',
+        'business_hours_uid',
         'override_time', // 覆蓋時間
         'override_date', // 覆蓋日期
         'max_capacity',  // 可預約人數
@@ -141,13 +201,12 @@ function initScheduleOverrideTable() {
 function initEventTable() {
     const headers = [
         'uid',
-        'userUid',
+        'manager_uid',
         'title',
         'description',          // 說明
         'is_phone_required',    // 是否需要填電話
         'is_email_required',    // 是否需要填Email
-        'service_menu_id',      // 服務項目選單ID
-        'service_menu_name',    // 服務項目選單名稱
+        'options',      // 服務項目選單ID
         'business_hours_ids',   // 營業時間ID(可以多選)
         'booking_dynamic_url',  // 預約動態網址
         'create_at',
@@ -156,17 +215,16 @@ function initEventTable() {
     createTableIfNotExists('event', headers);
 }
 
+
 /**
- * 服務項目 (service_item)
+ * 建立日誌資料表 (logs)
  */
-function initServiceItemTable() {
+function initLogTable() {
     const headers = [
         'uid',
-        'service_menu_id', // 服務項目選單ID
-        'title',
-        'duration',         // time (持續時間)
-        'create_at',
-        'update_at'
+        'time',
+        'status',   // info, warn, error
+        'msg'
     ];
-    createTableIfNotExists('service_item', headers);
+    createTableIfNotExists('logs', headers);
 }

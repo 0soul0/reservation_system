@@ -3,11 +3,13 @@
  */
 function doGet(e) {
     const query = e.parameter.query;
+    logInfo(`GET request: ${query}`);
     if (!query) {
         return createJsonResponse({ success: false, error: '缺少 query 參數' });
     }
 
     const result = Database.query(query);
+    logInfo(`GET response: ${JSON.stringify(result)}`);
     return createJsonResponse(result);
 }
 
@@ -32,9 +34,30 @@ function doPost(e) {
 }
 
 /**
- * 輔助函數：建立 JSON 回傳格式
+ * 輔助函數：建立標準 JSON 回傳格式
+ * @param {any} input Database.query 的原始回傳結果
  */
-function createJsonResponse(data) {
-    return ContentService.createTextOutput(JSON.stringify(data))
+function createJsonResponse(input) {
+    const response = {
+        status: 'success',
+        message: '',
+        data: null
+    };
+
+    if (input && typeof input === 'object') {
+        if (input.success === false) {
+            response.status = 'fail';
+            response.message = input.error || '不明錯誤';
+        } else if (input.success === true) {
+            const { success, message, ...rest } = input;
+            response.data = Object.keys(rest).length > 0 ? rest : null;
+        } else {
+            response.data = input;
+        }
+    } else {
+        response.data = input;
+    }
+
+    return ContentService.createTextOutput(JSON.stringify(response))
         .setMimeType(ContentService.MimeType.JSON);
 }
