@@ -6,6 +6,8 @@ const DATABASE_URL = import.meta.env.VITE_GAS_DATABASE_URL;
  * 執行失敗應傳回 { status: 'error', message: '...' }
  */
 export async function executeSQL<T = any>(sql: string): Promise<T[]> {
+    console.log("Fetching sql:" + sql);
+
     try {
         const response = await fetch(`${DATABASE_URL}?query=${encodeURIComponent(sql)}`, {
             method: 'GET',
@@ -17,7 +19,8 @@ export async function executeSQL<T = any>(sql: string): Promise<T[]> {
         }
 
         const result = await response.json();
-        console.log(result);
+        console.log("Fetch sql:", sql);
+        console.log("Fetch result:" + sql + " " + result);
         if (result.status === 'success') {
             return result.data as T[];
         } else {

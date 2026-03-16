@@ -28,7 +28,7 @@ function seedAllData() {
     Database.query(`INSERT INTO manager (
         uid, account, password, logo_url, website_name, bank_name, bank_account, bank_account_owner, questionnaire
     ) VALUES (
-        '${MGR_ID}', 'admin@relax.com', '1234', 'https://drive.google.com/uc?export=view&id=1JPnDw91jJiaH478ZhrBKRHh0vvowAyZx', '靜心紓壓館', '國泰世華', '123-456-789', '陳大志', '${JSON.stringify(questDef).replace(/'/g, "''")}'
+        '${MGR_ID}', 'admin', 'admin', 'hnp.png', '靜心紓壓館', '國泰世華', '123-456-789', '陳大志', '${JSON.stringify(questDef).replace(/'/g, "''")}'
     )`);
     console.log('✅ Manager 插入完成');
 

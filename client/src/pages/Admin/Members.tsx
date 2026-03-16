@@ -1,21 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Filter, X, Mail, Calendar, ShieldCheck, Phone, MapPin, Power, Loader2, RefreshCcw, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { executeSQL, executeNonQuery } from '../../utils/database';
-
-interface Member {
-    uid: string;
-    name: string;
-    line_uid: string;
-    phone: number;
-    email: string;
-    questionnaire: string;
-    create_at: string;
-    update_at: string;
-    status: number; // 0 = 活躍, 1 = 休眠
-}
-
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Member } from '../../types';
 
 const STATUS_MAP: Record<number, string> = {
     0: '休眠',
@@ -39,9 +26,7 @@ const Members: React.FC = () => {
     } = useQuery({
         queryKey: ['members'],
         queryFn: async () => {
-            console.log("Fetching members...");
             const result = await executeSQL<Member>("SELECT * FROM member ORDER BY create_at DESC");
-            console.log("Fetch result:", result);
             return result;
         },
         staleTime: 1000 * 60 * 5,

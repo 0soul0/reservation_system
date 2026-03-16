@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { executeSQL, executeNonQuery } from '../../utils/database';
 import { useAuth } from '../../utils/auth';
 import { QUERY_CONFIG } from '../../utils/constants';
-import type { EventData } from './Event';
+import type { EventData } from '../../types';
 
 const EventEdit: React.FC = () => {
     const navigate = useNavigate();

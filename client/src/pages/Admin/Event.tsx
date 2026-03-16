@@ -5,20 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { executeSQL, executeNonQuery } from '../../utils/database';
 import { useAuth } from '../../utils/auth';
 import { QUERY_CONFIG } from '../../utils/constants';
+import type { EventData } from '../../types';
 
-export interface EventData {
-    uid: string;
-    manager_uid: string;
-    title: string;
-    description: string;
-    is_phone_required: number;
-    is_email_required: number;
-    business_hours_ids: string;
-    booking_dynamic_url: string;
-    create_at: string;
-    update_at: string;
-    options: string; // JSON string: {"name": "Category", "items": [{"title": "Item", "duration": 60}]}
-}
 
 const Event: React.FC = () => {
     const navigate = useNavigate();
@@ -77,37 +65,26 @@ const Event: React.FC = () => {
                         )}
                     </div>
                 </div>
-                <button
-                    onClick={() => refetch()}
-                    disabled={isFetching}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        background: '#fff',
-                        border: '1px solid #e2e8f0',
-                        color: '#475569',
-                        padding: '0.625rem 1rem',
-                        fontSize: '0.875rem',
-                        borderRadius: '0.5rem'
-                    }}
-                >
-                    <RefreshCcw size={16} className={isFetching ? "animate-spin" : ""} />
-                    {isFetching ? '更新中...' : '手動刷新'}
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                        className="primary"
+                        style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', height: 'fit-content' }}
+                        onClick={() => { navigate('/admin/event/new') }}
+                    >
+                        <Plus size={18} /> 新增活動
+                    </button>
+                    <button
+                        onClick={() => refetch()}
+                        disabled={isFetching}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff', border: '1px solid #e2e8f0', color: '#475569', padding: '0.625rem 1rem', fontSize: '0.875rem' }}
+                    >
+                        <RefreshCcw size={16} className={isFetching ? 'animate-spin' : ''} />
+                        {isFetching ? '更新中...' : '手動刷新'}
+                    </button>
+                </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
-                <div
-                    onClick={() => navigate('/admin/event/new')}
-                    className="admin-card"
-                    style={{ border: '2px dashed #e2e8f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px', color: '#64748b', cursor: 'pointer', transition: 'all 0.2s' }}
-                >
-                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '50%', marginBottom: '1rem', color: 'var(--primary)' }}><Plus size={32} /></div>
-                    <p style={{ fontWeight: 700, fontSize: '1.125rem' }}>創建新活動</p>
-                    <p style={{ fontSize: '0.875rem', marginTop: '0.5rem', opacity: 0.7 }}>點擊開始設定新的服務或活動</p>
-                </div>
-
                 {isLoading ? (
                     <div style={{ gridColumn: '1/-1', display: 'flex', justifyContent: 'center', padding: '4rem' }}>
                         <Loader2 className="animate-spin" size={48} color="var(--primary)" />

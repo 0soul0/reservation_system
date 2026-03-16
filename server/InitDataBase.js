@@ -173,6 +173,9 @@ function initScheduleHoursTable() {
         'time_range',    // 營業時間
         'day_of_week',   // 星期
         'max_capacity',  // 可預約人數
+        'is_open',       // 是否營業
+        'last_booking_time', // 最後預約時間
+        'is_open_last_booking_time', // 最後預約時間是否營業
         'create_at',
         'update_at'
     ];
@@ -203,6 +206,7 @@ function initScheduleOverrideTable() {
         'override_time', // 覆蓋時間
         'override_date', // 覆蓋日期
         'max_capacity',  // 可預約人數
+        'is_closed',
         'create_at',
         'update_at'
     ];

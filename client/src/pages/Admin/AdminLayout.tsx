@@ -49,9 +49,9 @@ const AdminLayout: React.FC = () => {
                     <span>會員管理</span>
                 </NavLink>
 
-                <NavLink to="/admin/openinghours" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/admin/schedule_time" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
                     <Calendar size={20} />
-                    <span>營業時間</span>
+                    <span>排程時間</span>
                 </NavLink>
 
                 <NavLink to="/admin/event" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>

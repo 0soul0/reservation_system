@@ -5,7 +5,8 @@ import Members from './pages/Admin/Members';
 import Bookings from './pages/Admin/Bookings';
 import Event from './pages/Admin/Event';
 import EventEdit from './pages/Admin/EventEdit';
-import OpeningHours from './pages/Admin/OpeningHours';
+import ScheduleTime from './pages/Admin/ScheduleTime';
+import ScheduleTimeEdit from './pages/Admin/ScheduleTimeEdit';
 import './index.css';
 
 function App() {
@@ -20,7 +21,8 @@ function App() {
           <Route path="bookings" element={<Bookings />} />
           <Route path="event" element={<Event />} />
           <Route path="event/:id" element={<EventEdit />} />
-          <Route path="openinghours" element={<OpeningHours />} />
+          <Route path="schedule_time" element={<ScheduleTime />} />
+          <Route path="schedule_time/:id" element={<ScheduleTimeEdit />} />
         </Route>
 
         {/* Fallback */}
