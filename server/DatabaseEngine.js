@@ -26,11 +26,7 @@ const Database = {
                     throw new Error('未支援的 SQL 命令: ' + command);
             }
         } catch (e) {
-            logError('SQL 執行錯誤:'+e);
-            // 避免無限遞迴：如果錯誤發生在 logs 表本身，不重複紀錄
-            if (!sql.includes('INSERT INTO logs')) {
-                logError('error', `SQL Error: ${e.message} | Query: ${sql}`);
-            }
+            logError('SQL 執行錯誤:' + e + ' SQL:' + sql);
             return { success: false, error: e.message };
         }
     },
@@ -41,39 +37,27 @@ const Database = {
      * @param {string} msg 訊息內容
      */
     log: function (status, msg) {
+        try {
+            const ss = getSpreadsheetApp();
+            const sheet = ss.getSheetByName('logs');
+            if (sheet) {
+                const lastRow = sheet.getLastRow();
+                if (lastRow > 1000) {
+                    // 超過 1000 筆就清空（保留標題）
+                    sheet.deleteRows(2, lastRow - 1);
+                    console.log('Logs exceeded 1000 entries, cleared for new entries.');
+                }
+            }
+        } catch (e) {
+            console.error('Log rotation check failed:', e);
+        }
+
         const uid = Utilities.getUuid();
         const now = new Date();
         const timeStr = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
         const safeMsg = String(msg).replace(/'/g, "''");
         const sql = `INSERT INTO logs (uid, time, status, msg) VALUES ('${uid}', '${timeStr}', '${status}', '${safeMsg}')`;
-        const res = this.query(sql);
-
-        // 每次寫入後有 10% 機率觸發清理，避免效能影響
-        if (Math.random() < 0.1) {
-            this.rotateLogs(1000);
-        }
-        return res;
-    },
-
-    /**
-     * 清理舊日誌，保留最近的 N 筆
-     * @param {number} keepCount 保留數量 (預設 1000)
-     */
-    rotateLogs: function (keepCount = 1000) {
-        try {
-            const ss = getSpreadsheetApp();
-            const sheet = ss.getSheetByName('logs');
-            if (!sheet) return;
-
-            const lastRow = sheet.getLastRow();
-            if (lastRow <= keepCount + 1) return; // 第一行是標題
-
-            const numToDelete = lastRow - keepCount - 1;
-            sheet.deleteRows(2, numToDelete); // 從第二行開始刪除
-            console.log(`Rotated logs: Deleted ${numToDelete} old entries.`);
-        } catch (e) {
-            console.error('Log rotation failed:', e);
-        }
+        return this.query(sql);
     },
 
     /**
@@ -182,8 +166,8 @@ const Database = {
      */
     _executeUpdate: function (sql) {
         const tableName = this._extractTableName(sql, 'UPDATE');
-        const setMatch = sql.match(/SET\s+(.+?)(?=\s+WHERE|$)/i);
-        const whereMatch = sql.match(/WHERE\s+(.+)/i);
+        const setMatch = sql.match(/SET\s+([\s\S]+?)(?=\s+WHERE|$)/i);
+        const whereMatch = sql.match(/WHERE\s+([\s\S]+)/i);
 
         if (!setMatch || !whereMatch) throw new Error('UPDATE 必須包含 SET 與 WHERE 條件');
 
@@ -225,7 +209,7 @@ const Database = {
      */
     _executeDelete: function (sql) {
         const tableName = this._extractTableName(sql, 'FROM');
-        const whereMatch = sql.match(/WHERE\s+(.+)/i);
+        const whereMatch = sql.match(/WHERE\s+([\s\S]+)/i);
         if (!whereMatch) throw new Error('基於安全考量，DELETE 指令必須包含 WHERE 條件');
 
         const ss = getSpreadsheetApp();

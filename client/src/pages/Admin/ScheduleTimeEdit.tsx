@@ -38,9 +38,11 @@ const makeTempTime = (menuUid: string, dow: number): ScheduleTimeRow => ({
     uid: generateUid("_new_"),
     schedule_menu_uid: menuUid,
     time_range: '09:00-18:00',
-    day_of_week: dow,
+    day_of_week: dow, // 這裡的 dow 預期已經是 1-7
     max_capacity: 2,
     is_open: true,
+    is_open_last_booking_time: false,
+    last_booking_time: '17:00',
     create_at: new Date().toISOString(),
     update_at: new Date().toISOString(),
 });
@@ -103,6 +105,10 @@ const ScheduleTimeEdit: React.FC = () => {
 
     const updateSlot = <K extends keyof ScheduleTimeRow>(uid: string, key: K, value: ScheduleTimeRow[K]) => {
         setTimes((prev) => prev.map((t) => (t.uid === uid ? { ...t, [key]: value } : t)));
+    };
+
+    const updateDayLastBooking = (dow: number, updates: Partial<ScheduleTimeRow>) => {
+        setTimes((prev) => prev.map((t) => (t.day_of_week === dow ? { ...t, ...updates } : t)));
     };
 
     const toggleDay = (dow: number, currentlyEnabled: boolean) => {
@@ -212,16 +218,18 @@ const ScheduleTimeEdit: React.FC = () => {
             for (const t of times) {
                 if (t.uid.startsWith('_new_')) {
                     const realUid = generateUid();
-                    sqls.push(`INSERT INTO schedule_times (uid, schedule_menu_uid, time_range, day_of_week, max_capacity, is_open, create_at, update_at) VALUES ('${realUid}', '${id}', '${t.time_range}', ${t.day_of_week}, ${t.max_capacity}, ${t.is_open}, '${now}', '${now}')`);
+                    sqls.push(`INSERT INTO schedule_times (uid, schedule_menu_uid, time_range, day_of_week, max_capacity, is_open, is_open_last_booking_time, last_booking_time, create_at, update_at) VALUES ('${realUid}', '${id}', '${t.time_range}', ${t.day_of_week}, ${t.max_capacity}, ${t.is_open}, ${t.is_open_last_booking_time}, '${t.last_booking_time}', '${now}', '${now}')`);
                 } else {
                     const orig = original.times.find(ot => ot.uid === t.uid);
                     if (orig && (
                         orig.time_range !== t.time_range ||
                         orig.day_of_week !== t.day_of_week ||
                         orig.max_capacity !== t.max_capacity ||
-                        Boolean(orig.is_open) !== Boolean(t.is_open)
+                        Boolean(orig.is_open) !== Boolean(t.is_open) ||
+                        Boolean(orig.is_open_last_booking_time) !== Boolean(t.is_open_last_booking_time) ||
+                        orig.last_booking_time !== t.last_booking_time
                     )) {
-                        sqls.push(`UPDATE schedule_times SET time_range = '${t.time_range}', day_of_week = ${t.day_of_week}, max_capacity = ${t.max_capacity}, is_open = ${t.is_open}, update_at = '${now}' WHERE uid = '${t.uid}'`);
+                        sqls.push(`UPDATE schedule_times SET time_range = '${t.time_range}', day_of_week = ${t.day_of_week}, max_capacity = ${t.max_capacity}, is_open = ${t.is_open}, is_open_last_booking_time = ${t.is_open_last_booking_time}, last_booking_time = '${t.last_booking_time}', update_at = '${now}' WHERE uid = '${t.uid}'`);
                     }
                 }
             }
@@ -251,10 +259,14 @@ const ScheduleTimeEdit: React.FC = () => {
         onError: (err: any) => alert(err.message),
     });
 
-    if (isLoading) {
+    // 只有在完全沒有資料且正在初始讀取時才顯示全頁面遮罩
+    if (isLoading && !data) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '10rem' }}>
-                <Loader2 className="animate-spin" size={48} color="var(--primary)" />
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <Loader2 className="animate-spin" size={48} color="var(--primary)" />
+                    <p style={{ color: '#64748b', fontWeight: 500 }}>正在載入排程設定...</p>
+                </div>
             </div>
         );
     }
@@ -274,7 +286,9 @@ const ScheduleTimeEdit: React.FC = () => {
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#09090b', letterSpacing: '-0.02em', lineHeight: 1.2 }}>編輯排程時間</h1>
-                            {isFetching && <Loader2 size={16} className="animate-spin" color="#a1a1aa" />}
+                            {isFetching && (
+                                <Loader2 size={16} className="animate-spin" color="#94a3b8" />
+                            )}
                         </div>
                         <p style={{ fontSize: '0.75rem', color: '#a1a1aa', fontFamily: 'monospace' }}>{id}</p>
                     </div>
@@ -317,13 +331,14 @@ const ScheduleTimeEdit: React.FC = () => {
                             <Clock size={14} /> 每日時段設定
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {DAY_LABELS.map((label, dow) => {
-                                const slots = times.filter((t) => t.day_of_week === dow);
+                            {DAY_LABELS.map((label, index) => {
+                                const dbDow = index + 1; // 1=週一, 7=週日
+                                const slots = times.filter((t) => t.day_of_week === dbDow);
                                 const enabled = slots.length > 0;
 
                                 return (
                                     <div
-                                        key={dow}
+                                        key={index}
                                         style={{
                                             padding: '0.2rem 0.5rem',
                                             borderRadius: '0.75rem',
@@ -336,7 +351,7 @@ const ScheduleTimeEdit: React.FC = () => {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: enabled ? '0.35rem' : 0 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
                                                 <div
-                                                    onClick={() => toggleDay(dow, enabled)}
+                                                    onClick={() => toggleDay(dbDow, enabled)}
                                                     style={{
                                                         width: '32px',
                                                         height: '16px',
@@ -360,14 +375,71 @@ const ScheduleTimeEdit: React.FC = () => {
                                                     }} />
                                                 </div>
                                                 <span
-                                                    onClick={() => toggleDay(dow, enabled)}
-                                                    style={{ fontSize: '0.9375rem', fontWeight: 600, color: enabled ? '#09090b' : '#a1a1aa', cursor: 'pointer', userSelect: 'none' }}
+                                                    onClick={() => toggleDay(dbDow, enabled)}
+                                                    style={{ fontSize: '0.9375rem', fontWeight: 600, color: enabled ? '#09090b' : '#a1a1aa', cursor: 'pointer', userSelect: 'none', minWidth: '40px' }}
                                                 >
                                                     {label}
                                                 </span>
+
+                                                {enabled && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f8fafc', padding: '0 0.5rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', height: '30px', marginLeft: '0.5rem' }}>
+                                                        <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>最後預約</span>
+                                                        <div style={{ position: 'relative', width: '28px', height: '16px' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={slots[0]?.is_open_last_booking_time || false}
+                                                                id={`last-booking-toggle-${dbDow}`}
+                                                                style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                                                                onChange={(e) => updateDayLastBooking(dbDow, { is_open_last_booking_time: e.target.checked })}
+                                                            />
+                                                            <label
+                                                                htmlFor={`last-booking-toggle-${dbDow}`}
+                                                                style={{
+                                                                    display: 'block',
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    background: slots[0]?.is_open_last_booking_time ? '#09090b' : '#e2e2e7',
+                                                                    borderRadius: '10px',
+                                                                    cursor: 'pointer',
+                                                                    transition: 'all 0.2s',
+                                                                    position: 'relative'
+                                                                }}
+                                                            >
+                                                                <div style={{
+                                                                    position: 'absolute',
+                                                                    top: '2px',
+                                                                    left: '2px',
+                                                                    width: '12px',
+                                                                    height: '12px',
+                                                                    background: 'white',
+                                                                    borderRadius: '50%',
+                                                                    transition: 'all 0.2s',
+                                                                    transform: slots[0]?.is_open_last_booking_time ? 'translateX(12px)' : 'translateX(0)'
+                                                                }} />
+                                                            </label>
+                                                        </div>
+                                                        <select
+                                                            disabled={!slots[0]?.is_open_last_booking_time}
+                                                            value={slots[0]?.last_booking_time || '17:00'}
+                                                            onChange={(e) => updateDayLastBooking(dbDow, { last_booking_time: e.target.value })}
+                                                            style={{
+                                                                background: 'transparent',
+                                                                border: 'none',
+                                                                fontSize: '0.8125rem',
+                                                                color: slots[0]?.is_open_last_booking_time ? '#09090b' : '#a1a1aa',
+                                                                fontWeight: 600,
+                                                                outline: 'none',
+                                                                width: '60px',
+                                                                padding: 0
+                                                            }}
+                                                        >
+                                                            {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                                                        </select>
+                                                    </div>
+                                                )}
                                             </div>
                                             <button
-                                                onClick={() => addSlot(dow)}
+                                                onClick={() => addSlot(dbDow)}
                                                 style={{ padding: '0.25rem 0.5rem', borderRadius: '0.375rem', border: '1px solid #e2e2e7', background: 'white', color: '#18181b', fontSize: '0.7rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.2rem', opacity: enabled ? 1 : 0.5, pointerEvents: enabled ? 'auto' : 'none' }}
                                             >
                                                 <Plus size={14} /> 增加

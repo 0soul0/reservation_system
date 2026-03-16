@@ -6,6 +6,7 @@ import { executeSQL, executeNonQuery } from '../../utils/database';
 import { useAuth } from '../../utils/auth';
 import { QUERY_CONFIG } from '../../utils/constants';
 import type { EventData } from '../../types';
+import { generateUid } from '../../utils/id';
 
 const EventEdit: React.FC = () => {
     const navigate = useNavigate();
@@ -17,14 +18,14 @@ const EventEdit: React.FC = () => {
     const [eventState, setEventState] = useState({
         title: '',
         description: '',
-        is_email_required: 1,
-        is_phone_required: 1,
+        is_email_required: false,
+        is_phone_required: true,
         booking_dynamic_url: '',
         options: {
             name: '', // 服務選單分類名稱 (例如: 專業按摩服務)
             items: [] as { title: string, duration: number }[] // 具體項目
         },
-        selectedOpeningHours: [] as string[]
+        schedule_menu_uid: [] as { uid: string }[]
     });
 
     const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
@@ -38,12 +39,37 @@ const EventEdit: React.FC = () => {
 
     // 完成設定時同步至主狀態
     const saveOptions = () => {
+        // 1. 驗證選單分類名稱
+        if (!tempOptions.name.trim()) {
+            alert('請輸入「選單分類名稱」（例如：專業按摩服務）。');
+            return;
+        }
+
+        // 2. 驗證項目數量
+        if (tempOptions.items.length === 0) {
+            alert('請至少新增一個服務項目。');
+            return;
+        }
+
+        // 3. 驗證每個項目的內容
+        for (let i = 0; i < tempOptions.items.length; i++) {
+            const item = tempOptions.items[i];
+            if (!item.title.trim()) {
+                alert(`第 ${i + 1} 個項目的名稱不可為空。`);
+                return;
+            }
+            if (item.duration <= 0) {
+                alert(`項目「${item.title}」的時間必須大於 0 分鐘。`);
+                return;
+            }
+        }
+
         setEventState(prev => ({ ...prev, options: tempOptions }));
         setIsOptionModalOpen(false);
     };
 
     // 取得現有資料 (如果是編輯模式)
-    const { data: dbEvent, isLoading } = useQuery({
+    const { data: dbEvent, isLoading, isFetching } = useQuery({
         queryKey: ['event', id],
         queryFn: async () => {
             if (id === 'new') return null;
@@ -51,8 +77,18 @@ const EventEdit: React.FC = () => {
             return result?.[0] || null;
         },
         enabled: id !== 'new',
-        staleTime: QUERY_CONFIG.LONG_STALE_TIME, // 10分鐘內視為新鮮，減少重複請求
-        refetchOnWindowFocus: false, // 避免切換視窗就重新抓取
+        staleTime: QUERY_CONFIG.LONG_STALE_TIME,
+        refetchOnWindowFocus: false,
+    });
+
+    // 取得該管理員的所有營業時間選單
+    const { data: scheduleMenus = [], isLoading: isSchedulesLoading, isFetching: isSchedulesFetching } = useQuery({
+        queryKey: ['schedule_menus', manager?.uid],
+        queryFn: async () => {
+            if (!manager?.uid) return [];
+            return await executeSQL<any>(`SELECT * FROM schedule_menu WHERE manager_uid = '${manager.uid}'`);
+        },
+        enabled: !!manager?.uid,
     });
 
     // 當資料抓到時，初始化編輯狀態
@@ -61,11 +97,11 @@ const EventEdit: React.FC = () => {
             setEventState({
                 title: dbEvent.title,
                 description: dbEvent.description,
-                is_email_required: dbEvent.is_email_required,
-                is_phone_required: dbEvent.is_phone_required,
+                is_email_required: !!dbEvent.is_email_required,
+                is_phone_required: !!dbEvent.is_phone_required,
                 booking_dynamic_url: dbEvent.booking_dynamic_url || '',
                 options: dbEvent.options ? JSON.parse(dbEvent.options) : { name: '', items: [] },
-                selectedOpeningHours: dbEvent.business_hours_ids ? (dbEvent.business_hours_ids.startsWith('[') ? JSON.parse(dbEvent.business_hours_ids) : dbEvent.business_hours_ids.split(',')) : []
+                schedule_menu_uid: dbEvent.schedule_menu_uid ? JSON.parse(dbEvent.schedule_menu_uid) : []
             });
         }
     }, [dbEvent]);
@@ -73,31 +109,56 @@ const EventEdit: React.FC = () => {
     // 儲存 Mutation
     const saveMutation = useMutation({
         mutationFn: async () => {
-            const uid = id === 'new' ? `EVT${Date.now()}` : id;
+            const uid = id === 'new' ? generateUid() : id;
             const menuJson = JSON.stringify(eventState.options);
-            const hoursJson = JSON.stringify(eventState.selectedOpeningHours);
+            const hoursJson = JSON.stringify(eventState.schedule_menu_uid);
+
+            // 只有在編輯模式時檢查是否真的有變動
+            if (id !== 'new' && dbEvent) {
+                const hasChanged = 
+                    eventState.title !== dbEvent.title ||
+                    eventState.description !== dbEvent.description ||
+                    !!eventState.is_phone_required !== !!dbEvent.is_phone_required ||
+                    !!eventState.is_email_required !== !!dbEvent.is_email_required ||
+                    eventState.booking_dynamic_url !== (dbEvent.booking_dynamic_url || '') ||
+                    menuJson !== dbEvent.options ||
+                    hoursJson !== dbEvent.schedule_menu_uid;
+
+                if (!hasChanged) {
+                    console.log("No changes detected, skipping DB update.");
+                    return 'NO_CHANGES'; 
+                }
+            }
 
             let sql = '';
+            const now = new Date().toISOString();
             if (id === 'new') {
-                sql = `INSERT INTO event (uid, manager_uid, title, description, is_phone_required, is_email_required, booking_dynamic_url, options, business_hours_ids, create_at, update_at) 
-                       VALUES ('${uid}', '${manager?.uid}', '${eventState.title}', '${eventState.description}', ${eventState.is_phone_required}, ${eventState.is_email_required}, '${eventState.booking_dynamic_url}', '${menuJson}', '${hoursJson}', '${new Date().toISOString()}', '${new Date().toISOString()}')`;
+                sql = `INSERT INTO event (uid, manager_uid, title, description, is_phone_required, is_email_required, booking_dynamic_url, options, schedule_menu_uid, create_at, update_at) 
+                       VALUES ('${uid}', '${manager?.uid}', '${eventState.title}', '${eventState.description}', ${eventState.is_phone_required ? 1 : 0}, ${eventState.is_email_required ? 1 : 0}, '${eventState.booking_dynamic_url}', '${menuJson}', '${hoursJson}', '${now}', '${now}')`;
             } else {
                 sql = `UPDATE event SET 
                        title = '${eventState.title}', 
                        description = '${eventState.description}', 
-                       is_phone_required = ${eventState.is_phone_required}, 
-                       is_email_required = ${eventState.is_email_required}, 
+                       is_phone_required = ${eventState.is_phone_required ? 1 : 0}, 
+                       is_email_required = ${eventState.is_email_required ? 1 : 0}, 
                        booking_dynamic_url = '${eventState.booking_dynamic_url}',
                        options = '${menuJson}', 
-                       business_hours_ids = '${hoursJson}', 
-                       update_at = '${new Date().toISOString()}' 
+                       schedule_menu_uid = '${hoursJson}', 
+                       update_at = '${now}' 
                        WHERE uid = '${id}'`;
             }
             const success = await executeNonQuery(sql);
             if (!success) throw new Error('儲存失敗');
+            return 'UPDATED';
         },
-        onSuccess: () => {
+        onSuccess: (result) => {
+            if (result === 'NO_CHANGES') {
+                navigate('/admin/event');
+                return;
+            }
+            // 只有在真正有更新時才失效快取
             queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['event', id] });
             navigate('/admin/event');
         },
         onError: (err: any) => alert(err.message)
@@ -147,10 +208,14 @@ const EventEdit: React.FC = () => {
         setTempOptions(prev => ({ ...prev, name }));
     };
 
-    if (isLoading) {
+    // 只有在完全沒有資料且正在初始讀取時才顯示全頁面遮罩
+    if ((isLoading || isSchedulesLoading) && !dbEvent && scheduleMenus.length === 0) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '10rem' }}>
-                <Loader2 className="animate-spin" size={48} color="var(--primary)" />
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <Loader2 className="animate-spin" size={48} color="var(--primary)" />
+                    <p style={{ color: '#64748b', fontWeight: 500 }}>正在載入活動設定...</p>
+                </div>
             </div>
         );
     }
@@ -164,8 +229,11 @@ const EventEdit: React.FC = () => {
                 >
                     <ChevronLeft size={20} />
                 </button>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>{id === 'new' ? '新增活動' : '編輯活動設定'}</h1>
+                    {(isFetching || isSchedulesFetching) && (
+                        <Loader2 className="animate-spin" size={20} color="#94a3b8" />
+                    )}
                 </div>
                 {id !== 'new' && (
                     <button
@@ -213,13 +281,13 @@ const EventEdit: React.FC = () => {
                             <div>
                                 <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: '#64748b' }}>預約網址路徑 (Dynamic URL)</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <div style={{ background: '#f1f5f9', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.875rem', color: '#64748b', border: '1px solid #e2e8f0' }}>/booking/</div>
+                                    <div style={{ background: '#f1f5f9', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.875rem', color: '#64748b', border: '1px solid #e2e8f0' }}>/booking/{manager?.website_name}/</div>
                                     <input
                                         type="text"
                                         value={eventState.booking_dynamic_url}
                                         onChange={(e) => setEventState({ ...eventState, booking_dynamic_url: e.target.value.replace(/[^a-z0-9-]/gi, '').toLowerCase() })}
                                         style={{ flex: 1, color: '#1e293b', border: '1px solid #e2e8f0', background: '#f8fafc' }}
-                                        placeholder="活動專屬代碼 (例如: massage-spa)"
+                                        placeholder="活動專屬路徑 (例如: massage-spa)"
                                     />
                                 </div>
                                 <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.375rem' }}>※ 僅限英文字母、數字與連字號 (-)</p>
@@ -282,13 +350,13 @@ const EventEdit: React.FC = () => {
                         <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1.25rem' }}>預約資料要求</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-                                <input type="checkbox" checked={eventState.is_email_required === 1} onChange={(e) => setEventState({ ...eventState, is_email_required: e.target.checked ? 1 : 0 })} style={{ width: '18px', height: '18px' }} />
+                                <input type="checkbox" checked={eventState.is_email_required} onChange={(e) => setEventState({ ...eventState, is_email_required: e.target.checked })} style={{ width: '18px', height: '18px' }} />
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <Mail size={18} color="#64748b" /> <span style={{ fontSize: '0.9375rem', fontWeight: 500 }}>要求填寫 Email</span>
                                 </div>
                             </label>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-                                <input type="checkbox" checked={eventState.is_phone_required === 1} onChange={(e) => setEventState({ ...eventState, is_phone_required: e.target.checked ? 1 : 0 })} style={{ width: '18px', height: '18px' }} />
+                                <input type="checkbox" checked={eventState.is_phone_required} onChange={(e) => setEventState({ ...eventState, is_phone_required: e.target.checked })} style={{ width: '18px', height: '18px' }} />
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <Phone size={18} color="#64748b" /> <span style={{ fontSize: '0.9375rem', fontWeight: 500 }}>要求填寫 手機號碼</span>
                                 </div>
@@ -302,38 +370,45 @@ const EventEdit: React.FC = () => {
                             <Clock size={20} color="var(--primary)" /> 適用營業時間
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {/* 這裡模擬從 OpeningHours 獲取的模板列表 */}
-                            {['一般營業時間', '假日特別時段', '夜間服務模板'].map((item, idx) => {
-                                const val = (idx + 1).toString();
-                                const isChecked = eventState.selectedOpeningHours.includes(val);
-                                return (
-                                    <label key={idx} style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.75rem',
-                                        cursor: 'pointer',
-                                        padding: '0.75rem',
-                                        borderRadius: '0.5rem',
-                                        background: isChecked ? '#f0f9ff' : 'transparent',
-                                        border: isChecked ? '1px solid #bae6fd' : '1px solid #e2e8f0',
-                                        transition: 'all 0.2s'
-                                    }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={isChecked}
-                                            onChange={(e) => {
-                                                const current = eventState.selectedOpeningHours;
-                                                setEventState({
-                                                    ...eventState,
-                                                    selectedOpeningHours: e.target.checked ? [...current, val] : current.filter(v => v !== val)
-                                                });
-                                            }}
-                                            style={{ width: '18px', height: '18px' }}
-                                        />
-                                        <span style={{ fontSize: '0.875rem', fontWeight: 600, color: isChecked ? '#0369a1' : '#475569' }}>{item}</span>
-                                    </label>
-                                );
-                            })}
+                            {scheduleMenus.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '1.5rem', background: '#f8fafc', borderRadius: '0.75rem', border: '1px dashed #e2e8f0', color: '#94a3b8', fontSize: '0.875rem' }}>
+                                    尚未建立排程範本
+                                </div>
+                            ) : (
+                                scheduleMenus.map((item: any) => {
+                                    const val = item.uid;
+                                    const isChecked = eventState.schedule_menu_uid.some((t: any) => t.uid === val);
+                                    return (
+                                        <label key={val} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.75rem',
+                                            cursor: 'pointer',
+                                            padding: '0.75rem',
+                                            borderRadius: '0.5rem',
+                                            background: isChecked ? '#f0f9ff' : 'transparent',
+                                            border: isChecked ? '1px solid #bae6fd' : '1px solid #e2e8f0',
+                                            transition: 'all 0.2s'
+                                        }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={isChecked}
+                                                onChange={(e) => {
+                                                    const current = eventState.schedule_menu_uid;
+                                                    setEventState({
+                                                        ...eventState,
+                                                        schedule_menu_uid: e.target.checked
+                                                            ? [...current, { uid: val }]
+                                                            : current.filter((v: any) => v.uid !== val)
+                                                    });
+                                                }}
+                                                style={{ width: '18px', height: '18px' }}
+                                            />
+                                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: isChecked ? '#0369a1' : '#475569' }}>{item.name}</span>
+                                        </label>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
 
@@ -388,7 +463,7 @@ const EventEdit: React.FC = () => {
                             </div>
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#475569' }}>具體服務項目</span>
+                                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#475569' }}>服務項目</span>
                                 <button onClick={addOption} style={{ background: 'var(--primary-soft)', color: 'var(--primary)', padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}>
                                     <Plus size={14} /> 新增項目
                                 </button>
@@ -407,6 +482,7 @@ const EventEdit: React.FC = () => {
                                     }}>
                                         <input
                                             type="text"
+                                            required
                                             value={opt.title}
                                             onChange={(e) => updateOption(idx, 'title', e.target.value)}
                                             placeholder="項目名稱"
@@ -415,9 +491,12 @@ const EventEdit: React.FC = () => {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: '#f8fafc', padding: '0.25rem 0.5rem', borderRadius: '0.375rem', border: '1px solid #f1f5f9' }}>
                                             <input
                                                 type="number"
+                                                required
+                                                min={1}
+                                                max={1440}
                                                 value={opt.duration}
                                                 onChange={(e) => updateOption(idx, 'duration', e.target.value)}
-                                                style={{ width: '35px', border: 'none', background: 'transparent', padding: 0, textAlign: 'right', fontSize: '0.8125rem', fontWeight: 600 }}
+                                                style={{ width: '45px', border: 'none', background: 'transparent', padding: 0, textAlign: 'right', fontSize: '0.8125rem', fontWeight: 600 }}
                                             />
                                             <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>m</span>
                                         </div>

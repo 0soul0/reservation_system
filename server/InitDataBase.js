@@ -54,44 +54,6 @@ function createTableIfNotExists(tableName, headers) {
  */
 function migrateDatabaseStructure() {
     const ss = getSpreadsheetApp();
-
-    // 1. 處理更名：user -> member
-    const userSheet = ss.getSheetByName('user');
-    const memberSheet = ss.getSheetByName('member');
-    if (userSheet && !memberSheet) {
-        userSheet.setName('member');
-        console.log('Renamed table "user" to "member"');
-    }
-
-    // 2. 處理刪除：刪除 service_item
-    const serviceItemSheet = ss.getSheetByName('service_item');
-    if (serviceItemSheet) {
-        ss.deleteSheet(serviceItemSheet);
-        console.log('Deleted table "service_item"');
-    }
-
-    // 3. 處理欄位更名需求 (手動對應)
-    const renameMaps = [
-        { sheet: 'business_hours', old: 'userUid', new: 'manager_uid' },
-        { sheet: 'schedule_override', old: 'userUid', new: 'manager_uid' },
-        { sheet: 'event', old: 'userUid', new: 'manager_uid' },
-        { sheet: 'event', old: 'service_menu_id', new: 'options' },
-        { sheet: 'event', old: 'service_menu_name', new: 'options' }
-    ];
-
-    renameMaps.forEach(map => {
-        const sheet = ss.getSheetByName(map.sheet);
-        if (sheet) {
-            const range = sheet.getRange(1, 1, 1, sheet.getLastColumn());
-            const headers = range.getValues()[0];
-            const idx = headers.indexOf(map.old);
-            if (idx > -1 && !headers.includes(map.new)) {
-                sheet.getRange(1, idx + 1).setValue(map.new);
-                console.log(`Renamed column "${map.old}" to "${map.new}" in "${map.sheet}"`);
-            }
-        }
-    });
-
     // 4. 最後跑一次全量同步，確保所有新欄位都補齊
     initAllTables();
     console.log('Database migration completed.');
@@ -127,7 +89,7 @@ function initManagerTable() {
 function initUserTable() {
     const headers = [
         'uid',
-        'managerUid',
+        'manager_uid',
         'name',
         'line_uid',
         'phone',
@@ -224,15 +186,14 @@ function initEventTable() {
         'description',          // 說明
         'is_phone_required',    // 是否需要填電話
         'is_email_required',    // 是否需要填Email
+        'schedule_menu_uid',    // 營業時間選單ID
         'options',      // 服務項目選單ID
-        'business_hours_ids',   // 營業時間ID(可以多選)
         'booking_dynamic_url',  // 預約動態網址
         'create_at',
         'update_at'
     ];
     createTableIfNotExists('event', headers);
 }
-
 
 /**
  * 建立日誌資料表 (logs)

@@ -20,12 +20,13 @@ function doPost(e) {
     try {
         const postData = JSON.parse(e.postData.contents);
         const query = postData.query;
-
+        logInfo(`POST request: ${query}`);
         if (!query) {
             return createJsonResponse({ success: false, error: 'JSON 中缺少 query 欄位' });
         }
 
         const result = Database.query(query);
+        logInfo(`POST response: ${JSON.stringify(result)}`);
         return createJsonResponse(result);
 
     } catch (error) {

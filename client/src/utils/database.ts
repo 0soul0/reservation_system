@@ -19,8 +19,8 @@ export async function executeSQL<T = any>(sql: string): Promise<T[]> {
         }
 
         const result = await response.json();
-        console.log("Fetch sql:", sql);
-        console.log("Fetch result:" + sql + " " + result);
+
+        console.log("Fetch result:" + sql, result);
         if (result.status === 'success') {
             return result.data as T[];
         } else {
@@ -36,6 +36,7 @@ export async function executeSQL<T = any>(sql: string): Promise<T[]> {
  * 執行非查詢類 SQL (如 INSERT, UPDATE, DELETE)
  */
 export async function executeNonQuery(sql: string): Promise<boolean> {
+    console.log("Fetching sql:" + sql);
     try {
         // 使用 POST 避免 URL 長度限制及更好的語義
         const response = await fetch(DATABASE_URL, {
@@ -52,6 +53,7 @@ export async function executeNonQuery(sql: string): Promise<boolean> {
         }
 
         const result = await response.json();
+        console.log("Fetch result:" + sql, result);
         return result.status === 'success';
     } catch (error) {
         console.error('NonQuery Error:', error);

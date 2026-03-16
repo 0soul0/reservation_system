@@ -18,11 +18,13 @@ const ScheduleTime: React.FC = () => {
     const queryClient = useQueryClient();
     const { manager } = useAuth();
     const [isDeleting, setIsDeleting] = React.useState(false);
+    const [isManualRefetching, setIsManualRefetching] = React.useState(false);
 
     // ── Query ──────────────────────────────────────────────────────────────────
 
     const {
         data: menuList = [],
+        isLoading,
         isFetching,
         error,
         refetch,
@@ -31,7 +33,7 @@ const ScheduleTime: React.FC = () => {
         queryKey: ['schedule_menus'],
         queryFn: async (): Promise<ScheduleMenuWithTimes[]> => {
             const [menus, times] = await Promise.all([
-                executeSQL<ScheduleMenu>('SELECT * FROM schedule_menu ORDER BY create_at DESC'),
+                executeSQL<ScheduleMenu>(`SELECT * FROM schedule_menu WHERE manager_uid = '${manager?.uid}' ORDER BY create_at DESC`),
                 executeSQL<ScheduleTimeRow>('SELECT * FROM schedule_times ORDER BY day_of_week ASC'),
             ]);
             return menus.map((menu) => ({
@@ -103,17 +105,17 @@ const ScheduleTime: React.FC = () => {
         <div className="animate-in">
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
-                <div>
-                    <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: '#09090b', letterSpacing: '-0.03em', marginBottom: '0.25rem' }}>營業時間</h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <p style={{ color: '#71717a', fontSize: '1rem' }}>管理不同活動的適用時段與每週排程</p>
-                        {dataUpdatedAt > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#94a3b8', fontSize: '0.8125rem', paddingLeft: '1rem', borderLeft: '1px solid #e2e8f0' }}>
-                                <Clock size={14} />
-                                最後更新：{new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </div>
-                        )}
-                    </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: '#09090b', letterSpacing: '-0.03em', margin: 0 }}>營業時間</h1>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <p style={{ color: '#71717a', fontSize: '1rem' }}>管理不同活動的適用時段與每週排程</p>
+                    {dataUpdatedAt > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#94a3b8', fontSize: '0.8125rem', paddingLeft: '1rem', borderLeft: '1px solid #e2e8f0' }}>
+                            <Clock size={14} />
+                            最後更新：{new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </div>
+                    )}
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <button
@@ -126,9 +128,13 @@ const ScheduleTime: React.FC = () => {
                         新增時程
                     </button>
                     <button
-                        onClick={() => refetch()}
+                        onClick={async () => {
+                            setIsManualRefetching(true);
+                            await refetch();
+                            setIsManualRefetching(false);
+                        }}
                         disabled={isFetching}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff', border: '1px solid #e2e8f0', color: '#475569', padding: '0.625rem 1rem', fontSize: '0.875rem' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff', border: '1px solid #e2e8f0', color: '#475569', padding: '0.625rem 1rem', fontSize: '0.875rem', borderRadius: '0.5rem' }}
                     >
                         <RefreshCcw size={16} className={isFetching ? 'animate-spin' : ''} />
                         {isFetching ? '更新中...' : '手動刷新'}
@@ -137,10 +143,10 @@ const ScheduleTime: React.FC = () => {
             </div>
 
             {/* List */}
-            {(isFetching || isDeleting) ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#64748b', padding: '4rem 0' }}>
-                    <Loader2 className="animate-spin" size={32} />
-                    <span>{isDeleting ? '正在刪除資料...' : '正在讀取資料...'}</span>
+            {((isFetching && !isManualRefetching) || isLoading || isDeleting) ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#64748b', padding: '6rem 0' }}>
+                    <Loader2 className="animate-spin" size={32} color="var(--primary)" />
+                    <span style={{ fontWeight: 500 }}>{isDeleting ? '正在刪除資料...' : '正在讀取資料...'}</span>
                 </div>
             ) : error ? (
                 <div style={{ textAlign: 'center', padding: '4rem 0', color: '#ef4444' }}>

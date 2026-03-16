@@ -12,6 +12,7 @@ const Event: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { manager } = useAuth();
+    const [isManualRefetching, setIsManualRefetching] = React.useState(false);
 
     // 取得活動列表
     const {
@@ -53,17 +54,17 @@ const Event: React.FC = () => {
     return (
         <div className="animate-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
-                <div>
-                    <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: '#09090b', letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>活動設定</h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <p style={{ color: '#71717a', fontSize: '1rem' }}>管理您的所有預約活動與服務項目</p>
-                        {dataUpdatedAt > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#94a3b8', fontSize: '0.8125rem', paddingLeft: '1rem', borderLeft: '1px solid #e2e8f0' }}>
-                                <Clock size={14} />
-                                最後更新：{new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </div>
-                        )}
-                    </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: '#09090b', letterSpacing: '-0.02em', margin: 0 }}>活動設定</h1>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <p style={{ color: '#71717a', fontSize: '1rem' }}>管理您的所有預約活動與服務項目</p>
+                    {dataUpdatedAt > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#94a3b8', fontSize: '0.8125rem', paddingLeft: '1rem', borderLeft: '1px solid #e2e8f0' }}>
+                            <Clock size={14} />
+                            最後更新：{new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </div>
+                    )}
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <button
@@ -74,9 +75,13 @@ const Event: React.FC = () => {
                         <Plus size={18} /> 新增活動
                     </button>
                     <button
-                        onClick={() => refetch()}
+                        onClick={async () => {
+                            setIsManualRefetching(true);
+                            await refetch();
+                            setIsManualRefetching(false);
+                        }}
                         disabled={isFetching}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff', border: '1px solid #e2e8f0', color: '#475569', padding: '0.625rem 1rem', fontSize: '0.875rem' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff', border: '1px solid #e2e8f0', color: '#475569', padding: '0.625rem 1rem', fontSize: '0.875rem', borderRadius: '0.5rem' }}
                     >
                         <RefreshCcw size={16} className={isFetching ? 'animate-spin' : ''} />
                         {isFetching ? '更新中...' : '手動刷新'}
@@ -85,8 +90,8 @@ const Event: React.FC = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
-                {isLoading ? (
-                    <div style={{ gridColumn: '1/-1', display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+                {(isLoading || (isFetching && !isManualRefetching)) ? (
+                    <div style={{ gridColumn: '1/-1', display: 'flex', justifyContent: 'center', padding: '8rem' }}>
                         <Loader2 className="animate-spin" size={48} color="var(--primary)" />
                     </div>
                 ) : error ? (

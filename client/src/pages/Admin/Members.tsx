@@ -3,6 +3,7 @@ import { Search, Filter, X, Mail, Calendar, ShieldCheck, Phone, MapPin, Power, L
 import { executeSQL, executeNonQuery } from '../../utils/database';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Member } from '../../types';
+import { useAuth } from '../../utils/auth';
 
 const STATUS_MAP: Record<number, string> = {
     0: '休眠',
@@ -13,6 +14,7 @@ const Members: React.FC = () => {
     const queryClient = useQueryClient();
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const { manager } = useAuth()
     const itemsPerPage = 10;
 
     // 使用 TanStack Query 取得會員列表
@@ -26,7 +28,7 @@ const Members: React.FC = () => {
     } = useQuery({
         queryKey: ['members'],
         queryFn: async () => {
-            const result = await executeSQL<Member>("SELECT * FROM member ORDER BY create_at DESC");
+            const result = await executeSQL<Member>(`SELECT * FROM member WHERE manager_uid = '${manager.uid}' ORDER BY create_at DESC`);
             return result;
         },
         staleTime: 1000 * 60 * 5,
