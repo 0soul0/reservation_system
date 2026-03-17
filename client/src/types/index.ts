@@ -22,10 +22,12 @@ export type EventData = {
     uid: string;
     manager_uid: string;
     title: string;
+    logo_url?: string;
     description: string;
     is_phone_required: boolean;
     is_email_required: boolean;
     schedule_menu_uid: string;
+    website_name: string;
     booking_dynamic_url: string;
     create_at: string;
     update_at: string;
@@ -42,7 +44,7 @@ export type ScheduleMenu = {
     update_at: string;
 };
 
-export type ScheduleTimeRow = {
+export type ScheduleTime = {
     uid: string;
     schedule_menu_uid: string;
     time_range: string;
@@ -56,7 +58,7 @@ export type ScheduleTimeRow = {
 };
 
 export type ScheduleMenuWithTimes = ScheduleMenu & {
-    times: ScheduleTimeRow[];
+    times: ScheduleTime[];
 };
 
 export type ScheduleOverride = {
@@ -68,4 +70,23 @@ export type ScheduleOverride = {
     is_closed: boolean;
     create_at: string;
     update_at: string;
+};
+
+// ── Booking ───────────────────────────────────────────────────────────────────
+
+export type Booking = {
+    uid: string;
+    name: string;
+    line_uid: string;
+    phone: string;
+    booking_start_time: string;
+    booking_end_time: string;
+    service_id: string; // 可能是 JSON 或特定的服務名稱
+    is_deposit_received: boolean;
+    is_cancelled: boolean;
+    reminded_1day_sent: boolean;
+    reminded_2days_sent: boolean;
+    create_at: string;
+    update_at: string;
+    manager_uid: string;
 };

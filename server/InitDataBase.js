@@ -114,7 +114,8 @@ function initBookingTable() {
         'phone',
         'booking_start_time', // 預約開始時間
         'booking_end_time', // 預約開始時間
-        'service_id',          // 預約項目ID
+        'service_item',          // 預約項目
+        'service_computed_duration',      // 預約時長
         'is_deposit_received', // 是否收到定金
         'is_cancelled',        // 是否取消預約
         'reminded_1day_sent',   // 已傳送一天前提醒
@@ -141,7 +142,7 @@ function initScheduleHoursTable() {
         'create_at',
         'update_at'
     ];
-    createTableIfNotExists('schedule_times', headers);
+    createTableIfNotExists('schedule_time', headers);
 }
 
 /**
@@ -183,12 +184,14 @@ function initEventTable() {
         'uid',
         'manager_uid',
         'title',
+        'logo_url',
         'description',          // 說明
         'is_phone_required',    // 是否需要填電話
         'is_email_required',    // 是否需要填Email
         'schedule_menu_uid',    // 營業時間選單ID
         'options',      // 服務項目選單ID
         'booking_dynamic_url',  // 預約動態網址
+        'website_name', // 網站名稱
         'create_at',
         'update_at'
     ];

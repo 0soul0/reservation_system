@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { executeSQL, executeNonQuery } from '../../utils/database';
 import { useAuth } from '../../utils/auth';
 import { generateUid } from '../../utils/id';
-import type { ScheduleMenu, ScheduleTimeRow, ScheduleMenuWithTimes } from '../../types';
+import type { ScheduleMenu, ScheduleTime, ScheduleMenuWithTimes } from '../../types';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ const ScheduleTime: React.FC = () => {
         queryFn: async (): Promise<ScheduleMenuWithTimes[]> => {
             const [menus, times] = await Promise.all([
                 executeSQL<ScheduleMenu>(`SELECT * FROM schedule_menu WHERE manager_uid = '${manager?.uid}' ORDER BY create_at DESC`),
-                executeSQL<ScheduleTimeRow>('SELECT * FROM schedule_times ORDER BY day_of_week ASC'),
+                executeSQL<ScheduleTime>('SELECT * FROM schedule_time ORDER BY day_of_week ASC'),
             ]);
             return menus.map((menu) => ({
                 ...menu,
@@ -77,7 +77,7 @@ const ScheduleTime: React.FC = () => {
 
             // 依照關聯性刪除
             const results = await Promise.all([
-                executeNonQuery(`DELETE FROM schedule_times WHERE schedule_menu_uid = '${uid}'`),
+                executeNonQuery(`DELETE FROM schedule_time WHERE schedule_menu_uid = '${uid}'`),
                 executeNonQuery(`DELETE FROM schedule_override WHERE schedule_menu_uid = '${uid}'`),
                 executeNonQuery(`DELETE FROM schedule_menu WHERE uid = '${uid}'`),
             ]);

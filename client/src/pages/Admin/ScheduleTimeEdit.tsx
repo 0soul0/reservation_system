@@ -8,7 +8,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { executeSQL, executeNonQuery } from '../../utils/database';
 import { generateUid } from '../../utils/id';
-import type { ScheduleMenu, ScheduleTimeRow, ScheduleOverride } from '../../types';
+import type { ScheduleMenu, ScheduleTime, ScheduleOverride } from '../../types';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ const formatDateForInput = (dateStr: string) => {
     }
 };
 
-const makeTempTime = (menuUid: string, dow: number): ScheduleTimeRow => ({
+const makeTempTime = (menuUid: string, dow: number): ScheduleTime => ({
     uid: generateUid("_new_"),
     schedule_menu_uid: menuUid,
     time_range: '09:00-18:00',
@@ -56,7 +56,7 @@ const ScheduleTimeEdit: React.FC = () => {
     const queryClient = useQueryClient();
     const isNew = id === 'new';
 
-    const initialDataFromState = location.state?.initialData as { menu: ScheduleMenu; times: ScheduleTimeRow[]; overrides: ScheduleOverride[] } | undefined;
+    const initialDataFromState = location.state?.initialData as { menu: ScheduleMenu; times: ScheduleTime[]; overrides: ScheduleOverride[] } | undefined;
 
     // ── 取得原始資料（只有編輯模式才 query）──
     const { data, isLoading, isFetching } = useQuery({
@@ -64,7 +64,7 @@ const ScheduleTimeEdit: React.FC = () => {
         queryFn: async () => {
             const [menus, times, overrides] = await Promise.all([
                 executeSQL<ScheduleMenu>(`SELECT * FROM schedule_menu WHERE uid = '${id}' LIMIT 1`),
-                executeSQL<ScheduleTimeRow>(`SELECT * FROM schedule_times WHERE schedule_menu_uid = '${id}' ORDER BY day_of_week ASC`),
+                executeSQL<ScheduleTime>(`SELECT * FROM schedule_time WHERE schedule_menu_uid = '${id}' ORDER BY day_of_week ASC`),
                 executeSQL<ScheduleOverride>(`SELECT * FROM schedule_override WHERE schedule_menu_uid = '${id}' ORDER BY override_date DESC`),
             ]);
             return { menu: menus[0] ?? null, times, overrides };
@@ -77,7 +77,7 @@ const ScheduleTimeEdit: React.FC = () => {
 
     // ── 本地編輯狀態 ──
     const [name, setName] = useState('');
-    const [times, setTimes] = useState<ScheduleTimeRow[]>([]);
+    const [times, setTimes] = useState<ScheduleTime[]>([]);
     const [overrides, setOverrides] = useState<ScheduleOverride[]>([]);
     const [deletedUids, setDeletedUids] = useState<string[]>([]);
 
@@ -103,11 +103,11 @@ const ScheduleTimeEdit: React.FC = () => {
         if (!uid.startsWith('_new_')) setDeletedUids((prev) => [...prev, uid]);
     };
 
-    const updateSlot = <K extends keyof ScheduleTimeRow>(uid: string, key: K, value: ScheduleTimeRow[K]) => {
+    const updateSlot = <K extends keyof ScheduleTime>(uid: string, key: K, value: ScheduleTime[K]) => {
         setTimes((prev) => prev.map((t) => (t.uid === uid ? { ...t, [key]: value } : t)));
     };
 
-    const updateDayLastBooking = (dow: number, updates: Partial<ScheduleTimeRow>) => {
+    const updateDayLastBooking = (dow: number, updates: Partial<ScheduleTime>) => {
         setTimes((prev) => prev.map((t) => (t.day_of_week === dow ? { ...t, ...updates } : t)));
     };
 
@@ -213,12 +213,12 @@ const ScheduleTimeEdit: React.FC = () => {
 
             // 2. Schedule Times
             for (const uid of deletedUids) {
-                sqls.push(`DELETE FROM schedule_times WHERE uid = '${uid}'`);
+                sqls.push(`DELETE FROM schedule_time WHERE uid = '${uid}'`);
             }
             for (const t of times) {
                 if (t.uid.startsWith('_new_')) {
                     const realUid = generateUid();
-                    sqls.push(`INSERT INTO schedule_times (uid, schedule_menu_uid, time_range, day_of_week, max_capacity, is_open, is_open_last_booking_time, last_booking_time, create_at, update_at) VALUES ('${realUid}', '${id}', '${t.time_range}', ${t.day_of_week}, ${t.max_capacity}, ${t.is_open}, ${t.is_open_last_booking_time}, '${t.last_booking_time}', '${now}', '${now}')`);
+                    sqls.push(`INSERT INTO schedule_time (uid, schedule_menu_uid, time_range, day_of_week, max_capacity, is_open, is_open_last_booking_time, last_booking_time, create_at, update_at) VALUES ('${realUid}', '${id}', '${t.time_range}', ${t.day_of_week}, ${t.max_capacity}, ${t.is_open}, ${t.is_open_last_booking_time}, '${t.last_booking_time}', '${now}', '${now}')`);
                 } else {
                     const orig = original.times.find(ot => ot.uid === t.uid);
                     if (orig && (
@@ -229,7 +229,7 @@ const ScheduleTimeEdit: React.FC = () => {
                         Boolean(orig.is_open_last_booking_time) !== Boolean(t.is_open_last_booking_time) ||
                         orig.last_booking_time !== t.last_booking_time
                     )) {
-                        sqls.push(`UPDATE schedule_times SET time_range = '${t.time_range}', day_of_week = ${t.day_of_week}, max_capacity = ${t.max_capacity}, is_open = ${t.is_open}, is_open_last_booking_time = ${t.is_open_last_booking_time}, last_booking_time = '${t.last_booking_time}', update_at = '${now}' WHERE uid = '${t.uid}'`);
+                        sqls.push(`UPDATE schedule_time SET time_range = '${t.time_range}', day_of_week = ${t.day_of_week}, max_capacity = ${t.max_capacity}, is_open = ${t.is_open}, is_open_last_booking_time = ${t.is_open_last_booking_time}, last_booking_time = '${t.last_booking_time}', update_at = '${now}' WHERE uid = '${t.uid}'`);
                     }
                 }
             }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Loader2, RefreshCcw, Clock, Plus } from 'lucide-react';
+import { Edit2, Trash2, Loader2, RefreshCcw, Clock, Plus, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { executeSQL, executeNonQuery } from '../../utils/database';
@@ -16,19 +16,20 @@ const Event: React.FC = () => {
 
     // 取得活動列表
     const {
-        data: events = [],
+        data: { events = [], menus = [] } = {},
         isLoading,
         isFetching,
         error,
         refetch,
         dataUpdatedAt
     } = useQuery({
-        queryKey: ['events'],
+        queryKey: ['events_and_menus'],
         queryFn: async () => {
-            console.log("Fetching events...");
-            const sql = `SELECT * FROM event WHERE manager_uid = '${manager?.uid}' ORDER BY create_at DESC`;
-            const result = await executeSQL<EventData>(sql);
-            return result;
+            const [events, menus] = await Promise.all([
+                executeSQL<EventData>(`SELECT * FROM event WHERE manager_uid = '${manager?.uid}' ORDER BY create_at DESC`),
+                executeSQL<{ uid: string; name: string }>(`SELECT uid, name FROM schedule_menu WHERE manager_uid = '${manager?.uid}'`)
+            ]);
+            return { events, menus };
         },
         enabled: !!manager?.uid,
         staleTime: QUERY_CONFIG.STALE_TIME,
@@ -42,7 +43,7 @@ const Event: React.FC = () => {
             if (!success) throw new Error('刪除失敗');
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['events_and_menus'] });
         },
         onError: (err: any) => alert(err.message)
     });
@@ -122,13 +123,50 @@ const Event: React.FC = () => {
                                 </p>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '1.25rem' }}>
-                                <button
-                                    onClick={() => navigate(`/admin/event/${event.uid}`)}
-                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.625rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}
-                                >
-                                    <Edit2 size={16} /> 編輯
-                                </button>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                                    {(() => {
+                                        try {
+                                            const selectedMenus = JSON.parse(event.schedule_menu_uid || '[]');
+                                            return selectedMenus.map((sm: { uid: string }) => {
+                                                const menuInfo = menus.find(m => m.uid === sm.uid);
+                                                return (
+                                                    <button
+                                                        key={sm.uid}
+                                                        onClick={() => {
+                                                            const url = `${window.location.origin}/booking/${event.website_name}/${event.booking_dynamic_url}?schedule_menu_uid=${sm.uid}`;
+                                                            window.open(url, '_blank');
+                                                        }}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '0.4rem',
+                                                            background: '#eef2ff',
+                                                            border: '1px solid #e0e7ff',
+                                                            padding: '0.4rem 0.75rem',
+                                                            borderRadius: '0.5rem',
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: 600,
+                                                            color: '#4f46e5',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <ExternalLink size={12} /> {menuInfo?.name || '專屬預約'}
+                                                    </button>
+                                                );
+                                            });
+                                        } catch (e) {
+                                            return null;
+                                        }
+                                    })()}
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '1.25rem' }}>
+                                    <button
+                                        onClick={() => navigate(`/admin/event/${event.uid}`)}
+                                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.625rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}
+                                    >
+                                        <Edit2 size={16} /> 編輯活動
+                                    </button>
                                 <button
                                     onClick={() => deleteMutation.mutate(event.uid)}
                                     title="刪除活動"

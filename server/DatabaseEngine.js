@@ -141,7 +141,12 @@ const Database = {
         // 改用 regex 拆分 VALUES，避免 JSON 內部的逗號導致錯誤
         const valsStr = valsMatch[1].trim();
         const vals = valsStr.split(/,(?=(?:(?:[^']*'){2})*[^']*$)/).map(s => {
-            return s.trim().replace(/^'|'$/g, '').replace(/''/g, "'");
+            const v = s.trim();
+            if (v.startsWith("'") && v.endsWith("'")) return v.replace(/^'|'$/g, '').replace(/''/g, "'");
+            if (v.toLowerCase() === 'true') return true;
+            if (v.toLowerCase() === 'false') return false;
+            if (!isNaN(v) && v !== "") return Number(v);
+            return v;
         });
 
         const ss = getSpreadsheetApp();
@@ -150,14 +155,22 @@ const Database = {
 
         const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
         const now = new Date();
+        const nowStr = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
 
         const newRow = headers.map(h => {
             const idx = cols.indexOf(h);
-            if (h === 'create_at' || h === 'update_at') return now;
+            if (h === 'create_at' || h === 'update_at') return nowStr;
             return idx > -1 ? vals[idx] : "";
         });
 
-        sheet.appendRow(newRow);
+        // 取代原本的 appendRow，改用手動寫入以確保格式優先設定
+        const lastRow = sheet.getLastRow() + 1;
+        // 排除數字和 boolean 正常存，其餘強制純文字
+        const formats = newRow.map(v => (typeof v === 'number' || typeof v === 'boolean') ? 'General' : '@');
+        const range = sheet.getRange(lastRow, 1, 1, headers.length);
+        range.setNumberFormats([formats]); // 設定格式
+        range.setValues([newRow]); // 填入值
+
         return { success: true, message: '插入成功' };
     },
 
@@ -174,7 +187,21 @@ const Database = {
         const setPairs = setMatch[1].split(/,(?=(?:(?:[^']*'){2})*[^']*$)/).map(p => {
             const eqIdx = p.indexOf('=');
             if (eqIdx === -1) return null;
-            return [p.substring(0, eqIdx).trim(), p.substring(eqIdx + 1).trim().replace(/^'|'$/g, '').replace(/''/g, "'")];
+            const col = p.substring(0, eqIdx).trim();
+            const vStr = p.substring(eqIdx + 1).trim();
+            let val;
+            if (vStr.startsWith("'") && vStr.endsWith("'")) {
+                val = vStr.replace(/^'|'$/g, '').replace(/''/g, "'");
+            } else if (vStr.toLowerCase() === 'true') {
+                val = true;
+            } else if (vStr.toLowerCase() === 'false') {
+                val = false;
+            } else if (!isNaN(vStr) && vStr !== "") {
+                val = Number(vStr);
+            } else {
+                val = vStr;
+            }
+            return [col, val];
         }).filter(p => p !== null);
 
         const ss = getSpreadsheetApp();
@@ -182,6 +209,7 @@ const Database = {
         const data = sheet.getDataRange().getValues();
         const headers = data[0];
         const now = new Date();
+        const nowStr = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
 
         let updatedCount = 0;
         for (let i = 1; i < data.length; i++) {
@@ -190,13 +218,15 @@ const Database = {
                 setPairs.forEach(([col, val]) => {
                     const colIdx = headers.indexOf(col);
                     if (colIdx > -1) {
-                        sheet.getRange(i + 1, colIdx + 1).setValue(val);
+                        const cell = sheet.getRange(i + 1, colIdx + 1);
+                        const fmt = (typeof val === 'number' || typeof val === 'boolean') ? 'General' : '@';
+                        cell.setNumberFormat(fmt).setValue(val); 
                     }
                 });
                 // 自動更新 update_at
                 const updateAtIdx = headers.indexOf('update_at');
                 if (updateAtIdx > -1) {
-                    sheet.getRange(i + 1, updateAtIdx + 1).setValue(now);
+                    sheet.getRange(i + 1, updateAtIdx + 1).setNumberFormat("@").setValue(nowStr);
                 }
                 updatedCount++;
             }
@@ -243,7 +273,24 @@ const Database = {
 
     _rowToObj: function (headers, row) {
         const obj = {};
-        headers.forEach((h, i) => obj[h] = row[i]);
+        headers.forEach((h, i) => {
+            let val = row[i];
+            // 只有當讀到 Date 物件且不是 create_at/update_at 時才轉型為字串
+            // 如果原本就是 Number 或 Boolean，則保留原始型別
+            if (val instanceof Date && h !== 'create_at' && h !== 'update_at') {
+                if (h.endsWith('_date')) {
+                    val = Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd");
+                } else if (h.endsWith('_time')) {
+                    val = Utilities.formatDate(val, Session.getScriptTimeZone(), "HH:mm");
+                } else {
+                    const timePart = Utilities.formatDate(val, Session.getScriptTimeZone(), "HH:mm:ss");
+                    val = (timePart === "00:00:00") 
+                          ? Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd")
+                          : Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+                }
+            }
+            obj[h] = val;
+        });
         return obj;
     },
 

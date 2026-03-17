@@ -21,6 +21,7 @@ const EventEdit: React.FC = () => {
         is_email_required: false,
         is_phone_required: true,
         booking_dynamic_url: '',
+        website_name: '',
         options: {
             name: '', // 服務選單分類名稱 (例如: 專業按摩服務)
             items: [] as { title: string, duration: number }[] // 具體項目
@@ -99,6 +100,7 @@ const EventEdit: React.FC = () => {
                 description: dbEvent.description,
                 is_email_required: !!dbEvent.is_email_required,
                 is_phone_required: !!dbEvent.is_phone_required,
+                website_name: manager?.website_name || '',
                 booking_dynamic_url: dbEvent.booking_dynamic_url || '',
                 options: dbEvent.options ? JSON.parse(dbEvent.options) : { name: '', items: [] },
                 schedule_menu_uid: dbEvent.schedule_menu_uid ? JSON.parse(dbEvent.schedule_menu_uid) : []
@@ -115,7 +117,7 @@ const EventEdit: React.FC = () => {
 
             // 只有在編輯模式時檢查是否真的有變動
             if (id !== 'new' && dbEvent) {
-                const hasChanged = 
+                const hasChanged =
                     eventState.title !== dbEvent.title ||
                     eventState.description !== dbEvent.description ||
                     !!eventState.is_phone_required !== !!dbEvent.is_phone_required ||
@@ -126,21 +128,23 @@ const EventEdit: React.FC = () => {
 
                 if (!hasChanged) {
                     console.log("No changes detected, skipping DB update.");
-                    return 'NO_CHANGES'; 
+                    return 'NO_CHANGES';
                 }
             }
 
             let sql = '';
             const now = new Date().toISOString();
             if (id === 'new') {
-                sql = `INSERT INTO event (uid, manager_uid, title, description, is_phone_required, is_email_required, booking_dynamic_url, options, schedule_menu_uid, create_at, update_at) 
-                       VALUES ('${uid}', '${manager?.uid}', '${eventState.title}', '${eventState.description}', ${eventState.is_phone_required ? 1 : 0}, ${eventState.is_email_required ? 1 : 0}, '${eventState.booking_dynamic_url}', '${menuJson}', '${hoursJson}', '${now}', '${now}')`;
+                sql = `INSERT INTO event (uid, manager_uid, title, logo_url, description, is_phone_required, is_email_required, booking_dynamic_url, options, schedule_menu_uid, create_at, update_at) 
+                       VALUES ('${uid}', '${manager?.uid}', '${eventState.title}','${manager?.logo_url}', '${eventState.description}', ${eventState.is_phone_required}, ${eventState.is_email_required}, '/${manager?.website_name}/${eventState.booking_dynamic_url}', '${menuJson}', '${hoursJson}', '${now}', '${now}')`;
             } else {
                 sql = `UPDATE event SET 
                        title = '${eventState.title}', 
+                       logo_url = '${manager?.logo_url}', 
                        description = '${eventState.description}', 
-                       is_phone_required = ${eventState.is_phone_required ? 1 : 0}, 
-                       is_email_required = ${eventState.is_email_required ? 1 : 0}, 
+                       is_phone_required = ${eventState.is_phone_required}, 
+                       is_email_required = ${eventState.is_email_required}, 
+                       website_name = '${manager?.website_name}',
                        booking_dynamic_url = '${eventState.booking_dynamic_url}',
                        options = '${menuJson}', 
                        schedule_menu_uid = '${hoursJson}', 
@@ -157,7 +161,7 @@ const EventEdit: React.FC = () => {
                 return;
             }
             // 只有在真正有更新時才失效快取
-            queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['events_and_menus'] });
             queryClient.invalidateQueries({ queryKey: ['event', id] });
             navigate('/admin/event');
         },
@@ -172,7 +176,7 @@ const EventEdit: React.FC = () => {
             if (!success) throw new Error('刪除失敗');
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['events_and_menus'] });
             navigate('/admin/event');
         },
         onError: (err: any) => alert(err.message)

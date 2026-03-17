@@ -6,7 +6,6 @@ const DATABASE_URL = import.meta.env.VITE_GAS_DATABASE_URL;
  * 執行失敗應傳回 { status: 'error', message: '...' }
  */
 export async function executeSQL<T = any>(sql: string): Promise<T[]> {
-    console.log("Fetching sql:" + sql);
 
     try {
         const response = await fetch(`${DATABASE_URL}?query=${encodeURIComponent(sql)}`, {
@@ -36,7 +35,7 @@ export async function executeSQL<T = any>(sql: string): Promise<T[]> {
  * 執行非查詢類 SQL (如 INSERT, UPDATE, DELETE)
  */
 export async function executeNonQuery(sql: string): Promise<boolean> {
-    console.log("Fetching sql:" + sql);
+
     try {
         // 使用 POST 避免 URL 長度限制及更好的語義
         const response = await fetch(DATABASE_URL, {

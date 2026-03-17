@@ -7,6 +7,7 @@ import Event from './pages/Admin/Event';
 import EventEdit from './pages/Admin/EventEdit';
 import ScheduleTime from './pages/Admin/ScheduleTime';
 import ScheduleTimeEdit from './pages/Admin/ScheduleTimeEdit';
+import Booking from './pages/Booking';
 import './index.css';
 
 function App() {
@@ -24,6 +25,8 @@ function App() {
           <Route path="schedule_time" element={<ScheduleTime />} />
           <Route path="schedule_time/:id" element={<ScheduleTimeEdit />} />
         </Route>
+
+        <Route path="/booking/*" element={<Booking />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

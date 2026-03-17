@@ -318,3 +318,62 @@ td:last-child {
     transform: translateY(0);
   }
 }
+
+.dropdown-animate {
+  animation: dropdownFade 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── RWD Utilities ───────────────────────────────────────────────────────────── */
+
+.booking-layout-container {
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  padding: 0 1rem;
+  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .responsive-grid {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1.5rem;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    z-index: 100;
+  }
+
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .booking-layout-container {
+    padding: 0 0.75rem;
+  }
+
+  .step-indicator-line {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.5rem !important; }
+  .admin-card { padding: 1.25rem; }
+  .modal-content { border-radius: 0; height: 100%; max-height: 100%; }
+}
