@@ -138,8 +138,8 @@ const ScheduleTimeEdit: React.FC = () => {
 
     const deleteOverride = async (uid: string) => {
         if (!window.confirm('確定要刪除此特別日期設定嗎？')) return;
-        const ok = await executeNonQuery(`DELETE FROM schedule_override WHERE uid = '${uid}'`);
-        if (ok) {
+        const res = await executeNonQuery(`DELETE FROM schedule_override WHERE uid = '${uid}'`);
+        if (res.success) {
             setOverrides(prev => prev.filter(o => o.uid !== uid));
             queryClient.invalidateQueries({ queryKey: ['schedule_menu', id] });
         } else {
@@ -172,8 +172,8 @@ const ScheduleTimeEdit: React.FC = () => {
                 sql = `INSERT INTO schedule_override (uid, schedule_menu_uid, override_date, override_time, max_capacity, is_closed, create_at, update_at) VALUES ('${targetUid}', '${id}', '${inputDate}', '${overrideData.override_time}', ${overrideData.max_capacity}, ${overrideData.is_closed}, '${now}', '${now}')`;
             }
 
-            const ok = await executeNonQuery(sql);
-            if (ok) {
+            const res = await executeNonQuery(sql);
+            if (res.success) {
                 if (editingOverride) {
                     setOverrides(prev => prev.map(o => o.uid === editingOverride.uid ? { ...o, ...overrideData, update_at: now } : o));
                 } else {
@@ -242,8 +242,8 @@ const ScheduleTimeEdit: React.FC = () => {
             }
 
             for (const sql of sqls) {
-                const ok = await executeNonQuery(sql);
-                if (!ok) throw new Error('儲存失敗');
+                const res = await executeNonQuery(sql);
+                if (!res.success) throw new Error(res.message || '儲存失敗');
             }
             return 'SUCCESS';
         },

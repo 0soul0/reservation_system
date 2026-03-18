@@ -31,16 +31,19 @@ export async function executeSQL<T = any>(sql: string): Promise<T[]> {
     }
 }
 
-/**
- * 執行非查詢類 SQL (如 INSERT, UPDATE, DELETE)
- */
-export async function executeNonQuery(sql: string): Promise<boolean> {
+export interface DBResult {
+    success: boolean;
+    message?: string;
+    data?: any;
+}
 
+/**
+ * 執行非查詢類 SQL (如 INSERT, UPDATE, DELETE, CALL)
+ */
+export async function executeNonQuery(sql: string): Promise<DBResult> {
     try {
-        // 使用 POST 避免 URL 長度限制及更好的語義
         const response = await fetch(DATABASE_URL, {
             method: 'POST',
-            // 由於 GAS 對 POST 的 Content-Type 處理限制，通常用 text/plain 傳遞 JSON
             headers: {
                 'Content-Type': 'text/plain;charset=utf-8',
             },
@@ -53,9 +56,27 @@ export async function executeNonQuery(sql: string): Promise<boolean> {
 
         const result = await response.json();
         console.log("Fetch result:" + sql, result);
-        return result.status === 'success';
-    } catch (error) {
+
+        // 優先讀取業務邏輯的回傳結構 (圖片中的 result.data.result)
+        if (result.status === 'success' && result.data?.result) {
+            return {
+                success: result.data.result.success,
+                message: result.data.result.message || '',
+                data: result.data
+            };
+        }
+
+        return {
+            success: result.status === 'success',
+            message: result.message || '',
+            data: result.data
+        };
+    } catch (error: any) {
         console.error('NonQuery Error:', error);
-        return false;
+        return {
+            success: false,
+            message: error.message || 'Unknown error occurred'
+        };
     }
 }
+

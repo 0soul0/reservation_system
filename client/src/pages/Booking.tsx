@@ -2,9 +2,12 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Calendar as CalendarIcon, Clock, User, Phone, Mail, ChevronRight, ChevronLeft, CheckCircle2, Loader2, Edit, ChevronDown, Check } from 'lucide-react';
-import { executeSQL } from '../utils/database';
-import type { EventData, ScheduleMenu, ScheduleTime, ScheduleOverride } from '../types';
+import { executeNonQuery, executeSQL } from '../utils/database';
+import type { EventData, ScheduleTime, ScheduleOverride } from '../types';
 import { generateUid } from '../utils/id';
+import { TIME_SLOT_INTERVAL } from '../utils/constants';
+
+
 
 const formatDate = (date: Date | string) => {
     if (!date) return '';
@@ -25,6 +28,7 @@ const Booking: React.FC = () => {
     const websiteNameFromUrl = pathParts[0] || '';
     const dynamicUrlFromUrl = pathParts[1] || '';
     const scheduleMenuUidFromUrl = queryParams.get('schedule_menu_uid');
+    const lineUidFromUrl = queryParams.get('line_uid');
 
     // ── State ──────────────────────────────────────────────────────────────────
     const [step, setStep] = useState(1); // 1: Info, 2: Date/Time, 3: Success
@@ -38,6 +42,8 @@ const Booking: React.FC = () => {
     const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
     const [isFirstStepAttempted, setIsFirstStepAttempted] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [slotTime, setSlotTime] = useState("");
 
     // ── Cache Logic ─────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -127,33 +133,45 @@ const Booking: React.FC = () => {
         const startMinutes = timeToMinutes(startTimePart);
         const endMinutes = startMinutes + computedDuration;
         const endDateTime = `${dateStr} ${minutesToTime(endMinutes)}`;
+        const allDaySlots = getAvailableSlots(selectedDate);
+        const max_capacity_array: number[] = [];
+        for (let time = startMinutes; time < endMinutes; time += 30) {
+            const timeStr = minutesToTime(time);
+            const slot = allDaySlots.find(s => s.uid === `${dateStr}_${timeStr}`);
+            if (slot) max_capacity_array.push(slot.max_capacity);
+        }
 
+        const bookingData = {
+            uid: bookingUid,
+            line_uid: lineUidFromUrl,
+            name: formData.name,
+            phone: formData.phone,
+            booking_start_time: startDateTime,
+            booking_end_time: endDateTime,
+            service_item: formData.selectedService.title,
+            service_computed_duration: computedDuration,
+            manager_uid: event.manager_uid,
+            time_slot_interval: TIME_SLOT_INTERVAL,
+            max_capacity_array
+        };
+        setSlotTime(`${startTimePart}-${minutesToTime(endMinutes)} (${computedDuration}分鐘)`);
+        const sql = `CALL submitBooking('${JSON.stringify(bookingData).replace(/'/g, "''")}')`;
 
-        const serviceInfo = JSON.stringify(formData.selectedService);
-        const sql = `
-            INSERT INTO booking (
-                uid, name, phone, booking_start_time, booking_end_time, 
-                service_item,service_computed_duration, manager_uid, create_at, update_at, 
-                is_deposit_received, is_cancelled, reminded_1day_sent, reminded_2days_sent
-            ) VALUES (
-                '${bookingUid}', 
-                '${formData.name}', 
-                '${formData.phone}', 
-                '${startDateTime}', 
-                '${endDateTime}', 
-                '${serviceInfo.replace(/'/g, "''")}', 
-                '${computedDuration}'
-                '${event.manager_uid}', 
-                '${new Date().toISOString()}', 
-                '${new Date().toISOString()}',
-                0, 0, 0, 0
-            )
-        `;
+        setIsSubmitting(true);
+        try {
+            const result = await executeNonQuery(sql);
 
-        // 雖然原本是用 useMutation 較好，但先直接實作呼叫確保行為
-        setStep(3); // 先切換，因為 GAS 有時慢
-        const result = await executeSQL(sql);
-        console.log("Booking Submit Result:", result);
+            if (result.success) {
+                setStep(3); // 成功後才切換
+            } else {
+                alert(result.message || "預約失敗，請檢查網路連線或稍後再試。");
+            }
+        } catch (error) {
+            console.error("Booking Submit Failed:", error);
+            alert("預約失敗，請稍後再試。");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // ── Calculation ─────────────────────────────────────────────────────────────
@@ -651,12 +669,12 @@ const Booking: React.FC = () => {
                                     <ChevronLeft size={18} /> 上一步
                                 </button>
                                 <button
-                                    disabled={!selectedDate || !selectedTimeSlot}
+                                    disabled={!selectedDate || !selectedTimeSlot || isSubmitting}
                                     onClick={handleConfirmBooking}
                                     style={{
                                         flex: 2,
                                         padding: '0.875rem',
-                                        background: (!selectedDate || !selectedTimeSlot) ? '#cbd5e1' : 'var(--primary-gradient)',
+                                        background: (!selectedDate || !selectedTimeSlot || isSubmitting) ? '#cbd5e1' : 'var(--primary-gradient)',
                                         borderRadius: '1rem',
                                         color: 'white',
                                         fontWeight: 700,
@@ -665,11 +683,20 @@ const Booking: React.FC = () => {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '0.4rem',
-                                        boxShadow: (!selectedDate || !selectedTimeSlot) ? 'none' : '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
-                                        transition: 'all 0.3s'
+                                        boxShadow: (!selectedDate || !selectedTimeSlot || isSubmitting) ? 'none' : '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
+                                        transition: 'all 0.3s',
+                                        cursor: isSubmitting ? 'not-allowed' : 'pointer'
                                     }}
                                 >
-                                    確認預約 <CheckCircle2 size={18} />
+                                    {isSubmitting ? (
+                                        <>
+                                            <Loader2 size={18} className="animate-spin" /> 處理中...
+                                        </>
+                                    ) : (
+                                        <>
+                                            確認預約 <CheckCircle2 size={18} />
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -699,7 +726,7 @@ const Booking: React.FC = () => {
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <span style={{ color: '#64748b' }}>時段</span>
-                                            <span style={{ color: '#0f172a', fontWeight: 700 }}>{scheduleData?.times.find(t => t.uid === selectedTimeSlot)?.time_range}</span>
+                                            <span style={{ color: '#0f172a', fontWeight: 700 }}>{slotTime}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -707,7 +734,7 @@ const Booking: React.FC = () => {
                                     onClick={() => window.location.reload()}
                                     style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.9375rem', background: 'none', border: 'none', cursor: 'pointer' }}
                                 >
-                                    返回店家首頁
+                                    繼續預約
                                 </button>
                             </div>
                         </div>

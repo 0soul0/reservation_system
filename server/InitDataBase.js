@@ -5,6 +5,7 @@ function initAllTables() {
     initManagerTable();
     initUserTable();
     initBookingTable();
+    initBookingCacheTable();
     initScheduleHoursTable();
     initScheduleOverrideTable();
     initEventTable();
@@ -124,6 +125,21 @@ function initBookingTable() {
         'update_at'
     ];
     createTableIfNotExists('booking', headers);
+}
+
+/**
+ * 快取預約資料表 (booking_cache)
+ */
+function initBookingCacheTable() {
+    const headers = [
+        'uid',
+        'manager_uid',
+        'booking_start_time', // 預約開始時間
+        'booked_count',  // 已預約人數
+        'create_at',
+        'update_at'
+    ];
+    createTableIfNotExists('booking_cache', headers);
 }
 
 /**

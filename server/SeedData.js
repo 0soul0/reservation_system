@@ -128,7 +128,23 @@ function seedAllData() {
     ) VALUES (
         'OV_001', 'MENU_001', '2026-05-01', '00:00-23:59', '0', 'true'
     )`);
-    console.log('✅ Schedule Override 插入完成');
+    // 10. 測試 Procedure (使用 SQL CALL 方式)
+    const testBookingData = {
+        manager_uid: 'MGR_001',
+        name: '測試預存程序-CALL',
+        line_uid: 'line_call_888',
+        phone: '0988888888',
+        booking_start_time: `20263-03-20 16:00`,
+        booking_end_time: `20263-03-20 18:00`,
+        service_item: 'SQL CALL 測試 115',
+        service_computed_duration: 120,
+        is_deposit_received: false
+    };
+
+    // 透過 SQL 語法呼叫，將物件轉為 JSON 字串傳入
+    const dataStr = JSON.stringify(testBookingData).replace(/'/g, "''");
+    Database.query(`CALL submitBooking('${dataStr}')`);
+    console.log('✅ SQL CALL submitBooking 測試完成');
 
     console.log('✨ 測試資料插入作業全部結束！');
 }

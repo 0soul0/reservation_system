@@ -151,8 +151,8 @@ const EventEdit: React.FC = () => {
                        update_at = '${now}' 
                        WHERE uid = '${id}'`;
             }
-            const success = await executeNonQuery(sql);
-            if (!success) throw new Error('儲存失敗');
+            const result = await executeNonQuery(sql);
+            if (!result.success) throw new Error(result.message || '儲存失敗');
             return 'UPDATED';
         },
         onSuccess: (result) => {
@@ -172,8 +172,8 @@ const EventEdit: React.FC = () => {
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!confirm('確定要刪除此活動嗎？此操作不可恢復。')) return;
-            const success = await executeNonQuery(`DELETE FROM event WHERE uid = '${id}'`);
-            if (!success) throw new Error('刪除失敗');
+            const result = await executeNonQuery(`DELETE FROM event WHERE uid = '${id}'`);
+            if (!result.success) throw new Error(result.message || '刪除失敗');
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['events_and_menus'] });

@@ -15,6 +15,10 @@ const Database = {
         try {
             switch (command) {
                 case 'SELECT':
+                    // 判斷是標準 SELECT 還是 Procedure 呼叫 (判斷是否有 FROM)
+                    if (!/\s+FROM\s+/i.test(sql) && /SELECT\s+\w+\s*\(/.test(sql)) {
+                        return this._executeProcedure(sql, 'SELECT');
+                    }
                     return this._executeSelect(sql);
                 case 'INSERT':
                     return this._executeInsert(sql);
@@ -22,6 +26,8 @@ const Database = {
                     return this._executeUpdate(sql);
                 case 'DELETE':
                     return this._executeDelete(sql);
+                case 'CALL':
+                    return this._executeProcedure(sql, 'CALL');
                 default:
                     throw new Error('未支援的 SQL 命令: ' + command);
             }
@@ -257,6 +263,51 @@ const Database = {
             }
         }
         return { success: true, deletedCount };
+    },
+
+    /**
+     * 執行預存程序 (CALL 或 SELECT func())
+     * @param {string} sql 原始 SQL
+     * @param {string} type 'CALL' | 'SELECT'
+     */
+    _executeProcedure: function (sql, type) {
+        const regex = new RegExp(`${type}\\s+([\\w\\d_]+)\\s*\\(([\\s\\S]*)\\)`, 'i');
+        const match = sql.trim().match(regex);
+        if (!match) throw new Error(`${type} 語法錯誤，格式應為 ${type} ProcedureName(args)`);
+
+        const funcName = match[1];
+        const argsStr = match[2].trim();
+
+        // 解析參數
+        let args = [];
+        if (argsStr) {
+            args = argsStr.split(/,(?=(?:(?:[^']*'){2})*[^']*$)/).map(s => {
+                const v = s.trim();
+                // 處理引號字串
+                if (v.startsWith("'") && v.endsWith("'")) return v.replace(/^'|'$/g, '').replace(/''/g, "'");
+                // 處理布林
+                if (v.toLowerCase() === 'true') return true;
+                if (v.toLowerCase() === 'false') return false;
+                // 處理數字
+                if (!isNaN(v) && v !== "") return Number(v);
+                return v;
+            });
+        }
+
+        // 執行全域函數
+        const globalScope = typeof globalThis !== 'undefined' ? globalThis : this; // GAS 環境中通常是全域物件
+        const targetFunc = globalScope[funcName] || (typeof this !== 'undefined' ? this[funcName] : null);
+
+        if (typeof targetFunc === 'function') {
+            const result = targetFunc.apply(null, args);
+            // 如果是 SELECT，封裝成資料表格式回傳
+            if (type === 'SELECT') {
+                return [{ result: result }];
+            }
+            return { success: true, result: result };
+        } else {
+            throw new Error(`找不到對應的函數: ${funcName}`);
+        }
     },
 
     // --- 內部輔助函數 ---
