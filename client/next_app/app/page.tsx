@@ -1,12 +1,16 @@
+'use client';
+
 import React, { useState } from 'react';
 import { LogIn, User, Lock, ArrowRight, Loader2 } from 'lucide-react';
-import { callNextApi } from '../utils/database';
-import { useAuth } from '../utils/auth';
+import { callGasApi } from '@/lib/database';
+import { useAuth } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
 
-const Login: React.FC = () => {
+export default function Login() {
     const { login } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -18,16 +22,16 @@ const Login: React.FC = () => {
         const password = formData.get('password') as string;
 
         try {
-            // 改由 Next.js API 檢查帳號密碼，並從 Supabase 取得資料
-            const result = await callNextApi<any[]>({
+            // 從 manager 表檢查帳號密碼
+            const result = await callGasApi<any[]>({
                 action: "select",
                 table: 'manager',
-                where: `account = '${account}' AND password = '${password}' LIMIT 1`
+                where: `account = '${account}' AND password = '${password}'`
             });
 
-            if (result && result.length > 0) {
+            if (result && Array.isArray(result) && result.length > 0) {
                 login(result[0]); // 儲存 Session
-                window.location.href = '/admin/members';
+                router.push('/admin/members');
             } else {
                 setError('帳號或密碼錯誤');
             }
@@ -45,15 +49,12 @@ const Login: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'var(--bg-gradient)',
             padding: '1rem'
         }}>
-            <div className="glass-card" style={{
+            <div className="admin-card" style={{
                 width: '100%',
                 maxWidth: '400px',
                 padding: '2.5rem',
-                color: 'white',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{
@@ -65,7 +66,8 @@ const Login: React.FC = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         margin: '0 auto 1.5rem',
-                        boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)'
+                        boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)',
+                        color: 'white'
                     }}>
                         <LogIn size={32} />
                     </div>
@@ -77,7 +79,7 @@ const Login: React.FC = () => {
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent'
                     }}>歡迎回來</h1>
-                    <p style={{ color: 'var(--text-muted)' }}>請登錄您的管理帳戶2</p>
+                    <p style={{ color: 'var(--text-muted)' }}>請登錄您的管理帳戶</p>
                 </div>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -88,7 +90,7 @@ const Login: React.FC = () => {
                             name='account'
                             type="text"
                             placeholder="帳號"
-                            style={{ width: '100%', paddingLeft: '2.75rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '0.5rem', padding: '0.75rem 0.75rem 0.75rem 2.75rem', color: 'black' }}
+                            style={{ width: '100%', paddingLeft: '2.75rem' }}
                         />
                     </div>
                     <div style={{ position: 'relative' }}>
@@ -98,7 +100,7 @@ const Login: React.FC = () => {
                             name='password'
                             type="password"
                             placeholder="密碼"
-                            style={{ width: '100%', paddingLeft: '2.75rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '0.5rem', padding: '0.75rem 0.75rem 0.75rem 2.75rem', color: 'black' }}
+                            style={{ width: '100%', paddingLeft: '2.75rem' }}
                         />
                     </div>
 
@@ -108,21 +110,13 @@ const Login: React.FC = () => {
                         </div>
                     )}
 
-                    <button type="submit" disabled={isLoading} style={{
-                        background: 'var(--primary)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.875rem',
-                        borderRadius: '0.5rem',
-                        fontWeight: 600,
-                        fontSize: '1rem',
+                    <button type="submit" disabled={isLoading} className="primary" style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '0.5rem',
                         marginTop: '0.5rem',
                         opacity: isLoading ? 0.7 : 1,
-                        cursor: isLoading ? 'not-allowed' : 'pointer'
                     }}>
                         {isLoading ? <Loader2 size={18} className="animate-spin" /> : '立即登錄'}
                         {!isLoading && <ArrowRight size={18} />}
@@ -132,6 +126,4 @@ const Login: React.FC = () => {
             </div>
         </div>
     );
-};
-
-export default Login;
+}

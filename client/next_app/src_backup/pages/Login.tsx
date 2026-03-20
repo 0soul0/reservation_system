@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LogIn, User, Lock, ArrowRight, Loader2 } from 'lucide-react';
-import { callNextApi } from '../utils/database';
+import { callGasApi } from '../utils/database';
 import { useAuth } from '../utils/auth';
 
 const Login: React.FC = () => {
@@ -18,8 +18,8 @@ const Login: React.FC = () => {
         const password = formData.get('password') as string;
 
         try {
-            // 改由 Next.js API 檢查帳號密碼，並從 Supabase 取得資料
-            const result = await callNextApi<any[]>({
+            // 從 manager 表檢查帳號密碼
+            const result = await callGasApi<any[]>({
                 action: "select",
                 table: 'manager',
                 where: `account = '${account}' AND password = '${password}' LIMIT 1`
@@ -77,7 +77,7 @@ const Login: React.FC = () => {
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent'
                     }}>歡迎回來</h1>
-                    <p style={{ color: 'var(--text-muted)' }}>請登錄您的管理帳戶2</p>
+                    <p style={{ color: 'var(--text-muted)' }}>請登錄您的管理帳戶</p>
                 </div>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

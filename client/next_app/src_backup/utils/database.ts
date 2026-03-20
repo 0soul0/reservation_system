@@ -1,5 +1,4 @@
 const GAS_URL = import.meta.env.VITE_GAS_DATABASE_URL;
-const NEXT_API_URL = import.meta.env.VITE_NEXT_API_URL || "http://localhost:3000/api/database";
 
 export interface GasPayload {
     action: "select" | "insert" | "update" | "delete" | "call";
@@ -49,38 +48,6 @@ export async function callGasApi<T = any>(payload: GasPayload): Promise<T | null
         return result.data ?? null; // 回傳標準化後的資料
     } catch (error) {
         console.error("網路或系統錯誤:", error);
-        return null;
-    }
-}
-
-/**
- * Next.js API 呼叫函式
- */
-export async function callNextApi<T = any>(payload: GasPayload): Promise<T | null> {
-    try {
-        console.log("Next API payload: ", payload)
-        const response = await fetch(NEXT_API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result: GasResponse<T> = await response.json();
-        console.log("Next API result: ", result)
-        if (result.status === "fail") {
-            console.error("API 錯誤:", result.message);
-            return null;
-        }
-
-        return result.data ?? null;
-    } catch (error) {
-        console.error("Next API 網路或系統錯誤:", error);
         return null;
     }
 }
