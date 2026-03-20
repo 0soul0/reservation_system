@@ -18,8 +18,24 @@ function doGet(e) {
  */
 function doPost(e) {
     const start = Date.now();
+    const postData = e.postData.contents;
+    // logInfo(`POST request: ${postData}`);
+
     try {
-        const payload = JSON.parse(e.postData.contents);
+        const payload = JSON.parse(postData);
+
+        // --- LINE Webhook 處理 ---
+        if (payload.events && Array.isArray(payload.events)) {
+            // 從 URL 參數嘗試取得 manager_uid 例如 ?manager_uid=MGR_001
+            const managerUid = e.parameter.manager_uid || 'MGR_001';
+            payload.events.forEach(event => {
+                LineService.handleWebhook(event, managerUid);
+            });
+            return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+                .setMimeType(ContentService.MimeType.JSON);
+        }
+
+        // --- 原有 API 邏輯 ---
         const { action, table, data, sql, procedure, params, where } = payload;
         logInfo(`POST request: ${JSON.stringify(payload)}`);
         // 1. 安全性檢查與白名單過濾

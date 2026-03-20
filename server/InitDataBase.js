@@ -119,6 +119,7 @@ function initBookingTable() {
         'service_computed_duration',      // 預約時長
         'is_deposit_received', // 是否收到定金
         'is_cancelled',        // 是否取消預約
+        'google_event_id',     // 儲存 Google 日曆事件 ID
         'reminded_1day_sent',   // 已傳送一天前提醒
         'reminded_2days_sent',  // 已傳送兩天前提醒
         'create_at',
