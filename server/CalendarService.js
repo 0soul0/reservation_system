@@ -4,20 +4,11 @@
 const CalendarService = {
 
     /**
-     * 取得管理員的日曆 ID
-     */
-    getCalendarId: function (managerUid) {
-        const mgr = Database.query(`SELECT google_calendar_id FROM manager WHERE uid = '${managerUid}'`);
-        if (mgr && mgr.length > 0) return mgr[0].google_calendar_id;
-        return null;
-    },
-
-    /**
      * 建立日曆行程
      * const eventId = CalendarService.createEvent(data.manager_uid, data);
      */
-    createEvent: function (managerUid, bookingData) {
-        const calId = this.getCalendarId(managerUid);
+    createEvent: function (googleCalendarId, bookingData) {
+        const calId = googleCalendarId;
         if (!calId) return null;
 
         const calendar = CalendarApp.getCalendarById(calId);
@@ -39,8 +30,8 @@ const CalendarService = {
     /**
      * 更新日曆行程 (若時間或標題變更時)
      */
-    updateEvent: function (managerUid, eventId, updatedData) {
-        const calId = this.getCalendarId(managerUid);
+    updateEvent: function (googleCalendarId, eventId, updatedData) {
+        const calId = googleCalendarId;
         if (!calId || !eventId) return;
 
         const calendar = CalendarApp.getCalendarById(calId);
@@ -61,8 +52,8 @@ const CalendarService = {
     /**
      * 刪除日曆行程
      */
-    deleteEvent: function (managerUid, eventId) {
-        const calId = this.getCalendarId(managerUid);
+    deleteEvent: function (googleCalendarId, eventId) {
+        const calId = googleCalendarId;
         if (!calId || !eventId) return;
 
         const calendar = CalendarApp.getCalendarById(calId);
