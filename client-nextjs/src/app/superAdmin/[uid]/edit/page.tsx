@@ -1,0 +1,488 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Save, Loader2, X, Zap, ArrowLeft,
+  Shield, PlusCircle, Trash2,
+  ChevronDown, ChevronUp, MessageSquare
+} from 'lucide-react'
+import {
+  getAllManagers,
+  upsertManager,
+} from '@/app/actions/superManagers'
+import { getSuperSession } from '@/app/actions/superAuth'
+
+// ─── 問卷題目型別 ────────────────────────────────────────────
+type QOption = { title: string }
+type QItem = { title: string; options: QOption[] }
+
+// ─── Line Notify 問卷式填寫元件 ───────────────────────────────
+type NotifyEntry = { key: string; value: string }
+
+function LineNotifyBuilder({
+  value,
+  onChange,
+}: {
+  value: NotifyEntry[]
+  onChange: (v: NotifyEntry[]) => void
+}) {
+  const add = () => onChange([...value, { key: '', value: '' }])
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i))
+  const update = (i: number, field: 'key' | 'value', v: string) => {
+    const next = [...value]
+    next[i] = { ...next[i], [field]: v }
+    onChange(next)
+  }
+
+  return (
+    <div className="space-y-3">
+      <AnimatePresence>
+        {value.map((entry, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 space-y-3"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black text-emerald-500 uppercase tracking-widest whitespace-nowrap">
+                #{i + 1}
+              </span>
+              <input
+                value={entry.key}
+                onChange={(e) => update(i, 'key', e.target.value)}
+                placeholder="關鍵字（如：獲取驗證碼）"
+                className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-all font-bold"
+              />
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                className="p-2 text-slate-600 hover:text-rose-400 transition-colors"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+            <textarea
+              value={entry.value}
+              onChange={(e) => update(i, 'value', e.target.value)}
+              placeholder="回覆內容（可多行）"
+              rows={3}
+              className="w-full bg-white/[0.02] border border-white/[0.07] rounded-xl py-2 px-4 text-sm text-slate-300 focus:outline-none focus:border-emerald-500/30 transition-all resize-none"
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+      <button
+        type="button"
+        onClick={add}
+        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-white/10 rounded-2xl text-xs text-slate-600 hover:text-emerald-400 hover:border-emerald-500/30 transition-all font-black uppercase tracking-widest"
+      >
+        <PlusCircle size={16} /> 新增關鍵字回覆
+      </button>
+    </div>
+  )
+}
+
+// ─── 問卷建構器元件 ────────────────────────────────────────────
+function QuestionnaireBuilder({
+  value,
+  onChange,
+}: {
+  value: QItem[]
+  onChange: (v: QItem[]) => void
+}) {
+  const addQuestion = () => onChange([...value, { title: '', options: [] }])
+  const removeQuestion = (idx: number) => onChange(value.filter((_, i) => i !== idx))
+  const updateTitle = (idx: number, title: string) => {
+    const next = [...value]
+    next[idx] = { ...next[idx], title }
+    onChange(next)
+  }
+  const addOption = (qIdx: number) => {
+    const next = [...value]
+    next[qIdx] = { ...next[qIdx], options: [...next[qIdx].options, { title: '' }] }
+    onChange(next)
+  }
+  const removeOption = (qIdx: number, oIdx: number) => {
+    const next = [...value]
+    next[qIdx] = { ...next[qIdx], options: next[qIdx].options.filter((_, i) => i !== oIdx) }
+    onChange(next)
+  }
+  const updateOption = (qIdx: number, oIdx: number, title: string) => {
+    const next = [...value]
+    next[qIdx].options[oIdx] = { title }
+    onChange(next)
+  }
+
+  return (
+    <div className="space-y-3">
+      <AnimatePresence>
+        {value.map((q, qIdx) => (
+          <motion.div
+            key={qIdx}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 space-y-3"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black text-purple-500 uppercase tracking-widest whitespace-nowrap">
+                Q{qIdx + 1}
+              </span>
+              <input
+                value={q.title}
+                onChange={(e) => updateTitle(qIdx, e.target.value)}
+                placeholder="題目標題"
+                className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-purple-500/40 transition-all font-bold"
+              />
+              <button
+                type="button"
+                onClick={() => removeQuestion(qIdx)}
+                className="p-2 text-slate-600 hover:text-rose-400 transition-colors"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+            <div className="pl-8 space-y-2">
+              <AnimatePresence>
+                {q.options.map((opt, oIdx) => (
+                  <motion.div
+                    key={oIdx}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-600 shrink-0" />
+                    <input
+                      value={opt.title}
+                      onChange={(e) => updateOption(qIdx, oIdx, e.target.value)}
+                      placeholder={`選項 ${oIdx + 1}`}
+                      className="flex-1 bg-white/[0.02] border border-white/[0.07] rounded-lg py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-500/30 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeOption(qIdx, oIdx)}
+                      className="text-slate-700 hover:text-rose-400 transition-colors"
+                    >
+                      <X size={13} />
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              <button
+                type="button"
+                onClick={() => addOption(qIdx)}
+                className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-cyan-400 transition-colors font-bold tracking-wider uppercase mt-1"
+              >
+                <PlusCircle size={13} /> 新增選項
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+      <button
+        type="button"
+        onClick={addQuestion}
+        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-white/10 rounded-2xl text-xs text-slate-600 hover:text-purple-400 hover:border-purple-500/30 transition-all font-black uppercase tracking-widest"
+      >
+        <PlusCircle size={16} /> 新增題目
+      </button>
+    </div>
+  )
+}
+
+// ─── 區塊折疊元件 ─────────────────────────────────────────────
+function Section({
+  title,
+  color = 'purple',
+  children,
+  defaultOpen = true,
+}: {
+  title: string
+  color?: string
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  const colorMap: Record<string, string> = {
+    purple: 'text-purple-500',
+    cyan: 'text-cyan-500',
+    emerald: 'text-emerald-500',
+    yellow: 'text-yellow-500',
+  }
+  return (
+    <div className="border border-white/10 rounded-2xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.02] transition-all"
+      >
+        <p className={`text-[11px] font-black ${colorMap[color] ?? 'text-white'} uppercase tracking-[0.3em]`}>
+          {title}
+        </p>
+        {open ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 space-y-4">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+const inputCls =
+  'w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-purple-500/40 transition-all'
+const areaCls =
+  'w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-purple-500/40 transition-all resize-none'
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-sm font-black text-slate-300 uppercase tracking-widest italic ml-0.5">
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+// ─── 工具：把 NotifyEntry[] 轉 JSON string ────────────────────
+function entriesToJson(entries: NotifyEntry[]): string {
+  const obj: Record<string, string> = {}
+  entries.forEach(({ key, value }) => {
+    if (key.trim()) obj[key.trim()] = value
+  })
+  return JSON.stringify(obj, null, 2)
+}
+
+function jsonToEntries(raw: unknown): NotifyEntry[] {
+  try {
+    const obj: Record<string, string> =
+      typeof raw === 'string' ? JSON.parse(raw || '{}') : (raw ?? {})
+    return Object.entries(obj).map(([key, value]) => ({ key, value: String(value) }))
+  } catch {
+    return []
+  }
+}
+
+// ─── 主頁面 ────────────────────────────────────────────────────
+export default function ManagerEditPage() {
+  const router = useRouter()
+  const params = useParams()
+  const isNew = params.uid === 'new'
+
+  const [manager, setManager] = useState<any>(null)
+  const [loading, setLoading] = useState(!isNew)
+  const [isSaving, setIsSaving] = useState(false)
+  const [questionnaire, setQuestionnaire] = useState<QItem[]>([])
+  const [notifyEntries, setNotifyEntries] = useState<NotifyEntry[]>([])
+
+  useEffect(() => {
+    async function init() {
+      const session = await getSuperSession()
+      if (!session) { router.push('/superAdmin/login'); return }
+
+      if (isNew) {
+        setManager({ name: '', account: '', password: '', logo_url: '/logo.png', website_name: '' })
+        setLoading(false)
+        return
+      }
+
+      const all = await getAllManagers()
+      const found = all.find((m: any) => m.uid === params.uid)
+      if (!found) { router.push('/superAdmin'); return }
+
+      setManager(found)
+      try {
+        const raw = found.questionnaire
+        const q = typeof raw === 'string' ? JSON.parse(raw || '[]') : (Array.isArray(raw) ? raw : [])
+        setQuestionnaire(Array.isArray(q) ? q : [])
+      } catch { setQuestionnaire([]) }
+
+      setNotifyEntries(jsonToEntries(found.line_notify_content))
+      setLoading(false)
+    }
+    init()
+  }, [])
+
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSaving(true)
+    const formData = new FormData(e.currentTarget)
+    const payload: any = Object.fromEntries(formData.entries())
+    if (!isNew) payload.uid = manager.uid
+    payload.questionnaire = JSON.stringify(questionnaire)
+    payload.line_notify_content = entriesToJson(notifyEntries)
+
+    const res = await upsertManager(payload)
+    if (res.success) {
+      router.push('/superAdmin')
+    } else {
+      alert(res.message || '儲存失敗')
+    }
+    setIsSaving(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <Loader2 className="animate-spin text-purple-500" size={48} strokeWidth={1} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-purple-500/30">
+      <div className="fixed top-0 right-0 w-[40vw] h-[40vw] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[40vw] h-[40vw] bg-cyan-600/5 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-30 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/[0.06]">
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.push('/superAdmin')}
+              className="p-2 hover:bg-white/10 rounded-xl transition-all text-slate-400 hover:text-white"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div className="w-9 h-9 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <Zap size={18} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-black text-white italic tracking-tighter uppercase">
+                {isNew ? '建立管理員' : '編輯管理員'}
+              </h1>
+              <p className="text-slate-500 font-bold text-xs uppercase tracking-[0.3em]">
+                {isNew ? 'New Manager' : manager?.name}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => router.push('/superAdmin')}
+              className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all text-slate-400"
+            >
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSave} className="max-w-3xl mx-auto px-6 py-8 space-y-4 relative z-10">
+
+        {/* 基本資料 */}
+        <Section title="基本資料" color="purple">
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="展示名稱">
+              <input name="name" defaultValue={manager?.name} required placeholder="如: 極速美業店" className={inputCls} />
+            </Field>
+            <Field label="登入帳號">
+              <input name="account" defaultValue={manager?.account} required placeholder="admin_fast" className={`${inputCls} font-mono`} />
+            </Field>
+            <Field label="帳號密碼">
+              <input
+                name="password"
+                type="password"
+                defaultValue={manager?.password}
+                required={isNew}
+                placeholder={isNew ? '••••••••' : '若不修改請留空'}
+                className={`${inputCls} font-mono`}
+              />
+            </Field>
+            <Field label="專屬網址碼">
+              <input name="website_name" defaultValue={manager?.website_name} required placeholder="my-shop-id" className={`${inputCls} font-mono`} />
+            </Field>
+            <Field label="Logo 連結">
+              <input name="logo_url" defaultValue={manager?.logo_url} placeholder="/logo.png" className={`${inputCls} font-mono`} />
+            </Field>
+            <Field label="權限等級 (level)">
+              <input name="level" type="number" defaultValue={manager?.level ?? 1} min={1} max={9} className={inputCls} />
+            </Field>
+          </div>
+        </Section>
+
+        {/* 金融資訊 */}
+        <Section title="金融資訊" color="cyan" defaultOpen={false}>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="銀行名稱">
+              <input name="bank_name" defaultValue={manager?.bank_name} placeholder="如: 玉山銀行" className={inputCls} />
+            </Field>
+            <Field label="銀行帳號">
+              <input name="bank_account" defaultValue={manager?.bank_account} placeholder="帳號後5碼" className={`${inputCls} font-mono`} />
+            </Field>
+            <div className="col-span-2">
+              <Field label="帳戶名稱">
+                <input name="bank_account_owner" defaultValue={manager?.bank_account_owner} placeholder="如: 王小明" className={inputCls} />
+              </Field>
+            </div>
+          </div>
+        </Section>
+
+        {/* LINE / Google 整合 */}
+        <Section title="LINE / Google 整合" color="emerald" defaultOpen={false}>
+          <Field label="LINE Channel Access Token">
+            <input name="line_channel_access_token" defaultValue={manager?.line_channel_access_token} placeholder="Bearer token..." className={`${inputCls} font-mono text-xs`} />
+          </Field>
+          <Field label="Google Calendar ID">
+            <input name="google_calendar_id" defaultValue={manager?.google_calendar_id} placeholder="xxxx@group.calendar.google.com" className={`${inputCls} font-mono text-xs`} />
+          </Field>
+          <Field label="Google Calendar Access Token">
+            <input name="google_calendar_access_token" defaultValue={manager?.google_calendar_access_token} placeholder="ya29.xxx..." className={`${inputCls} font-mono text-xs`} />
+          </Field>
+        </Section>
+
+        {/* LINE Notify 關鍵字回覆 */}
+        <Section title="LINE Notify 關鍵字回覆" color="emerald">
+          <p className="text-xs text-slate-500">
+            設定聊天機器人的關鍵字觸發回覆，每筆為一組「關鍵字 → 回覆內容」
+          </p>
+          <LineNotifyBuilder value={notifyEntries} onChange={setNotifyEntries} />
+
+          {/* line_notify_default */}
+          <Field label="預設回覆（查無關鍵字時）">
+            <textarea
+              name="line_notify_default"
+              defaultValue={manager?.line_notify_default ?? ''}
+              placeholder="查無此關鍵字，請重新輸入或洽詢客服。"
+              rows={4}
+              className={areaCls}
+            />
+          </Field>
+        </Section>
+
+        {/* 問卷 */}
+        <Section title="會員註冊問卷題目" color="yellow" defaultOpen={false}>
+          <QuestionnaireBuilder value={questionnaire} onChange={setQuestionnaire} />
+        </Section>
+
+        {/* Submit */}
+        <div className="pt-2 pb-10">
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="w-full bg-gradient-to-br from-purple-600 to-cyan-600 py-4 rounded-2xl text-white font-black text-sm uppercase tracking-widest shadow-xl shadow-purple-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isSaving ? <Loader2 className="animate-spin" size={20} /> : <><Save size={20} /> 儲存變更</>}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
