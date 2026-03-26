@@ -5,21 +5,17 @@ import { useRouter, useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Save, Loader2, X, Zap, ArrowLeft,
-  Shield, PlusCircle, Trash2,
-  ChevronDown, ChevronUp, MessageSquare
+  PlusCircle, Trash2,
+  ChevronDown, ChevronUp, Check
 } from 'lucide-react'
 import {
   getAllManagers,
   upsertManager,
 } from '@/app/actions/superManagers'
 import { getSuperSession } from '@/app/actions/superAuth'
+import { useSuperAdmin } from '../../SuperAdminContext'
+import { NotifyEntry, QItem } from '@/types'
 
-// ─── 問卷題目型別 ────────────────────────────────────────────
-type QOption = { title: string }
-type QItem = { title: string; options: QOption[] }
-
-// ─── Line Notify 問卷式填寫元件 ───────────────────────────────
-type NotifyEntry = { key: string; value: string }
 
 function LineNotifyBuilder({
   value,
@@ -28,51 +24,28 @@ function LineNotifyBuilder({
   value: NotifyEntry[]
   onChange: (v: NotifyEntry[]) => void
 }) {
-  const add = () => onChange([...value, { key: '', value: '' }])
+  const { notifyProcedures } = useSuperAdmin()
+  const add = () => onChange([...value, { key: '', value: '', sample: '', name: '', uid: '', has_text: true, procedure_name: '', columns_json: '' }])
   const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i))
-  const update = (i: number, field: 'key' | 'value', v: string) => {
+  const update = (i: number, nextEntry: Partial<NotifyEntry>) => {
     const next = [...value]
-    next[i] = { ...next[i], [field]: v }
+    next[i] = { ...next[i], ...nextEntry }
+    console.log("next", next)
     onChange(next)
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <AnimatePresence>
         {value.map((entry, i) => (
-          <motion.div
+          <NotifyEntryRow
             key={i}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-            className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 space-y-3"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-emerald-500 uppercase tracking-widest whitespace-nowrap">
-                #{i + 1}
-              </span>
-              <input
-                value={entry.key}
-                onChange={(e) => update(i, 'key', e.target.value)}
-                placeholder="關鍵字（如：獲取驗證碼）"
-                className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl py-2 px-4 text-base text-white focus:outline-none focus:border-emerald-500/40 transition-all font-bold"
-              />
-              <button
-                type="button"
-                onClick={() => remove(i)}
-                className="p-2 text-slate-600 hover:text-rose-400 transition-colors"
-              >
-                <Trash2 size={15} />
-              </button>
-            </div>
-            <textarea
-              value={entry.value}
-              onChange={(e) => update(i, 'value', e.target.value)}
-              placeholder="回覆內容（可多行）需要call function ex: @CALL get_booking_history"
-              rows={3}
-              className="w-full bg-white/[0.02] border border-white/[0.07] rounded-xl py-2 px-4 text-base text-white focus:outline-none focus:border-emerald-500/30 transition-all resize-none"
-            />
-          </motion.div>
+            index={i}
+            entry={entry}
+            procedures={notifyProcedures}
+            onUpdate={update}
+            onRemove={() => remove(i)}
+          />
         ))}
       </AnimatePresence>
       <button
@@ -83,6 +56,123 @@ function LineNotifyBuilder({
         <PlusCircle size={16} /> 新增關鍵字回覆
       </button>
     </div>
+  )
+}
+
+function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
+  const [isOpen, setIsOpen] = useState(false)
+  const newProcedures = [{ uid: 0, name: '自訂義訊息', sample: '', has_text: true, key: '' }, ...procedures];
+  // 比對邏輯現在基於 name 和 sample (或內容屬性)
+  const selectedProc = newProcedures.find((p: any) =>
+    p.uid === entry.uid
+  )
+  console.log("newProcedures", newProcedures)
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+      className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-4 relative"
+    >
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-[0.2em]">#{index + 1}</span>
+          <div className="relative group">
+            <input
+              value={selectedProc?.key || entry.key}
+              readOnly={selectedProc?.key}
+              onChange={(e) => onUpdate(index, { key: e.target.value })}
+              placeholder="關鍵字"
+              className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-base text-white focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all font-black placeholder:text-slate-700 w-40 shadow-inner"
+            />
+          </div>
+        </div>
+
+        {/* Custom Dropdown */}
+        <div className="relative flex-1 max-w-[200px]">
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className={`w-full flex items-center justify-between px-4 py-2 rounded-xl border transition-all text-[11px] font-black uppercase tracking-widest ${isOpen ? 'bg-white/10 border-emerald-500/50 text-emerald-400' : 'bg-white/[0.03] border-white/5 text-slate-500 hover:border-white/20'}`}
+          >
+            <span className="truncate">{entry.name || '快速選擇範本'}</span>
+            <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence>
+            {isOpen && (
+              <>
+                <div className="fixed inset-0 z-[60]" onClick={() => setIsOpen(false)} />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  className="absolute top-full right-0 mt-2 w-64 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl p-2 z-[70] overflow-hidden backdrop-blur-xl"
+                >
+                  <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                    {newProcedures.map((p: any) => (
+                      <button
+                        key={p.uid}
+                        type="button"
+                        onClick={() => {
+                          onUpdate(index, {
+                            name: p.name,
+                            value: p.sample || "",
+                            has_text: p.has_text,
+                            procedure_name: p.procedure_name,
+                            uid: p.uid,
+                            ...(p.key && { key: p.key })
+                          })
+                          setIsOpen(false)
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-left group"
+                      >
+                        <span className={`text-xs font-bold ${selectedProc?.uid === p.uid ? 'text-emerald-400' : 'text-slate-400 group-hover:text-white'}`}>
+                          {p.name}
+                        </span>
+                        {selectedProc?.uid === p.uid && <Check size={14} className="text-emerald-400" />}
+                      </button>
+                    ))}
+                    {newProcedures.length === 0 && (
+                      <div className="p-4 text-center text-[10px] text-slate-600 font-black uppercase tracking-widest">暫無可用範本</div>
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <button type="button" onClick={onRemove} className="p-2 text-slate-700 hover:text-rose-500 transition-colors">
+          <Trash2 size={16} />
+        </button>
+      </div>
+
+      {(!selectedProc || selectedProc.has_text) && (<>
+        {selectedProc?.columns_json && (
+          <div className="flex flex-wrap gap-2"> {/* 建議加個容器控制間距 */}
+            {JSON.parse(selectedProc.columns_json).map((item: string, index: number) => (
+              <span
+                key={index} // 因為 item 只是字串，建議用 index 或 item 本身當 key
+                className='text-[10px] bg-white/5 border border-white/10 rounded-md px-2 py-0.5 font-bold text-slate-400 group-hover:text-emerald-400 transition-colors'
+              >
+                {`{${item}}`} {/* 顯示成 {name} 的格式，方便用戶辨識變數 */}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <textarea
+          value={entry.value}
+          onChange={(e) => onUpdate(index, { value: e.target.value })}
+          placeholder="回覆內容..."
+          rows={5}
+          className="w-full bg-white/[0.02] border border-white/[0.07] rounded-xl py-3 px-4 text-sm text-slate-300 focus:outline-none focus:border-emerald-500/30 transition-all resize-y font-medium"
+        />
+      </>
+
+      )}
+    </motion.div>
   )
 }
 
@@ -261,20 +351,29 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 // ─── 工具：把 NotifyEntry[] 轉 JSON string ────────────────────
 function entriesToJson(entries: NotifyEntry[]): string {
-  const obj: Record<string, string> = {}
-  entries.forEach(({ key, value }) => {
-    if (key.trim()) obj[key.trim()] = value
-  })
-  return JSON.stringify(obj, null, 2)
+  // 直接存入整個物件陣列，不再壓縮為單一物件，以便保留 4 個欄位
+  return JSON.stringify(entries.filter(e => e.key.trim() || e.name.trim()), null, 2);
 }
 
 function jsonToEntries(raw: unknown): NotifyEntry[] {
   try {
-    const obj: Record<string, string> =
-      typeof raw === 'string' ? JSON.parse(raw || '{}') : (raw ?? {})
-    return Object.entries(obj).map(([key, value]) => ({ key, value: String(value) }))
+    const data = typeof raw === 'string' ? JSON.parse(raw || '[]') : (raw ?? []);
+    // 向下相容：如果舊資料是物件格式，則轉換為陣列
+    if (data && !Array.isArray(data) && typeof data === 'object') {
+      return Object.entries(data).map(([key, value]) => ({
+        uid: '',
+        key,
+        procedure_name: '',
+        has_text: true,
+        value: String(value),
+        name: '',
+        sample: '',
+        columns_json: ''
+      }));
+    }
+    return Array.isArray(data) ? data : [];
   } catch {
-    return []
+    return [];
   }
 }
 
@@ -311,7 +410,7 @@ export default function ManagerEditPage() {
         const q = typeof raw === 'string' ? JSON.parse(raw || '[]') : (Array.isArray(raw) ? raw : [])
         setQuestionnaire(Array.isArray(q) ? q : [])
       } catch { setQuestionnaire([]) }
-
+      console.log(found.line_notify_content)
       setNotifyEntries(jsonToEntries(found.line_notify_content))
       setLoading(false)
     }
@@ -326,7 +425,7 @@ export default function ManagerEditPage() {
     if (!isNew) payload.uid = manager.uid
     payload.questionnaire = JSON.stringify(questionnaire)
     payload.line_notify_content = entriesToJson(notifyEntries)
-
+    console.log(notifyEntries)
     const res = await upsertManager(payload)
     if (res.success) {
       router.push('/superAdmin')
@@ -461,7 +560,7 @@ export default function ManagerEditPage() {
               name="line_notify_default"
               defaultValue={manager?.line_notify_default ?? ''}
               placeholder="查無此關鍵字，請重新輸入或洽詢客服。"
-              rows={4}
+              rows={5}
               className={areaCls}
             />
           </Field>

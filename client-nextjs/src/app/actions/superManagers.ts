@@ -1,8 +1,9 @@
 'use server'
 
 import { supabaseAdmin } from '@/lib/supabase'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, unstable_cache } from 'next/cache'
 import { nanoid } from 'nanoid'
+import { CACHE_TIME } from '@/constants/common'
 
 export async function getAllManagers() {
   const { data, error } = await supabaseAdmin
@@ -45,15 +46,36 @@ export async function upsertManager(payload: any) {
 }
 
 export async function deleteManager(uid: string) {
-    const { error } = await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from('manager')
     .delete()
     .eq('uid', uid)
 
-    if (error) {
-        console.error('deleteManager error:', error)
-        return { success: false, message: error.message }
-    }
-    revalidatePath('/superAdmin')
-    return { success: true }
+  if (error) {
+    console.error('deleteManager error:', error)
+    return { success: false, message: error.message }
+  }
+  revalidatePath('/superAdmin')
+  return { success: true }
 }
+
+export const getNotifyProcedures = unstable_cache(
+  async () => {
+    const { data, error } = await supabaseAdmin
+      .from('line_notify_procedure')
+      .select('*')
+      .order('create_at', { ascending: false })
+
+    if (error) {
+      console.error('getNotifyProcedures error:', error)
+      return []
+    }
+    console.log("getNotifyProcedures", data)
+    return data
+  },
+  ['line_notify_procedure'],
+  {
+    revalidate: CACHE_TIME,
+    tags: ['line_notify_procedure']
+  }
+)

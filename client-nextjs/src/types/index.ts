@@ -150,3 +150,46 @@ export type BookingCache = {
   update_at: string;
   create_at: string;
 }
+
+export type GasPayload = {
+  action: 'CREATE' | 'UPDATE' | 'DELETE';
+  googleCalendarId: string;
+  eventId?: string;
+  data?: {
+    name: string;
+    phone: string;
+    email: string;
+    service_item: string;
+    booking_start_time: string;
+    booking_end_time: string;
+    line_uid?: string;
+  };
+}
+
+export type LineNotifyProcedure = {
+  uid: string
+  name: string
+  procedure: string
+  create_at: string
+}
+
+// ─── 問卷題目型別 ────────────────────────────────────────────
+export type QOption = {
+  title: string
+}
+export type QItem = {
+  title: string;
+  options: QOption[]
+}
+
+// ─── Line Notify 問卷式填寫元件 ───────────────────────────────
+export type NotifyEntry = {
+  key: string;
+  value: string,
+  sample: string,
+  name: string,
+  uid: string,
+  has_text: boolean,
+  procedure_name: string,
+  columns_json: string
+}

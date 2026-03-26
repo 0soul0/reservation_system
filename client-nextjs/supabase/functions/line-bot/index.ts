@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, isProcedureCheckText } from "./constant.ts";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "./constant.ts";
 import { LineService } from "./line_server.ts";
-import { checkProcedure } from "./action.ts";
+import { executeProcedure } from "./action.ts";
 
 //npx supabase functions deploy line-bot --project-ref rqczzxaxyntjdyqifalj --no-verify-jwt
 
@@ -37,32 +37,35 @@ Deno.serve(async (req) => {
         if (!managerData) {
           responseText = "查無此官方帳號";
         }
-
-        if (managerData && managerData.line_notify_content) {
-          try {
-            const notifyMap = typeof managerData.line_notify_content === 'string'
-              ? JSON.parse(managerData.line_notify_content)
-              : managerData.line_notify_content;
-
-            if (notifyMap[userMsg]) {
-              responseText = notifyMap[userMsg];
-            } else {
-              responseText = managerData.line_notify_default || "查無此關鍵字，請重新輸入。";
-            }
-            console.log("responseText in:", responseText);
-
-          } catch (parseError) {
-            console.log("JSON 解析失敗:", parseError);
-            responseText = "系統資料格式錯誤。";
-          }
+        let notifyJson
+        try {
+          notifyJson = JSON.parse(managerData.line_notify_content)
+        } catch (parseError) {
+          console.log("JSON 解析失敗:", parseError);
+          responseText = "系統資料格式錯誤。";
         }
+
+        const searchData = notifyJson.find(item => item.key === userMsg)
+        console.log("searchData:", searchData);
+        //取得回復文字
+        if (managerData) {
+          responseText = getResponseText(searchData, managerData)
+        }
+
         console.log("responseText:", responseText);
         // --- 邏輯 A: 判斷是否需要呼叫 Procedure ---
-        if (responseText.includes(isProcedureCheckText)) {
-          const procedureName = responseText.replace(isProcedureCheckText, "").trim()
-          const bookingHistory = await checkProcedure(procedureName, supabase, lineId) || [];
-          responseText = JSON.stringify(bookingHistory)
+        if (searchData && searchData.procedure_name) {
+          const procedureData = await executeProcedure(searchData, supabase, { lineId: lineId }) || [];
+          console.log("procedureData", procedureData)
+          if (hasContent(procedureData) && searchData.has_text) {
+            console.log("procedureData-un", procedureData)
+            responseText = replaceResponseText(responseText, procedureData)
+          } else {
+            responseText = JSON.stringify(procedureData)
+          }
         }
+
+
         console.log("responseText bookingHistory:", responseText);
         // 3. 發送回覆給 Line
         await LineService.reply(managerData.line_channel_access_token, replyToken, responseText);
@@ -87,7 +90,6 @@ Deno.serve(async (req) => {
 });
 
 
-
 const getManagerData = async (uid: string | null) => {
   if (!uid) return null;
 
@@ -104,3 +106,42 @@ const getManagerData = async (uid: string | null) => {
   return managerData;
 };
 
+
+const getResponseText = (data: any, managerData: any) => {
+  if (data) {
+    return data.value || '';
+  } else {
+    return managerData.line_notify_default || "查無此關鍵字，請重新輸入。";
+  }
+
+}
+
+
+const replaceResponseText = (text: string, responseData: any) => {
+  // 1. 安全檢查：確保 responseData 存在且是物件
+  if (!responseData || typeof responseData !== 'object') return text;
+
+  // 2. 進行變數替換
+  // 直接將 responseData 作為資料來源
+  const result = text.replace(/{(\w+)}/g, (match, key) => {
+    const value = responseData[key];
+
+    // 針對 status 特別處理
+    if (key === 'status') {
+      // 確保只有在 value 真正存在（或明確為布林值）時才轉換
+      return value === true ? "已綁定" : "未綁定";
+    }
+
+    // 如果 key 存在且不是 undefined，則替換；否則保留 {key}
+    return value !== undefined ? value : match;
+  });
+
+  return result;
+};
+
+const hasContent = (data) => {
+  if (!data) return false; // 排除 null, undefined
+  if (Array.isArray(data)) return data.length > 0; // 排除 []
+  if (typeof data === 'object') return Object.keys(data).length > 0; // 排除 {}
+  return true;
+};

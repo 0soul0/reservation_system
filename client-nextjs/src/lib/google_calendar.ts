@@ -1,0 +1,30 @@
+import { GasPayload } from "@/types";
+
+
+const GAS_URL = process.env.NEXT_PUBLIC_GAS_URL!
+
+export class GoogleCalendarService {
+
+    static async sync(payload: GasPayload) {
+        try {
+            const response = await fetch(GAS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) throw new Error(`網路回應錯誤: ${response.status}`);
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(`GAS 執行失敗: ${result.error}`);
+            }
+
+            return result.result; // 回傳 eventId 或 "OK"
+        } catch (error) {
+            console.error("Google Calendar 同步異常:", error);
+            throw error;
+        }
+    }
+}

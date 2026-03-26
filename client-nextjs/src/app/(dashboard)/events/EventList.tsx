@@ -33,23 +33,23 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
   return (
     <div className="space-y-6">
       {/* 操作欄 */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 bg-white/5 border border-white/10 p-6 md:p-8 rounded-[2rem] backdrop-blur-xl">
+        <div className="relative flex-1 max-w-2xl group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-400 transition-colors" size={18} />
           <input
             type="text"
             placeholder="搜尋活動標題或說明..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3 text-white placeholder:text-slate-600 focus:border-purple-500/50 outline-none transition-all"
+            className="w-full bg-white/10 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-500 font-bold focus:border-cyan-500/50 focus:bg-white/15 outline-none transition-all shadow-inner"
           />
         </div>
         <Link
           href="/events/new"
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 hover:scale-105 transition-all text-white flex items-center justify-center gap-2"
+          className="px-8 py-3.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl font-black hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all text-white flex items-center justify-center gap-2 shadow-xl"
         >
-          <Plus size={18} />
-          新增預約項目
+          <Plus size={20} />
+          <span>新增預約項目</span>
         </Link>
       </div>
 
@@ -70,26 +70,26 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
                 <div className="absolute -right-10 -top-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl group-hover:bg-cyan-500/20 transition-all" />
 
                 <div className="relative z-10 flex flex-col h-full">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${hasPublished ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' : 'bg-slate-500/10 border-slate-500/30 text-slate-400'}`}>
+                  <div className="flex items-center justify-between mb-5">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-[0.1em] uppercase border shadow-sm ${hasPublished ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400' : 'bg-slate-500/20 border-slate-500/30 text-slate-400'}`}>
                       {hasPublished ? '已發佈' : '草稿'}
                     </span>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDelete(event.uid)}
                         disabled={isDeleting === event.uid}
-                        className="p-2 bg-white/5 hover:bg-rose-500/20 rounded-lg text-slate-500 hover:text-rose-400 transition-colors"
+                        className="p-2.5 bg-white/5 border border-white/10 hover:bg-rose-500/20 rounded-xl text-slate-500 hover:text-rose-400 transition-all active:scale-90"
                       >
                         {isDeleting === event.uid ? <span className="w-4 h-4 block border-2 border-t-transparent border-rose-400 rounded-full animate-spin" /> : <Trash2 size={16} />}
                       </button>
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">
+                  <h3 className="text-xl font-black text-white mb-2 group-hover:text-cyan-400 transition-colors tracking-tight">
                     {event.title}
                   </h3>
 
-                  <p className="text-slate-400 text-sm line-clamp-2 mb-6">
+                  <p className="text-slate-400 text-sm font-medium line-clamp-2 mb-8 leading-relaxed">
                     {event.description || '暫無活動說明...'}
                   </p>
                   {hasPublished && (
@@ -124,15 +124,14 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
                   )}
 
 
-                  <div className="mt-auto pt-6 border-t border-white/5 flex gap-3">
+                  <div className="mt-auto pt-6 border-t border-white/5">
                     <Link
                       href={`/events/${event.uid}`}
-                      className="flex-1 py-3 bg-white/5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white flex items-center justify-center gap-2 transition-all border border-white/5"
+                      className="w-full py-4 bg-white/10 border border-white/10 rounded-2xl text-xs font-black text-slate-200 hover:bg-white/15 hover:text-white hover:border-white/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm uppercase tracking-widest"
                     >
-                      <Edit2 size={14} />
-                      編輯設定
+                      <Edit2 size={16} />
+                      <span>編輯項目項目設定</span>
                     </Link>
-
                   </div>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 'use server'
 
-import { supabaseAdmin } from '@/lib/supabase'
+import { GoogleCalendarService } from '@/lib/google_calendar'
+import { supabaseAdmin, SUPABASE_EDGE_FUNCTION } from '@/lib/supabase'
 import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
 
@@ -25,18 +26,59 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
         p_time_slot_interval: timeSlotInterval
       })
 
-    if (result.booking_success) {
-      revalidatePath('/bookings')
-      return { success: true, uid }
-    }
-    else {
+    console.log("payload", payload)
+    console.log("result", result)
+    console.log("error", error)
+    if (error) throw error
+
+    if (!result.booking_success) {
       return { success: false, message: result.msg }
     }
+
+    if (result.google_calendar_id) {
+      await GoogleCalendarService.sync({
+        action: 'CREATE',
+        googleCalendarId: result.google_calendar_id,
+        data: {
+          name: payload.name,
+          phone: payload.phone || '',
+          email: payload.email || '',
+          service_item: payload.service_item,
+          booking_start_time: payload.booking_start_time,
+          booking_end_time: payload.booking_end_time,
+          line_uid: payload.line_uid || result.line_uid
+        }
+      });
+    }
+
+    if (result.line_uid && result.line_channel_access_token) {
+      await supabaseAdmin.functions.invoke(SUPABASE_EDGE_FUNCTION.lineBotNotify, {
+        body: {
+          name: payload.name,
+          phone: payload.phone || '',
+          email: payload.email || '',
+          service_item: payload.service_item,
+          booking_start_time: payload.booking_start_time,
+          booking_end_time: payload.booking_end_time,
+          line_uid: payload.line_uid || result.line_uid,
+          manager_uid: payload.manager_uid,
+          action: 'BOOKING'
+        },
+      })
+    }
+
+    revalidatePath('/bookings')
+    return { success: true, uid }
+
+
+
   } catch (err: any) {
     console.error('submitBooking Error:', err)
     return { success: false, message: err.message }
   }
 }
+
+
 
 export async function cancelBooking(bookingUid: string, timeSlotInterval: number, deleteType: number) {
   try {

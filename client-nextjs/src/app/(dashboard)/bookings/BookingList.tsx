@@ -91,32 +91,32 @@ export default function BookingList({
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSearch} className="flex gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl">
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl">
         <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="搜尋預約人、手機或服務名稱..."
-            className="w-full pl-12 pr-4 py-3 bg-white/5 rounded-xl border border-white/10 outline-none focus:border-purple-500/50 transition-all text-white placeholder-slate-500"
+            className="w-full pl-12 pr-4 py-3 bg-white/10 rounded-xl border border-white/10 outline-none focus:border-purple-500/50 transition-all text-white placeholder-slate-400"
           />
         </div>
-        <button type="submit" className="px-8 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 hover:scale-105 transition-all text-white">
+        <button type="submit" className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-bold hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all text-white">
           搜尋
         </button>
       </form>
 
       <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl relative">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        <div className="overflow-x-auto scrollbar-hide md:scrollbar-default">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">預約時間</th>
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">預約人</th>
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">服務項目</th>
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">訂金/狀態</th>
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">操作</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">預約時間</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">預約人</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">服務項目</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">狀態</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider text-right">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -124,45 +124,47 @@ export default function BookingList({
                 <tr
                   key={booking.uid}
                   onClick={() => setSelectedBooking(booking)}
-                  className={`hover:bg-white/10 transition-colors group cursor-pointer ${booking.is_cancelled ? 'opacity-50' : ''}`}
+                  className={`hover:bg-white/10 transition-colors group cursor-pointer ${booking.is_cancelled ? 'opacity-40' : ''}`}
                 >
-                  <td className="px-8 py-6 space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-white font-medium">
-                      <Calendar size={14} className="text-cyan-400" />
+                  <td className="px-6 py-5 space-y-1.5 whitespace-nowrap">
+                    <div className="flex items-center gap-2 text-sm text-white font-bold">
+                      <Calendar size={14} className="text-cyan-400 shrink-0" />
                       <span>{dayjs.utc(booking.booking_start_time).format('YYYY-MM-DD')}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-500 font-mono">
-                      <Clock size={14} className="text-cyan-400" />
+                    <div className="flex items-center gap-2 text-[12px] text-slate-300 font-mono font-bold tracking-tight">
+                      <Clock size={14} className="text-cyan-400 shrink-0" />
                       <span>{dayjs.utc(booking.booking_start_time).format('HH:mm')}</span>
-                      <span>~</span>
+                      <span className="opacity-40">—</span>
                       <span>{dayjs.utc(booking.booking_end_time).format('HH:mm')}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="font-medium text-white">{booking.name}</div>
-                    <div className="text-xs text-slate-500 mt-1 font-mono">{booking.phone}</div>
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="font-bold text-white text-[15px]">{booking.name}</div>
+                    <div className="text-[11px] text-slate-400 mt-1 font-mono font-bold tracking-wider">{booking.phone}</div>
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-6 py-5">
                     <div className="flex items-center gap-2">
-                      <Tag size={14} className="text-purple-400" />
-                      <span className="text-slate-200">{booking.service_item}</span>
+                      <Tag size={14} className="text-purple-400 shrink-0" />
+                      <span className="text-slate-100 font-bold text-sm whitespace-nowrap">{booking.service_item}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-6 space-x-2">
-                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${booking.is_deposit_received
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                      : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
-                      }`}>
-                      {booking.is_deposit_received ? '已付訂金' : '未付訂金'}
-                    </span>
-                    {booking.is_cancelled && (
-                      <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                        已取消
+                  <td className="px-6 py-5">
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className={`inline-flex px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${booking.is_deposit_received
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        }`}>
+                        {booking.is_deposit_received ? '已付訂金' : '待付訂金'}
                       </span>
-                    )}
+                      {booking.is_cancelled && (
+                        <span className="inline-flex px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                          已取消
+                        </span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <button className="p-2 text-slate-500 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+                  <td className="px-6 py-5 text-right">
+                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all inline-flex items-center">
                       <ExternalLink size={18} />
                     </button>
                   </td>
@@ -178,18 +180,18 @@ export default function BookingList({
           </table>
         </div>
 
-        <div className="px-8 py-5 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/[0.02]">
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-slate-500">
-              顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆，共 <span className="text-white">{totalCount}</span> 筆
+        <div className="px-6 py-5 border-t border-white/10 flex flex-col lg:flex-row items-center justify-between gap-6 bg-white/[0.02]">
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <p className="text-sm text-slate-400 font-bold">
+              顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆，共 <span className="text-white font-black">{totalCount}</span> 筆
             </p>
-            <div className="h-4 w-px bg-white/10 hidden md:block" />
+            <div className="h-4 w-px bg-white/10 hidden sm:block" />
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 lowercase font-mono">每頁顯示</span>
+              <span className="text-xs text-slate-500 uppercase font-black tracking-tighter">每頁</span>
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer"
+                className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer font-bold"
               >
                 {[10, 20, 50, 100].map(size => (
                   <option key={size} value={size} className="bg-[#111]">{size} 筆</option>
@@ -206,13 +208,13 @@ export default function BookingList({
             >
               <ChevronLeft size={20} />
             </button>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar">
               {totalPages > 0 ? [...Array(totalPages)].map((_, i) => (
                 <button
                   key={i}
                   onClick={() => handlePageChange(i + 1)}
-                  className={`min-w-[40px] h-10 rounded-xl text-sm font-medium transition-all ${currentPage === i + 1
-                    ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/20'
+                  className={`min-w-[40px] h-10 rounded-xl text-sm font-bold transition-all ${currentPage === i + 1
+                    ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/30'
                     : 'hover:bg-white/10 text-slate-400 hover:text-white border border-transparent hover:border-white/10'
                     }`}
                 >
@@ -246,46 +248,49 @@ export default function BookingList({
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-lg bg-[#111] border border-white/20 rounded-3xl overflow-hidden shadow-2xl relative z-10"
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10 max-h-[90vh] flex flex-col"
             >
-              <div className="p-8 pb-4 flex items-center justify-between">
+              <div className="p-6 md:p-8 flex items-center justify-between border-b border-white/5 bg-white/5">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center border border-white/10">
                     <Calendar className="w-7 h-7 text-purple-400" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">預約詳細資訊</h2>
-                    <p className="text-slate-500 font-mono text-xs">{selectedBooking.uid}</p>
+                    <h2 className="text-xl font-bold text-white leading-tight">預約詳細資訊</h2>
+                    <p className="text-slate-500 font-mono text-xs mt-1">{selectedBooking.uid}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedBooking(null)} className="p-2 hover:bg-white/10 rounded-xl transition-all text-slate-400 hover:text-white">
+                <button onClick={() => setSelectedBooking(null)} className="p-3 hover:bg-white/10 rounded-2xl transition-all text-slate-400 hover:text-white">
                   <X size={24} />
                 </button>
               </div>
 
-              <div className="p-8 pt-4 space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-6 no-scrollbar">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <InfoItem icon={<User className="text-cyan-400" size={16} />} label="預約人" value={selectedBooking.name} />
                   <InfoItem icon={<Phone className="text-purple-400" size={16} />} label="手機電話" value={selectedBooking.phone} />
-                  <div className="col-span-2">
+                  <div className="col-span-1 sm:col-span-2">
                     <InfoItem icon={<Tag className="text-emerald-400" size={16} />} label="服務項目" value={selectedBooking.service_item} />
                   </div>
                   <InfoItem icon={<Clock className="text-yellow-400" size={16} />} label="開始時間" value={new Date(selectedBooking.booking_start_time).toLocaleString('zh-TW')} />
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-500 uppercase font-mono flex items-center gap-2">
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-2">
                       <DollarSign size={14} className="text-emerald-400" /> 訂金支付狀態
                     </p>
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => setTempDepositStatus(!tempDepositStatus)}
-                        className={`relative w-12 h-6 rounded-full transition-colors duration-200 outline-none ${tempDepositStatus ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                        className={`relative w-12 h-6 rounded-full transition-all duration-200 outline-none flex items-center ${tempDepositStatus ? 'bg-emerald-600 shadow-inner' : 'bg-slate-700 shadow-inner'}`}
                       >
-                        <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${tempDepositStatus ? 'translate-x-6' : ''}`} />
+                        <motion.div 
+                          animate={{ x: tempDepositStatus ? 26 : 4 }}
+                          className="w-4 h-4 bg-white rounded-full shadow-lg" 
+                        />
                       </button>
-                      <span className={`text-sm font-bold ${tempDepositStatus ? 'text-emerald-400' : 'text-slate-400'}`}>
+                      <span className={`text-sm font-bold ${tempDepositStatus ? 'text-emerald-400' : 'text-slate-300'}`}>
                         {tempDepositStatus ? '已付訂金' : '待支付'}
                       </span>
                     </div>
@@ -293,9 +298,9 @@ export default function BookingList({
                 </div>
 
                 {selectedBooking.notes && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-slate-500 uppercase font-mono">備註事項</p>
-                    <div className="p-4 bg-white/5 border border-white/10 rounded-2xl text-slate-300 text-sm">
+                  <div className="space-y-2 pt-2">
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">備註事項</p>
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-3xl text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
                       {selectedBooking.notes}
                     </div>
                   </div>

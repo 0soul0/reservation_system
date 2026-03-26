@@ -55,45 +55,48 @@ export default function SuperAdminPage() {
       <div className="fixed bottom-0 left-0 w-[40vw] h-[40vw] bg-cyan-600/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Header */}
-      <header className="max-w-7xl mx-auto flex items-center justify-between mb-8 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-xl shadow-purple-500/20 ring-2 ring-white/5">
-            <Shield className="text-white w-5 h-5" />
+      <header className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between mb-10 gap-6 relative z-10">
+        <div className="flex items-center gap-4 group">
+          <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-[0_15px_30px_-10px_rgba(147,51,234,0.5)] ring-2 ring-white/10 group-hover:scale-110 transition-transform duration-500">
+            <Shield className="text-white w-7 h-7" />
           </div>
-          <div>
-            <h1 className="text-xl font-black text-white tracking-tighter italic uppercase">
-              Triple <span className="text-purple-500">Super</span> Dashboard
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-black text-white tracking-widest italic uppercase">
+              SUPER <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">ADMIN</span>
             </h1>
-            <p className="text-slate-300 text-sm font-bold tracking-[0.3em] uppercase opacity-70">System Management Authority</p>
+            <p className="text-slate-500 text-[10px] font-black tracking-[0.4em] uppercase opacity-70">SYSTEM AUTHORITY PORTAL</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={async () => { await superLogoutAction(); router.push('/superAdmin/login') }}
-            className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 transition-all active:scale-95 text-slate-400"
+            className="flex-1 md:flex-none px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 transition-all active:scale-95 text-slate-400 shadow-lg"
           >
             登出
           </button>
           <button
             onClick={() => router.push('/superAdmin/new/edit')}
-            className="px-5 py-2.5 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-purple-500/30"
+            className="flex-1 md:flex-none px-8 py-3 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:shadow-[0_15px_40px_-5px_rgba(147,51,234,0.6)] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-purple-500/30 border border-white/10"
           >
-            <UserPlus size={14} /> 建立管理員
+            <UserPlus size={16} /> 建立管理員建立管理員
           </button>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto relative z-10">
         {/* Search */}
-        <div className="mb-6 relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-500 transition-colors" size={16} />
+        <div className="mb-10 relative group">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-300" size={20} />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="搜尋管理員姓名、帳號或網站名稱..."
-            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all placeholder-slate-600"
+            placeholder="搜尋管理員姓名、帳號、網站識別識別碼..."
+            className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[2rem] py-5.5 pl-14 pr-6 text-white font-bold outline-none focus:border-cyan-500/50 focus:bg-white/[0.08] transition-all placeholder-slate-600 shadow-inner text-base"
           />
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/5 px-2 py-1 rounded-md border border-white/5 text-[10px] text-slate-600 font-mono tracking-tighter uppercase hidden sm:block">
+            Search Portal
+          </div>
         </div>
 
         {loading ? (
@@ -114,54 +117,58 @@ export default function SuperAdminPage() {
                   className="group relative bg-white/[0.02] border border-white/10 rounded-3xl p-6 hover:bg-white/[0.04] hover:border-purple-500/30 transition-all duration-500 shadow-xl"
                 >
                   <div className="flex items-start justify-between">
-                    <div className="w-14 h-14 bg-gradient-to-br from-purple-600/10 to-transparent border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center p-3">
+                    <div className="w-16 h-16 bg-gradient-to-br from-white/10 to-transparent border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center p-3.5 shadow-inner group-hover:scale-105 transition-transform duration-500">
                       {manager.logo_url ? (
-                        <img src={manager.logo_url} alt={manager.name} className="w-full h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500" />
+                        <img src={manager.logo_url} alt={manager.name} className="w-full h-full object-contain filter contrast-[1.1] transition-all duration-500" />
                       ) : (
-                        <User size={24} className="text-slate-700" />
+                        <User size={32} className="text-slate-600" />
                       )}
                     </div>
-                    <div className="flex gap-1.5">
-                      <button onClick={() => router.push(`/superAdmin/${manager.uid}/edit`)} className="p-2 bg-white/5 rounded-xl hover:bg-purple-600 hover:text-white transition-all text-slate-400">
-                        <Edit3 size={15} />
+                    <div className="flex gap-2">
+                      <button onClick={() => router.push(`/superAdmin/${manager.uid}/edit`)} className="p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-purple-600/40 hover:text-white hover:border-purple-500 transition-all text-slate-400 active:scale-90">
+                        <Edit3 size={18} />
                       </button>
                       {manager.level == 0 && (
-                        <button onClick={() => handleDelete(manager.uid)} className="p-2 bg-white/5 rounded-xl hover:bg-rose-600 hover:text-white transition-all text-slate-400">
-                          <Trash2 size={15} />
+                        <button onClick={() => handleDelete(manager.uid)} className="p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-rose-600/40 hover:text-white hover:border-rose-500 transition-all text-slate-400 active:scale-90">
+                          <Trash2 size={18} />
                         </button>
                       )}
                     </div>
                   </div>
-                  <div className="mt-5 space-y-4">
+                  <div className="mt-8 space-y-6 relative z-10">
                     <div>
-                      <h2 className="text-lg font-black text-white italic tracking-tight">{manager.name}</h2>
-                      <p className="text-slate-300 font-mono text-sm uppercase tracking-widest mt-0.5">@{manager.account}</p>
+                      <h2 className="text-2xl font-black text-white italic tracking-tighter leading-none mb-1 uppercase bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent group-hover:to-white transition-all">{manager.name}</h2>
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-glow shadow-purple-500/50" />
+                        <p className="text-slate-500 font-black text-[11px] uppercase tracking-[0.25em]">@{manager.account}</p>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3 py-3 px-4 bg-white/[0.03] border border-white/5 rounded-xl">
-                        <Globe size={14} className="text-cyan-500 shrink-0" />
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-4 py-4 px-5 bg-white/[0.05] border border-white/5 rounded-2xl transition-all group-hover:bg-white/[0.08] shadow-inner">
+                        <Globe size={18} className="text-cyan-400 shrink-0" />
                         <div className="flex-1 overflow-hidden">
-                          <p className="text-sm text-slate-300 uppercase font-bold tracking-widest">網站識別碼</p>
-                          <p className="text-xs font-bold text-slate-300 truncate">{manager.website_name}</p>
+                          <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-0.5 opacity-60">WEBSITE IDENTITY</p>
+                          <p className="text-sm font-black text-slate-200 truncate font-mono italic">{manager.website_name}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 py-3 px-4 bg-white/[0.03] border border-white/5 rounded-xl">
-                        <Settings size={14} className="text-purple-500 shrink-0" />
+                      <div className="flex items-center gap-4 py-4 px-5 bg-white/[0.05] border border-white/5 rounded-2xl transition-all group-hover:bg-white/[0.08] shadow-inner">
+                        <Settings size={18} className="text-purple-400 shrink-0" />
                         <div>
-                          <p className="text-sm text-slate-300 uppercase font-bold tracking-widest">問卷題目數</p>
-                          <p className="text-xs font-bold text-slate-300">
+                          <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-0.5 opacity-60">QUESTIONNAIRE DATA</p>
+                          <p className="text-sm font-black text-slate-200 italic">
                             {(() => {
                               try {
                                 const raw = manager.questionnaire
                                 const q = typeof raw === 'string' ? JSON.parse(raw || '[]') : (Array.isArray(raw) ? raw : [])
                                 return q.length
                               } catch { return 0 }
-                            })()} 題
+                            })()} <span className="text-[10px] text-slate-500 not-italic ml-1 opacity-50 uppercase tracking-tighter">Questions Defined</span>
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
+                  <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-purple-600/0 via-purple-600/50 to-cyan-600/0 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </motion.div>
               ))}
             </AnimatePresence>

@@ -24,6 +24,16 @@ export async function registerMember(payload: {
       update_at: now
     }
     console.log(data)
+
+    const { data: result } = await supabaseAdmin
+      .from('member').select('*')
+      .eq('phone', payload.phone)
+      .eq('manager_uid', payload.manager_uid).single()
+
+    if (result) {
+      return { success: false, message: '此電話已註冊' }
+    }
+
     const { error } = await supabaseAdmin
       .from('member')
       .insert(data)

@@ -43,18 +43,18 @@ export default function ScheduleList({ menus, managerUid }: ScheduleListProps) {
   return (
     <div className="space-y-6">
       {/* 操作欄 */}
-      <div className="flex items-center justify-between bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl">
-        <div>
-          <h2 className="text-xl font-bold text-white">排程時段管理</h2>
-          <p className="text-slate-400 text-sm mt-1">設定不同時段的預約規則與公休日</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white/5 border border-white/10 p-6 md:p-8 rounded-[2rem] backdrop-blur-xl">
+        <div className="space-y-1">
+          <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">排程時段管理</h2>
+          <p className="text-slate-400 text-sm font-medium">設定不同時段的預約規則與公休日</p>
         </div>
         <button
           onClick={handleCreate}
           disabled={isCreating}
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 hover:scale-105 transition-all text-white flex items-center gap-2 disabled:opacity-50"
+          className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl font-bold hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50"
         >
-          {isCreating ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
-          新增時程
+          {isCreating ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} />}
+          <span>新增時程</span>
         </button>
       </div>
 
@@ -92,22 +92,22 @@ export default function ScheduleList({ menus, managerUid }: ScheduleListProps) {
                   </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">
+                <h3 className="text-xl font-black text-white mb-2 group-hover:text-purple-400 transition-colors tracking-tight">
                   {menu.name || '未命名模板'}
                 </h3>
 
-                <div className="space-y-3 mt-auto pt-6 border-t border-white/5">
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                <div className="space-y-4 mt-auto pt-6 border-t border-white/5">
+                  <div className="flex items-center gap-2 text-xs text-slate-300 font-bold font-mono">
                     <Clock size={14} className="text-cyan-400" />
                     <span>更新於 {new Date(menu.update_at).toLocaleDateString('zh-TW')}</span>
                   </div>
 
                   <Link
                     href={`/schedules/${menu.uid}`}
-                    className="w-full py-3 mt-2 bg-white/5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white flex items-center justify-center gap-2 group/btn transition-all"
+                    className="w-full py-4 mt-2 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 flex items-center justify-center gap-2 group/btn transition-all shadow-sm"
                   >
-                    設定時段時程
-                    <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                    <span>設定時段時程</span>
+                    <ArrowRight size={18} className="group-hover/btn:translate-x-1.5 transition-transform" />
                   </Link>
                 </div>
               </div>

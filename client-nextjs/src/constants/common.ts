@@ -6,3 +6,5 @@ export const QUERY_CONFIG = {
 
 
 export const TIME_SLOT_INTERVAL = 30; // 30 分鐘
+
+export const CACHE_TIME = 1000; // 1 小時

@@ -1,21 +1,28 @@
-export const checkProcedure = async (...args: any[]) => {
-    console.log("args", args)
-    switch (args[0]) {
-        case "get_booking_history":
-            return await getBookingHistory(args[0], args[1], args[2]);
+
+
+export const executeProcedure = async (searchData: any, supabase: any, payload: any = {}) => {
+    console.log("searchData", searchData)
+    console.log("payload", payload)
+    const { lineId } = payload;
+    switch (searchData.procedure_name) {
+        // case "line_get_booking_history":
+        //     return await getBookingHistory(searchData.procedure_name, supabase, lineId);
+
+        // case "line_get_member": // 順便擴充你之前的功能
+        //     return await callProcedure(searchData.procedure_name, supabase, lineId);
+
         default:
-            return "";
+            return await callProcedure(searchData.procedure_name, supabase, lineId);
     }
 }
 
 
-
-
-const getBookingHistory = async (procedureName: string, supabase: any, lineId: string | null) => {
+const callProcedure = async (procedureName: string, supabase: any, lineId: string | null) => {
     const { data, error } = await supabase.rpc(procedureName, {
-        p_line_uid: lineId
+        luid: lineId
     });
-    console.log("getBookingHistory", data)
+
+    console.log("callProcedure: ", data)
     if (error) {
         return "";
     }

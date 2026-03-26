@@ -131,11 +131,13 @@ export default function BookingClient(props: BookingClientProps) {
   useEffect(() => {
     const cachedName = localStorage.getItem('booking_name')
     const cachedPhone = localStorage.getItem('booking_phone')
-    if (cachedName || cachedPhone) {
+    const cachedEmail = localStorage.getItem('booking_email')
+    if (cachedName || cachedPhone || cachedEmail) {
       setFormData(prev => ({
         ...prev,
         name: cachedName || prev.name,
         phone: cachedPhone || prev.phone,
+        email: cachedEmail || prev.email,
       }))
     }
     setIsLoaded(true)
@@ -145,8 +147,9 @@ export default function BookingClient(props: BookingClientProps) {
     if (isLoaded) {
       localStorage.setItem('booking_name', formData.name)
       localStorage.setItem('booking_phone', formData.phone)
+      localStorage.setItem('booking_email', formData.email)
     }
-  }, [formData.name, formData.phone, isLoaded])
+  }, [formData.name, formData.phone, formData.email, isLoaded])
 
   // -- Event Options --
   const eventOptions = useMemo(() => {

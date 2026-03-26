@@ -91,33 +91,33 @@ export default function MemberList({
   return (
     <div className="space-y-6">
       {/* 搜尋欄位 */}
-      <form onSubmit={handleSearch} className="flex gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl">
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl">
         <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="搜尋姓名、電話或 Email..."
-            className="w-full pl-12 pr-4 py-3 bg-white/5 rounded-xl border border-white/10 outline-none focus:border-purple-500/50 transition-all text-white placeholder-slate-500"
+            className="w-full pl-12 pr-4 py-3 bg-white/10 rounded-xl border border-white/10 outline-none focus:border-purple-500/50 transition-all text-white placeholder-slate-400"
           />
         </div>
-        <button type="submit" className="px-8 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 hover:scale-105 transition-all text-white">
+        <button type="submit" className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-bold hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all text-white">
           搜尋
         </button>
       </form>
 
       {/* 資料表格 */}
       <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl relative">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        <div className="overflow-x-auto scrollbar-hide md:scrollbar-default">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">會員姓名</th>
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">聯絡資訊</th>
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">狀態</th>
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">註冊日期</th>
-                <th className="px-8 py-5 text-sm font-semibold text-slate-300">操作</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">會員姓名</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">聯絡資訊</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">狀態</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">註冊日期</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider text-right">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -127,33 +127,35 @@ export default function MemberList({
                   onClick={() => openMemberDetail(member)}
                   className="hover:bg-white/10 transition-colors group cursor-pointer"
                 >
-                  <td className="px-8 py-6 font-medium text-white">{member.name || '未命名'}</td>
-                  <td className="px-8 py-6 space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <Phone size={14} className="text-cyan-400" />
-                      <span>{member.phone || '-'}</span>
-                    </div>
-                    {member.email && (
-                      <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <Mail size={14} className="text-purple-400" />
-                        <span>{member.email}</span>
+                  <td className="px-6 py-5 font-bold text-white whitespace-nowrap">{member.name || '未命名'}</td>
+                  <td className="px-6 py-5">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-sm text-slate-200">
+                        <Phone size={14} className="text-cyan-400 shrink-0" />
+                        <span className="font-mono">{member.phone || '-'}</span>
                       </div>
-                    )}
+                      {member.email && (
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          <Mail size={14} className="text-purple-400 shrink-0" />
+                          <span className="truncate max-w-[200px]">{member.email}</span>
+                        </div>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${member.status
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                      : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                  <td className="px-6 py-5">
+                    <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-bold tracking-wide ${member.status
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
                       }`}>
                       {showStatusText(member.status)}
                     </span>
                   </td>
-                  <td className="px-8 py-6 text-sm text-slate-500">
+                  <td className="px-6 py-5 text-sm text-slate-400 font-mono whitespace-nowrap">
                     {new Date(member.create_at).toLocaleDateString('zh-TW')}
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-6 py-5 text-right">
                     <button
-                      className="p-2 text-slate-500 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                      className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all inline-flex items-center"
                     >
                       <ExternalLink size={18} />
                     </button>
@@ -161,7 +163,7 @@ export default function MemberList({
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center text-slate-500">
+                  <td colSpan={5} className="px-8 py-20 text-center text-slate-400 italic">
                     暫無符合條件的會員資料
                   </td>
                 </tr>
@@ -171,18 +173,18 @@ export default function MemberList({
         </div>
 
         {/* 分頁控制項 */}
-        <div className="px-8 py-5 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/[0.02]">
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-slate-500">
-              顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆資料，共 <span className="text-white">{totalCount}</span> 筆
+        <div className="px-6 py-5 border-t border-white/10 flex flex-col lg:flex-row items-center justify-between gap-6 bg-white/[0.02]">
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <p className="text-sm text-slate-400 font-medium">
+              顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆資料，共 <span className="text-white font-bold">{totalCount}</span> 筆
             </p>
-            <div className="h-4 w-px bg-white/10 hidden md:block" />
+            <div className="h-4 w-px bg-white/10 hidden sm:block" />
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 uppercase font-mono">每頁顯示</span>
+              <span className="text-xs text-slate-500 uppercase font-bold tracking-tighter">每頁</span>
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer"
+                className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer font-bold"
               >
                 {[10, 20, 50, 100].map(size => (
                   <option key={size} value={size} className="bg-[#111]">{size} 筆</option>
@@ -200,13 +202,13 @@ export default function MemberList({
               <ChevronLeft size={20} />
             </button>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar">
               {totalPages > 0 ? [...Array(totalPages)].map((_, i) => (
                 <button
                   key={i}
                   onClick={() => handlePageChange(i + 1)}
-                  className={`min-w-[40px] h-10 rounded-xl text-sm font-medium transition-all ${currentPage === i + 1
-                    ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/20'
+                  className={`min-w-[40px] h-10 rounded-xl text-sm font-bold transition-all ${currentPage === i + 1
+                    ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/30'
                     : 'hover:bg-white/10 text-slate-400 hover:text-white border border-transparent hover:border-white/10'
                     }`}
                 >
@@ -239,47 +241,47 @@ export default function MemberList({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedMember(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-2xl bg-[#111] border border-white/20 rounded-3xl overflow-hidden shadow-2xl relative z-10"
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10 max-h-[90vh] flex flex-col"
             >
               {/* Modal Header */}
-              <div className="p-8 pb-4 flex items-center justify-between">
+              <div className="p-6 md:p-8 flex items-center justify-between border-b border-white/5 bg-white/5">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center border border-white/10">
+                  <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-purple-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center border border-white/10">
                     <User className="w-8 h-8 text-purple-400" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">{selectedMember.name}</h2>
-                    <p className="text-slate-500 font-mono text-sm">{selectedMember.uid}</p>
+                    <h2 className="text-xl md:text-2xl font-bold text-white leading-tight">{selectedMember.name}</h2>
+                    <p className="text-slate-500 font-mono text-xs mt-1">{selectedMember.uid}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedMember(null)}
-                  className="p-2 hover:bg-white/10 rounded-xl transition-all text-slate-400 hover:text-white"
+                  className="p-3 hover:bg-white/10 rounded-2xl transition-all text-slate-400 hover:text-white"
                 >
                   <X size={24} />
                 </button>
               </div>
 
               {/* Modal Body */}
-              <div className="p-8 pt-4 space-y-8">
-                <div className="grid grid-cols-2 gap-6">
+              <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-8 no-scrollbar">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <InfoItem icon={<Phone className="text-cyan-400" size={18} />} label="手機電話" value={selectedMember.phone || '未提供'} />
                   <InfoItem icon={<Mail className="text-purple-400" size={18} />} label="Email" value={selectedMember.email || '未提供'} />
                   <InfoItem icon={<MessageSquare className="text-emerald-400" size={18} />} label="LINE ID" value={selectedMember.line_uid || '未連動'} />
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-slate-500 text-xs">
+                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
                       <ShieldCheck className="text-yellow-400" size={18} />
                       <span>會員狀態</span>
                     </div>
-                    <div className="pl-6 flex items-center gap-2">
+                    <div className="pl-6 flex items-center gap-3">
                       <Switch checked={tempStatus} onChange={setTempStatus} />
-                      <span>{showStatusText(tempStatus)}</span>
+                      <span className="font-bold text-sm text-white">{showStatusText(tempStatus)}</span>
                     </div>
                   </div>
                 </div>
