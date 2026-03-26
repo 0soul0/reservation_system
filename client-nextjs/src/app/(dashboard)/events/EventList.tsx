@@ -41,7 +41,7 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
             placeholder="搜尋活動標題或說明..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white/10 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-500 font-bold focus:border-cyan-500/50 focus:bg-white/15 outline-none transition-all shadow-inner"
+            className="w-full bg-white/10 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-300 font-bold focus:border-cyan-500/50 focus:bg-white/15 outline-none transition-all shadow-inner"
           />
         </div>
         <Link
@@ -71,14 +71,14 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
 
                 <div className="relative z-10 flex flex-col h-full">
                   <div className="flex items-center justify-between mb-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-[0.1em] uppercase border shadow-sm ${hasPublished ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400' : 'bg-slate-500/20 border-slate-500/30 text-slate-400'}`}>
+                    <span className={`px-3 py-1 rounded-full text-[14px] font-black tracking-[0.1em] uppercase border shadow-sm ${hasPublished ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400' : 'bg-slate-500/20 border-slate-500/30 text-slate-400'}`}>
                       {hasPublished ? '已發佈' : '草稿'}
                     </span>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDelete(event.uid)}
                         disabled={isDeleting === event.uid}
-                        className="p-2.5 bg-white/5 border border-white/10 hover:bg-rose-500/20 rounded-xl text-slate-500 hover:text-rose-400 transition-all active:scale-90"
+                        className="p-2.5 bg-white/5 border border-white/10 hover:bg-rose-500/20 rounded-xl text-slate-300 hover:text-rose-400 transition-all active:scale-90"
                       >
                         {isDeleting === event.uid ? <span className="w-4 h-4 block border-2 border-t-transparent border-rose-400 rounded-full animate-spin" /> : <Trash2 size={16} />}
                       </button>
@@ -89,12 +89,12 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
                     {event.title}
                   </h3>
 
-                  <p className="text-slate-400 text-sm font-medium line-clamp-2 mb-8 leading-relaxed">
+                  <p className="text-slate-400 text-xm font-medium line-clamp-2 mb-8 leading-relaxed">
                     {event.description || '暫無活動說明...'}
                   </p>
                   {hasPublished && (
                     <div className="space-y-2 mb-6">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">測試連接</p>
+                      <p className="text-[14px] font-bold text-slate-300 uppercase tracking-widest">測試連接</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedMenus.length > 0 ? (
                           selectedMenus.map(sm => {
@@ -108,7 +108,7 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
                                   window.open(url, '_blank')
                                 }}
                                 disabled={!event.booking_dynamic_url}
-                                className={`px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] flex items-center gap-1.5 transition-all ${event.booking_dynamic_url ? 'text-slate-300 hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-400 cursor-pointer' : 'text-slate-600 cursor-not-allowed opacity-50'
+                                className={`px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-[14px] flex items-center gap-1.5 transition-all ${event.booking_dynamic_url ? 'text-slate-300 hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-400 cursor-pointer' : 'text-slate-600 cursor-not-allowed opacity-50'
                                   }`}
                               >
                                 <ExternalLink size={10} className={event.booking_dynamic_url ? "text-purple-400" : "text-slate-600"} />
@@ -117,7 +117,7 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
                             )
                           })
                         ) : (
-                          <span className="text-[10px] text-slate-600 italic">尚未連結時程</span>
+                          <span className="text-[14px] text-slate-600 italic">尚未連結時程</span>
                         )}
                       </div>
                     </div>
@@ -127,7 +127,7 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
                   <div className="mt-auto pt-6 border-t border-white/5">
                     <Link
                       href={`/events/${event.uid}`}
-                      className="w-full py-4 bg-white/10 border border-white/10 rounded-2xl text-xs font-black text-slate-200 hover:bg-white/15 hover:text-white hover:border-white/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm uppercase tracking-widest"
+                      className="w-full py-4 bg-white/10 border border-white/10 rounded-2xl text-ms font-black text-slate-200 hover:bg-white/15 hover:text-white hover:border-white/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm uppercase tracking-widest"
                     >
                       <Edit2 size={16} />
                       <span>編輯項目項目設定</span>
@@ -138,7 +138,7 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
             )
           })
         ) : (
-          <div className="col-span-full py-20 bg-white/5 border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-slate-500">
+          <div className="col-span-full py-20 bg-white/5 border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-slate-300">
             <Box className="w-12 h-12 mb-4 opacity-20" />
             <p>{searchTerm ? '找不到符合搜尋條件的活動' : '尚無預約項目，請點擊右前方新增。'}</p>
           </div>

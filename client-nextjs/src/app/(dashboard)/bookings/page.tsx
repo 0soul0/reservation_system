@@ -72,7 +72,7 @@ function StatsCard({ label, value, icon }: { label: string; value: number | stri
     <div className="p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl hover:border-white/20 transition-all group">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500 font-mono uppercase tracking-tighter">{label}</p>
+          <p className="text-xm font-medium text-slate-300 font-mono uppercase tracking-tighter">{label}</p>
           <p className="text-3xl font-bold text-white mt-1">{value}</p>
         </div>
         <div className="p-3 bg-white/5 rounded-xl group-hover:scale-110 transition-transform duration-300 border border-white/5">

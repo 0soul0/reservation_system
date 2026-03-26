@@ -46,7 +46,7 @@ export default function ScheduleList({ menus, managerUid }: ScheduleListProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white/5 border border-white/10 p-6 md:p-8 rounded-[2rem] backdrop-blur-xl">
         <div className="space-y-1">
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">排程時段管理</h2>
-          <p className="text-slate-400 text-sm font-medium">設定不同時段的預約規則與公休日</p>
+          <p className="text-slate-400 text-xm font-medium">設定不同時段的預約規則與公休日</p>
         </div>
         <button
           onClick={handleCreate}
@@ -81,7 +81,7 @@ export default function ScheduleList({ menus, managerUid }: ScheduleListProps) {
                         handleDelete(menu.uid)
                       }}
                       disabled={isDeleting === menu.uid}
-                      className="p-2 bg-white/5 hover:bg-rose-500/20 rounded-lg text-slate-500 hover:text-rose-400 transition-colors"
+                      className="p-2 bg-white/5 hover:bg-rose-500/20 rounded-lg text-slate-300 hover:text-rose-400 transition-colors"
                     >
                       {isDeleting === menu.uid ? (
                         <Loader2 size={16} className="animate-spin" />
@@ -97,14 +97,14 @@ export default function ScheduleList({ menus, managerUid }: ScheduleListProps) {
                 </h3>
 
                 <div className="space-y-4 mt-auto pt-6 border-t border-white/5">
-                  <div className="flex items-center gap-2 text-xs text-slate-300 font-bold font-mono">
+                  <div className="flex items-center gap-2 text-ms text-slate-300 font-bold font-mono">
                     <Clock size={14} className="text-cyan-400" />
                     <span>更新於 {new Date(menu.update_at).toLocaleDateString('zh-TW')}</span>
                   </div>
 
                   <Link
                     href={`/schedules/${menu.uid}`}
-                    className="w-full py-4 mt-2 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 flex items-center justify-center gap-2 group/btn transition-all shadow-sm"
+                    className="w-full py-4 mt-2 bg-white/5 border border-white/10 rounded-2xl text-xm font-bold text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 flex items-center justify-center gap-2 group/btn transition-all shadow-sm"
                   >
                     <span>設定時段時程</span>
                     <ArrowRight size={18} className="group-hover/btn:translate-x-1.5 transition-transform" />
@@ -114,7 +114,7 @@ export default function ScheduleList({ menus, managerUid }: ScheduleListProps) {
             </div>
           ))
         ) : (
-          <div className="col-span-full py-20 bg-white/5 border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-slate-500">
+          <div className="col-span-full py-20 bg-white/5 border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-slate-300">
             <Calendar className="w-12 h-12 mb-4 opacity-20" />
             <p>尚無任何時程模板，請點擊右上方新增。</p>
           </div>

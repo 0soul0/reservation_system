@@ -138,7 +138,7 @@ export default function RegisterPage() {
             成為特約會員 <br />
             <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">開始您的預約</span>
           </h1>
-          <p className="text-slate-500 text-sm mt-4 font-bold tracking-wide">只需填寫基本資料，即可享受專屬極致服務</p>
+          <p className="text-slate-300 text-xm mt-4 font-bold tracking-wide">只需填寫基本資料，即可享受專屬極致服務</p>
         </header>
 
         <motion.div
@@ -148,16 +148,16 @@ export default function RegisterPage() {
           className="bg-white/[0.03] backdrop-blur-[40px] border border-white/10 rounded-[3rem] p-8 md:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)]"
         >
           <div className="space-y-6">
-            <h2 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2 opacity-60">
+            <h2 className="text-[12px] font-black text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2 opacity-60">
               <User size={14} className="text-cyan-400" /> 基本資料 BASIC INFO
             </h2>
 
             <div className="space-y-5">
               {/* Name */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-slate-400 ml-1 uppercase tracking-wider">姓名 NAME</label>
+                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">姓名 NAME</label>
                 <div className="relative group">
-                  <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-purple-400 transition-colors" />
+                  <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
                   <input
                     type="text"
                     value={formData.name}
@@ -170,9 +170,9 @@ export default function RegisterPage() {
 
               {/* Phone */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-slate-400 ml-1 uppercase tracking-wider">電話 PHONE</label>
+                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">電話 PHONE</label>
                 <div className="relative group">
-                  <Phone size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-purple-400 transition-colors" />
+                  <Phone size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
                   <input
                     type="tel"
                     value={formData.phone}
@@ -181,14 +181,14 @@ export default function RegisterPage() {
                     className={`w-full bg-white/5 border-2 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-slate-600 font-bold outline-none transition-all shadow-inner ${isAttempted && !isPhoneValid ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/5 focus:border-purple-500/40 focus:bg-white/10'}`}
                   />
                 </div>
-                {isAttempted && !isPhoneValid && <p className="text-[11px] text-rose-400 font-black ml-1 tracking-tighter">請輸入正確的手機格式</p>}
+                {isAttempted && !isPhoneValid && <p className="text-[13px] text-rose-400 font-black ml-1 tracking-tighter">請輸入正確的手機格式</p>}
               </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-slate-400 ml-1 uppercase tracking-wider">電子信箱 EMAIL</label>
+                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">電子信箱 EMAIL</label>
                 <div className="relative group">
-                  <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-purple-400 transition-colors" />
+                  <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
                   <input
                     type="email"
                     value={formData.email}
@@ -197,7 +197,7 @@ export default function RegisterPage() {
                     className={`w-full bg-white/5 border-2 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-slate-600 font-bold outline-none transition-all shadow-inner ${isAttempted && !isEmailValid ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/5 focus:border-purple-500/40 focus:bg-white/10'}`}
                   />
                 </div>
-                {isAttempted && !isEmailValid && <p className="text-[11px] text-rose-400 font-black ml-1 tracking-tighter">請輸入正確的信箱格式</p>}
+                {isAttempted && !isEmailValid && <p className="text-[13px] text-rose-400 font-black ml-1 tracking-tighter">請輸入正確的信箱格式</p>}
               </div>
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function RegisterPage() {
           {/* Questionnaire Section */}
           {parsedQuestionnaire.length > 0 && (
             <div className="mt-8 pt-8 border-t border-white/5 flex flex-col gap-10">
-              <h2 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2 opacity-60">
+              <h2 className="text-[12px] font-black text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2 opacity-60">
                 <ListTodo size={14} className="text-cyan-400" /> 偏好問卷 PREFERENCES
               </h2>
 
@@ -213,7 +213,7 @@ export default function RegisterPage() {
                 const hasOptions = q.options && q.options.length > 0
                 return (
                   <div key={idx} className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${idx * 150}ms` }}>
-                    <label className="text-sm font-black text-white ml-1 block">{q.title}</label>
+                    <label className="text-xm font-black text-white ml-1 block">{q.title}</label>
 
                     {hasOptions ? (
                       <div className="flex flex-wrap gap-3">
@@ -224,7 +224,7 @@ export default function RegisterPage() {
                               key={optIdx}
                               onClick={() => setAnswers(prev => ({ ...prev, [q.title]: opt.title }))}
                               className={`
-                                px-6 py-3 rounded-2xl text-xs font-black transition-all border-2
+                                px-6 py-3 rounded-2xl text-ms font-black transition-all border-2
                                 ${isSelected ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/40' : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10'}
                               `}
                             >
@@ -235,7 +235,7 @@ export default function RegisterPage() {
                         <button
                           onClick={() => setAnswers(prev => ({ ...prev, [q.title]: '__OTHER__' }))}
                           className={`
-                            px-6 py-3 rounded-2xl text-xs font-black transition-all border-2
+                            px-6 py-3 rounded-2xl text-ms font-black transition-all border-2
                             ${answers[q.title] === '__OTHER__' ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/40' : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10'}
                           `}
                         >
@@ -281,7 +281,7 @@ export default function RegisterPage() {
 
         {/* Footer */}
         <footer className="mt-12 text-center opacity-40">
-          <p className="text-[10px] font-black text-slate-500 tracking-[0.3em] uppercase">
+          <p className="text-[14px] font-black text-slate-300 tracking-[0.3em] uppercase">
             v0.2.0 © SECURE RESERVATION GATEWAY
           </p>
         </footer>

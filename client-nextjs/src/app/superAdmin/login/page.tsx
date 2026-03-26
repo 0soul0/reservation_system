@@ -42,26 +42,26 @@ export default function SuperAdminLoginPage() {
         className="w-full max-w-[460px] relative z-10"
       >
         <div className="text-center mb-12">
-            <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-[2rem] shadow-2xl shadow-purple-500/30 mb-8"
-            >
-                <Shield className="text-white w-10 h-10" />
-            </motion.div>
-            <h1 className="text-4xl font-black text-white tracking-tighter mb-4 italic uppercase">
-                Triple SuperAdmin
-            </h1>
-            <p className="text-slate-500 font-medium text-sm tracking-widest uppercase opacity-70">
-                系統最高權限管理員登入
-            </p>
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-[2rem] shadow-2xl shadow-purple-500/30 mb-8"
+          >
+            <Shield className="text-white w-10 h-10" />
+          </motion.div>
+          <h1 className="text-4xl font-black text-white tracking-tighter mb-4 italic uppercase">
+            Triple SuperAdmin
+          </h1>
+          <p className="text-slate-300 font-medium text-xm tracking-widest uppercase opacity-70">
+            系統最高權限管理員登入
+          </p>
         </div>
 
         <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 p-10 rounded-[3rem] shadow-2xl shadow-black shadow-inner">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-1">帳號</label>
+              <label className="text-[14px] font-black text-slate-300 uppercase tracking-[0.3em] ml-1">帳號</label>
               <div className="relative group">
                 <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-purple-400 transition-colors">
                   <User size={18} />
@@ -71,13 +71,13 @@ export default function SuperAdminLoginPage() {
                   type="text"
                   required
                   placeholder="Super Admin Account"
-                  className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-sm text-white focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
+                  className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-xm text-white focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-1">密碼</label>
+              <label className="text-[14px] font-black text-slate-300 uppercase tracking-[0.3em] ml-1">密碼</label>
               <div className="relative group">
                 <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-cyan-400 transition-colors">
                   <Lock size={18} />
@@ -87,7 +87,7 @@ export default function SuperAdminLoginPage() {
                   type="password"
                   required
                   placeholder="••••••••"
-                  className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-sm text-white focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all"
+                  className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-xm text-white focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all"
                 />
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function SuperAdminLoginPage() {
                 animate={{ opacity: 1, height: 'auto' }}
                 className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl"
               >
-                <p className="text-rose-400 text-xs font-bold text-center italic">{error}</p>
+                <p className="text-rose-400 text-ms font-bold text-center italic">{error}</p>
               </motion.div>
             )}
 
@@ -116,7 +116,7 @@ export default function SuperAdminLoginPage() {
           </form>
         </div>
 
-        <p className="text-center mt-12 text-[10px] text-slate-600 font-bold tracking-[0.2em] uppercase">
+        <p className="text-center mt-12 text-[14px] text-slate-600 font-bold tracking-[0.2em] uppercase">
           v1.0.0 © Power By Antigravity-Engine
         </p>
       </motion.div>

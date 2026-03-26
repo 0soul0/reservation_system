@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  Users, 
-  Calendar, 
-  LogOut, 
-  LayoutDashboard, 
-  ChevronRight, 
+import {
+  Users,
+  Calendar,
+  LogOut,
+  LayoutDashboard,
+  ChevronRight,
   Clock,
   Menu,
   X
@@ -39,7 +39,7 @@ export default function DashboardNav({ session }: DashboardNavProps) {
           </div>
           <span className="text-xl font-bold tracking-tight text-white">管理系統</span>
         </Link>
-        <button 
+        <button
           onClick={toggleSidebar}
           className="p-2 text-slate-400 hover:text-white"
         >
@@ -65,7 +65,7 @@ export default function DashboardNav({ session }: DashboardNavProps) {
             </div>
 
             <div className="md:hidden p-8 flex justify-between items-center">
-               <Link href="/members" className="flex items-center gap-2">
+              <Link href="/members" className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center font-bold text-white">
                   R
                 </div>
@@ -85,19 +85,19 @@ export default function DashboardNav({ session }: DashboardNavProps) {
 
             <div className="p-4 mt-auto border-t border-white/10">
               <div className="px-3 py-1 mb-2">
-                <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase opacity-60">v0.1.1</span>
+                <span className="text-[14px] font-bold text-slate-300 tracking-widest uppercase opacity-60">v0.1.1</span>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 mb-4">
                 <div className="p-2 bg-white/10 rounded-lg">
-                  <span className="text-[10px] font-bold text-purple-400">ADMIN</span>
+                  <span className="text-[14px] font-bold text-purple-400">ADMIN</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate text-white">{session.name}</p>
-                  <p className="text-xs text-slate-500 truncate">{session.account}</p>
+                  <p className="text-xm font-medium truncate text-white">{session.name}</p>
+                  <p className="text-ms text-slate-300 truncate">{session.account}</p>
                 </div>
               </div>
               <form action={logoutAction}>
-                <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <button className="w-full flex items-center gap-3 px-4 py-3 text-xm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                   <LogOut size={18} />
                   <span>登出系統</span>
                 </button>
@@ -109,7 +109,7 @@ export default function DashboardNav({ session }: DashboardNavProps) {
 
       {/* Mobile Overlay Darken */}
       {isOpen && (
-        <div 
+        <div
           onClick={toggleSidebar}
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
         />
@@ -118,15 +118,15 @@ export default function DashboardNav({ session }: DashboardNavProps) {
   )
 }
 
-function SidebarLink({ 
-  href, 
-  icon, 
-  label, 
+function SidebarLink({
+  href,
+  icon,
+  label,
   active,
   onClick
-}: { 
-  href: string; 
-  icon: React.ReactNode; 
+}: {
+  href: string;
+  icon: React.ReactNode;
   label: string;
   active: boolean;
   onClick: () => void;
@@ -137,8 +137,8 @@ function SidebarLink({
       onClick={onClick}
       className={`
         flex items-center justify-between px-4 py-3 rounded-xl transition-all group
-        ${active 
-          ? 'bg-white/10 text-white shadow-sm' 
+        ${active
+          ? 'bg-white/10 text-white shadow-sm'
           : 'text-slate-400 hover:text-white hover:bg-white/5'}
       `}
     >
@@ -146,9 +146,9 @@ function SidebarLink({
         {icon}
         <span className="font-semibold">{label}</span>
       </div>
-      <ChevronRight 
-        size={16} 
-        className={`transition-opacity ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} 
+      <ChevronRight
+        size={16}
+        className={`transition-opacity ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
       />
     </Link>
   )

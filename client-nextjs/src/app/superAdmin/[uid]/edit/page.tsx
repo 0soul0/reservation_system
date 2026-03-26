@@ -51,7 +51,7 @@ function LineNotifyBuilder({
       <button
         type="button"
         onClick={add}
-        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-white/10 rounded-2xl text-xs text-slate-600 hover:text-emerald-400 hover:border-emerald-500/30 transition-all font-black uppercase tracking-widest"
+        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-white/10 rounded-2xl text-ms text-slate-600 hover:text-emerald-400 hover:border-emerald-500/30 transition-all font-black uppercase tracking-widest"
       >
         <PlusCircle size={16} /> 新增關鍵字回覆
       </button>
@@ -90,7 +90,7 @@ function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-[0.2em]">#{index + 1}</span>
+          <span className="text-[14px] font-black text-emerald-500/50 uppercase tracking-[0.2em]">#{index + 1}</span>
           <div className="relative group">
             <input
               value={selectedProc?.key || entry.key}
@@ -107,7 +107,7 @@ function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className={`w-full flex items-center justify-between px-4 py-2 rounded-xl border transition-all text-[11px] font-black uppercase tracking-widest ${isOpen ? 'bg-white/10 border-emerald-500/50 text-emerald-400' : 'bg-white/[0.03] border-white/5 text-slate-500 hover:border-white/20'}`}
+            className={`w-full flex items-center justify-between px-4 py-2 rounded-xl border transition-all text-[13px] font-black uppercase tracking-widest ${isOpen ? 'bg-white/10 border-emerald-500/50 text-emerald-400' : 'bg-white/[0.03] border-white/5 text-slate-300 hover:border-white/20'}`}
           >
             <span className="truncate">{entry.name || '快速選擇範本'}</span>
             <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -141,14 +141,14 @@ function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
                         }}
                         className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-left group"
                       >
-                        <span className={`text-xs font-bold ${selectedProc?.uid === p.uid ? 'text-emerald-400' : 'text-slate-400 group-hover:text-white'}`}>
+                        <span className={`text-ms font-bold ${selectedProc?.uid === p.uid ? 'text-emerald-400' : 'text-slate-400 group-hover:text-white'}`}>
                           {p.name}
                         </span>
                         {selectedProc?.uid === p.uid && <Check size={14} className="text-emerald-400" />}
                       </button>
                     ))}
                     {newProcedures.length === 0 && (
-                      <div className="p-4 text-center text-[10px] text-slate-600 font-black uppercase tracking-widest">暫無可用範本</div>
+                      <div className="p-4 text-center text-[14px] text-slate-600 font-black uppercase tracking-widest">暫無可用範本</div>
                     )}
                   </div>
                 </motion.div>
@@ -171,7 +171,7 @@ function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
             <span
               key={`default-${index}`}
               // 移除 group-hover:，直接使用 text-emerald-400 (或 green-400)
-              className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 rounded-md px-2 py-0.5 font-bold text-emerald-400 transition-colors"
+              className="text-[14px] bg-emerald-500/10 border border-emerald-500/20 rounded-md px-2 py-0.5 font-bold text-emerald-400 transition-colors"
             >
               {`{${item.key}}`}
             </span>
@@ -182,7 +182,7 @@ function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
             JSON.parse(selectedProc.columns_json).map((item: string, index: number) => (
               <span
                 key={`dynamic-${index}`}
-                className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 rounded-md px-2 py-0.5 font-bold text-emerald-400 transition-colors"
+                className="text-[14px] bg-emerald-500/10 border border-emerald-500/20 rounded-md px-2 py-0.5 font-bold text-emerald-400 transition-colors"
               >
                 {`{${item}}`}
               </span>
@@ -195,7 +195,7 @@ function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
           onChange={(e) => onUpdate(index, { value: e.target.value })}
           placeholder="回覆內容..."
           rows={5}
-          className="w-full bg-white/[0.02] border border-white/[0.07] rounded-xl py-3 px-4 text-sm text-slate-300 focus:outline-none focus:border-emerald-500/30 transition-all resize-y font-medium"
+          className="w-full bg-white/[0.02] border border-white/[0.07] rounded-xl py-3 px-4 text-xm text-slate-300 focus:outline-none focus:border-emerald-500/30 transition-all resize-y font-medium"
         />
       </>
 
@@ -247,7 +247,7 @@ function QuestionnaireBuilder({
             className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 space-y-3"
           >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-purple-500 uppercase tracking-widest whitespace-nowrap">
+              <span className="text-xm font-black text-purple-500 uppercase tracking-widest whitespace-nowrap">
                 Q{qIdx + 1}
               </span>
               <input
@@ -279,7 +279,7 @@ function QuestionnaireBuilder({
                       value={opt.title}
                       onChange={(e) => updateOption(qIdx, oIdx, e.target.value)}
                       placeholder={`選項 ${oIdx + 1}`}
-                      className="flex-1 bg-white/[0.02] border border-white/[0.07] rounded-lg py-1.5 px-3 text-sm text-white focus:outline-none focus:border-cyan-500/30 transition-all"
+                      className="flex-1 bg-white/[0.02] border border-white/[0.07] rounded-lg py-1.5 px-3 text-xm text-white focus:outline-none focus:border-cyan-500/30 transition-all"
                     />
                     <button
                       type="button"
@@ -294,7 +294,7 @@ function QuestionnaireBuilder({
               <button
                 type="button"
                 onClick={() => addOption(qIdx)}
-                className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-cyan-400 transition-colors font-bold tracking-wider uppercase mt-1"
+                className="flex items-center gap-1.5 text-xm text-slate-600 hover:text-cyan-400 transition-colors font-bold tracking-wider uppercase mt-1"
               >
                 <PlusCircle size={13} /> 新增選項
               </button>
@@ -305,7 +305,7 @@ function QuestionnaireBuilder({
       <button
         type="button"
         onClick={addQuestion}
-        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-white/10 rounded-2xl text-xs text-slate-600 hover:text-purple-400 hover:border-purple-500/30 transition-all font-black uppercase tracking-widest"
+        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-white/10 rounded-2xl text-ms text-slate-600 hover:text-purple-400 hover:border-purple-500/30 transition-all font-black uppercase tracking-widest"
       >
         <PlusCircle size={16} /> 新增題目
       </button>
@@ -339,10 +339,10 @@ function Section({
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.02] transition-all"
       >
-        <p className={`text-sm font-black ${colorMap[color] ?? 'text-white'} uppercase tracking-[0.2em]`}>
+        <p className={`text-xm font-black ${colorMap[color] ?? 'text-white'} uppercase tracking-[0.2em]`}>
           {title}
         </p>
-        {open ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+        {open ? <ChevronUp size={16} className="text-slate-300" /> : <ChevronDown size={16} className="text-slate-300" />}
       </button>
       <AnimatePresence>
         {open && (
@@ -362,14 +362,14 @@ function Section({
 }
 
 const inputCls =
-  'w-full bg-white/[0.05] border border-white/15 rounded-xl py-3 px-4 text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500/60 transition-all'
+  'w-full bg-white/[0.05] border border-white/15 rounded-xl py-3 px-4 text-base text-white placeholder:text-slate-300 focus:outline-none focus:border-purple-500/60 transition-all'
 const areaCls =
-  'w-full bg-white/[0.05] border border-white/15 rounded-xl py-3 px-4 text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500/60 transition-all resize-none'
+  'w-full bg-white/[0.05] border border-white/15 rounded-xl py-3 px-4 text-base text-white placeholder:text-slate-300 focus:outline-none focus:border-purple-500/60 transition-all resize-none'
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-extrabold text-white uppercase tracking-wider ml-0.5">
+      <label className="block text-xm font-extrabold text-white uppercase tracking-wider ml-0.5">
         {label}
       </label>
       {children}
@@ -494,7 +494,7 @@ export default function ManagerEditPage() {
               <h1 className="text-lg font-black text-white italic tracking-tighter uppercase">
                 {isNew ? '建立管理員' : '編輯管理員'}
               </h1>
-              <p className="text-slate-500 font-bold text-xs uppercase tracking-[0.3em]">
+              <p className="text-slate-300 font-bold text-ms uppercase tracking-[0.3em]">
                 {isNew ? 'New Manager' : manager?.name}
               </p>
             </div>
@@ -503,7 +503,7 @@ export default function ManagerEditPage() {
             <button
               type="button"
               onClick={() => router.push('/superAdmin')}
-              className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all text-slate-400"
+              className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-ms font-bold uppercase tracking-widest hover:bg-white/10 transition-all text-slate-400"
             >
               取消
             </button>
@@ -565,19 +565,19 @@ export default function ManagerEditPage() {
         {/* LINE / Google 整合 */}
         <Section title="LINE / Google 整合" color="emerald" defaultOpen={false}>
           <Field label="LINE Channel Access Token">
-            <input name="line_channel_access_token" defaultValue={manager?.line_channel_access_token} placeholder="Bearer token..." className={`${inputCls} font-mono text-xs`} />
+            <input name="line_channel_access_token" defaultValue={manager?.line_channel_access_token} placeholder="Bearer token..." className={`${inputCls} font-mono text-ms`} />
           </Field>
           <Field label="Google Calendar ID">
-            <input name="google_calendar_id" defaultValue={manager?.google_calendar_id} placeholder="xxxx@group.calendar.google.com" className={`${inputCls} font-mono text-xs`} />
+            <input name="google_calendar_id" defaultValue={manager?.google_calendar_id} placeholder="xxxx@group.calendar.google.com" className={`${inputCls} font-mono text-ms`} />
           </Field>
           <Field label="Google Calendar Access Token">
-            <input name="google_calendar_access_token" defaultValue={manager?.google_calendar_access_token} placeholder="ya29.xxx..." className={`${inputCls} font-mono text-xs`} />
+            <input name="google_calendar_access_token" defaultValue={manager?.google_calendar_access_token} placeholder="ya29.xxx..." className={`${inputCls} font-mono text-ms`} />
           </Field>
         </Section>
 
         {/* LINE Notify 關鍵字回覆 */}
         <Section title="LINE Notify 關鍵字回覆" color="emerald">
-          <p className="text-xs text-slate-500">
+          <p className="text-ms text-slate-300">
             設定聊天機器人的關鍵字觸發回覆，每筆為一組「關鍵字 → 回覆內容」
           </p>
           <LineNotifyBuilder value={notifyEntries} onChange={setNotifyEntries} />
@@ -604,7 +604,7 @@ export default function ManagerEditPage() {
           <button
             type="submit"
             disabled={isSaving}
-            className="w-full bg-gradient-to-br from-purple-600 to-cyan-600 py-4 rounded-2xl text-white font-black text-sm uppercase tracking-widest shadow-xl shadow-purple-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-br from-purple-600 to-cyan-600 py-4 rounded-2xl text-white font-black text-xm uppercase tracking-widest shadow-xl shadow-purple-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isSaving ? <Loader2 className="animate-spin" size={20} /> : <><Save size={20} /> 儲存變更</>}
           </button>

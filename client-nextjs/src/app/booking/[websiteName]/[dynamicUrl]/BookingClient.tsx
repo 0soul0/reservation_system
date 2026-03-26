@@ -89,7 +89,7 @@ const SimpleCalendar: React.FC<{ selected: Date | null, onSelect: (d: Date) => v
               key={date.toISOString()}
               onClick={() => !isPast && onSelect(new Date(date))}
               className={`
-                relative py-2.5 rounded-xl text-sm font-bold transition-all
+                relative py-2.5 rounded-xl text-xm font-bold transition-all
                 ${isPast ? 'text-slate-200 cursor-not-allowed' : 'cursor-pointer'}
                 ${isSelected ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/20' : isToday && !isPast ? 'text-purple-600 hover:bg-purple-50' : !isPast ? 'text-slate-600 hover:bg-slate-50' : ''}
               `}
@@ -323,7 +323,7 @@ export default function BookingClient(props: BookingClientProps) {
             <div className="w-9 h-9 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center text-white overflow-hidden">
               {manager?.logo_url ? <img src={`/logo/${manager?.logo_url}`} className="w-full h-full object-cover" alt="Logo" /> : <span className="font-bold">{event.title[0]}</span>}
             </div>
-            <h1 className="font-extrabold text-sm text-slate-800 line-clamp-1">{event.title}</h1>
+            <h1 className="font-extrabold text-xm text-slate-800 line-clamp-1">{event.title}</h1>
           </div>
         </header>
 
@@ -332,7 +332,7 @@ export default function BookingClient(props: BookingClientProps) {
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex flex-col items-center gap-2 relative z-10">
               <div className={`
-                w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500
+                w-8 h-8 rounded-full flex items-center justify-center text-ms font-bold transition-all duration-500
                 ${step === s ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/30 scale-110' : step > s ? 'bg-green-500 text-white' : 'bg-white border-2 border-slate-200 text-slate-900'}
               `}>
                 {step > s ? <Check size={16} strokeWidth={3} /> : s}
@@ -353,7 +353,7 @@ export default function BookingClient(props: BookingClientProps) {
                   {/* Left: Info */}
                   <div className="space-y-6">
                     <h2 className="text-[14px] font-black text-slate-900 uppercase tracking-[0.2em]">活動細節</h2>
-                    <div className="text-slate-600 leading-relaxed whitespace-pre-wrap text-sm">
+                    <div className="text-slate-600 leading-relaxed whitespace-pre-wrap text-xm">
                       {event.description || '暫無活動說明'}
                     </div>
                   </div>
@@ -364,7 +364,7 @@ export default function BookingClient(props: BookingClientProps) {
                     <div className="space-y-4">
                       {/* Name */}
                       <div className="space-y-1.5">
-                        <label className="text-[14px] font-bold text-slate-500 ml-1">姓名 <span className="text-rose-500">*</span></label>
+                        <label className="text-[14px] font-bold text-slate-300 ml-1">姓名 <span className="text-rose-500">*</span></label>
                         <div className="relative group">
                           <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-500 transition-colors" />
                           <input
@@ -372,7 +372,7 @@ export default function BookingClient(props: BookingClientProps) {
                             value={formData.name}
                             onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
                             placeholder="您的姓名"
-                            className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-sm outline-none transition-all ${isFirstStepAttempted && !formData.name ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
+                            className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-xm outline-none transition-all ${isFirstStepAttempted && !formData.name ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
                           />
                         </div>
                       </div>
@@ -380,7 +380,7 @@ export default function BookingClient(props: BookingClientProps) {
                       {/* Phone */}
                       {event.is_phone_required && (
                         <div className="space-y-1.5">
-                          <label className="text-[14px] font-bold text-slate-500 ml-1">電話 <span className="text-rose-500">*</span></label>
+                          <label className="text-[14px] font-bold text-slate-300 ml-1">電話 <span className="text-rose-500">*</span></label>
                           <div className="relative group">
                             <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-500 transition-colors" />
                             <input
@@ -388,7 +388,7 @@ export default function BookingClient(props: BookingClientProps) {
                               value={formData.phone}
                               onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
                               placeholder="09XXXXXXXX"
-                              className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-sm outline-none transition-all ${(isFirstStepAttempted && !formData.phone) || (formData.phone && !isPhoneValid) ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
+                              className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-xm outline-none transition-all ${(isFirstStepAttempted && !formData.phone) || (formData.phone && !isPhoneValid) ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
                             />
                           </div>
                           {formData.phone && !isPhoneValid && <p className="text-[14px] text-rose-500 font-bold ml-1">格式不正確</p>}
@@ -398,7 +398,7 @@ export default function BookingClient(props: BookingClientProps) {
                       {/* Email */}
                       {event.is_email_required && (
                         <div className="space-y-1.5">
-                          <label className="text-[14px] font-bold text-slate-500 ml-1">信箱 <span className="text-rose-500">*</span></label>
+                          <label className="text-[14px] font-bold text-slate-300 ml-1">信箱 <span className="text-rose-500">*</span></label>
                           <div className="relative group">
                             <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-500 transition-colors" />
                             <input
@@ -406,7 +406,7 @@ export default function BookingClient(props: BookingClientProps) {
                               value={formData.email}
                               onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
                               placeholder="example@email.com"
-                              className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-sm outline-none transition-all ${(isFirstStepAttempted && !formData.email) || (formData.email && !isEmailValid) ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
+                              className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-xm outline-none transition-all ${(isFirstStepAttempted && !formData.email) || (formData.email && !isEmailValid) ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
                             />
                           </div>
                           {formData.email && !isEmailValid && <p className="text-[14px] text-rose-500 font-bold ml-1">格式不正確</p>}
@@ -415,15 +415,15 @@ export default function BookingClient(props: BookingClientProps) {
 
                       {/* Service Dropdown */}
                       <div className="space-y-1.5">
-                        <label className="text-[14px] font-bold text-slate-500 ml-1">預約項目 <span className="text-rose-500">*</span></label>
+                        <label className="text-[14px] font-bold text-slate-300 ml-1">預約項目 <span className="text-rose-500">*</span></label>
                         <div className="relative">
                           <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className={`w-full bg-slate-50 border-2 rounded-2xl px-5 py-3.5 text-sm flex justify-between items-center transition-all ${isFirstStepAttempted && !formData.selectedService ? 'border-rose-200 bg-rose-50' : (isDropdownOpen ? 'border-purple-600/20 bg-white ring-4 ring-purple-600/5' : 'border-transparent')}`}
+                            className={`w-full bg-slate-50 border-2 rounded-2xl px-5 py-3.5 text-xm flex justify-between items-center transition-all ${isFirstStepAttempted && !formData.selectedService ? 'border-rose-200 bg-rose-50' : (isDropdownOpen ? 'border-purple-600/20 bg-white ring-4 ring-purple-600/5' : 'border-transparent')}`}
                           >
                             <div className="flex items-center gap-2">
                               {formData.selectedService ? (
-                                <span className="font-extrabold text-slate-800">{formData.selectedService.title} <span className="text-xs text-slate-900 font-normal">({formData.selectedService.duration} min)</span></span>
+                                <span className="font-extrabold text-slate-800">{formData.selectedService.title} <span className="text-ms text-slate-900 font-normal">({formData.selectedService.duration} min)</span></span>
                               ) : (
                                 <span className="text-slate-900">請挑選項目...</span>
                               )}
@@ -443,7 +443,7 @@ export default function BookingClient(props: BookingClientProps) {
                                   className={`p-3 rounded-xl cursor-pointer flex justify-between items-center transition-colors ${formData.selectedService === item ? 'bg-purple-50 text-purple-600' : 'hover:bg-slate-50'}`}
                                 >
                                   <div>
-                                    <div className="font-bold text-sm">{item.title}</div>
+                                    <div className="font-bold text-xm">{item.title}</div>
                                     <div className="text-[14px] opacity-60">{item.duration} 分鐘</div>
                                   </div>
                                   {formData.selectedService === item && <Check size={14} />}
@@ -466,7 +466,7 @@ export default function BookingClient(props: BookingClientProps) {
                     (event.is_email_required ? (formData.email && isEmailValid) : true)
                   if (canProceed) setStep(2)
                 }}
-                className="w-full bg-gradient-to-br from-purple-600 to-cyan-600 py-4 rounded-2xl text-white font-black shadow-xl shadow-purple-500/20 hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-br from-purple-600 to-cyan-600 py-4 rounded-2xl text-white font-black shadow-xl shadow-purple-500/20 hover:scale-[1.02] active:scale-95 transition-all text-xm flex items-center justify-center gap-2"
               >
                 下一步：選擇預約時間 <ChevronRight size={18} />
               </button>
@@ -497,15 +497,15 @@ export default function BookingClient(props: BookingClientProps) {
                           onClick={() => setSelectedTimeSlot(slot.uid)}
                           className={`
                             p-3 rounded-2xl border-2 flex flex-col items-center transition-all
-                            ${selectedTimeSlot === slot.uid ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'}
+                            ${selectedTimeSlot === slot.uid ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-slate-50 bg-slate-50 text-slate-300 hover:border-slate-200'}
                           `}
                         >
-                          <span className={`text-xs font-black ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-emerald-600'}`}>{slot.time_range}</span>
+                          <span className={`text-ms font-black ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-emerald-600'}`}>{slot.time_range}</span>
                           <span className={`text-[14px] font-bold ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-slate-900'}`} >可預約 {slot.available_capacity} 位</span>
                         </button>
                       ))}
                       {getAvailableSlots(selectedDate).length === 0 && (
-                        <div className="col-span-3 py-12 text-center text-slate-900 text-xs font-bold">當日目前無可預約時段</div>
+                        <div className="col-span-3 py-12 text-center text-slate-900 text-ms font-bold">當日目前無可預約時段</div>
                       )}
                     </div>
                   ) : (
@@ -520,14 +520,14 @@ export default function BookingClient(props: BookingClientProps) {
               <div className="flex gap-4">
                 <button
                   onClick={() => setStep(1)}
-                  className="w-40 py-4 bg-white border border-slate-200 rounded-2xl text-slate-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
+                  className="w-40 py-4 bg-white border border-slate-200 rounded-2xl text-slate-300 font-bold text-xm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
                 >
                   <ChevronLeft size={18} /> 上一步
                 </button>
                 <button
                   disabled={!selectedDate || !selectedTimeSlot || isSubmitting}
                   onClick={handleConfirmBooking}
-                  className="flex-1 bg-gradient-to-br from-purple-600 to-cyan-600 py-4 rounded-2xl text-white font-black shadow-xl shadow-purple-500/20 disabled:grayscale disabled:opacity-50 transition-all text-sm flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-br from-purple-600 to-cyan-600 py-4 rounded-2xl text-white font-black shadow-xl shadow-purple-500/20 disabled:grayscale disabled:opacity-50 transition-all text-xm flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <><Loader2 size={18} className="animate-spin" /> 送出中...</> : <><CheckCircle2 size={18} /> 確認預約</>}
                 </button>
@@ -542,7 +542,7 @@ export default function BookingClient(props: BookingClientProps) {
                   <CheckCircle2 size={48} strokeWidth={2.5} />
                 </div>
                 <h2 className="text-3xl font-black text-slate-800 mb-2">預約成功！</h2>
-                <p className="text-slate-500 text-sm mb-10 leading-relaxed font-bold">
+                <p className="text-slate-300 text-xm mb-10 leading-relaxed font-bold">
                   感謝您的預約，系統已收到您的申請。<br />
                   我們將盡快與您聯繫確認。
                 </p>
@@ -550,15 +550,15 @@ export default function BookingClient(props: BookingClientProps) {
                 <div className="bg-slate-50 p-6 rounded-3xl text-left space-y-4 mb-10 border border-slate-100">
                   <p className="text-[14px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">預約明細</p>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center text-sm">
+                    <div className="flex justify-between items-center text-xm">
                       <span className="text-slate-900 font-bold">服務項目</span>
                       <span className="text-slate-800 font-black">{formData.selectedService?.title}</span>
                     </div>
-                    <div className="flex justify-between items-center text-sm">
+                    <div className="flex justify-between items-center text-xm">
                       <span className="text-slate-900 font-bold">預約日期</span>
                       <span className="text-slate-800 font-black">{selectedDate ? formatDate(selectedDate) : ''}</span>
                     </div>
-                    <div className="flex justify-between items-center text-sm">
+                    <div className="flex justify-between items-center text-xm">
                       <span className="text-slate-900 font-bold">時段</span>
                       <span className="text-slate-800 font-black">{slotTime}</span>
                     </div>
@@ -567,7 +567,7 @@ export default function BookingClient(props: BookingClientProps) {
 
                 <button
                   onClick={() => window.location.reload()}
-                  className="text-purple-600 font-black text-sm hover:underline decoration-2 underline-offset-8"
+                  className="text-purple-600 font-black text-xm hover:underline decoration-2 underline-offset-8"
                 >
                   繼續下一筆預約
                 </button>

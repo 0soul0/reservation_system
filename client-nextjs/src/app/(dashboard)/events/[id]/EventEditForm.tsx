@@ -104,7 +104,7 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
             <h1 className="text-2xl font-bold text-white leading-tight">
               {isNew ? '新增預約項目' : '編輯活動設定'}
             </h1>
-            <p className="text-slate-500 text-xs font-mono">{isNew ? 'NEW_EVENT' : id}</p>
+            <p className="text-slate-300 text-ms font-mono">{isNew ? 'NEW_EVENT' : id}</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -123,12 +123,12 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
           <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl space-y-6">
             <div className="flex items-center gap-2 mb-2">
               <FileText size={16} className="text-purple-400" />
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">基本設定</h3>
+              <h3 className="text-xm font-bold text-slate-400 uppercase tracking-widest">基本設定</h3>
             </div>
 
             <div className="space-y-4">
               <div className="group">
-                <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">項目名稱</label>
+                <label className="text-ms font-bold text-slate-300 uppercase mb-2 block">項目名稱</label>
                 <input
                   type="text"
                   value={title}
@@ -140,22 +140,22 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="group">
-                  <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">動態網址路徑</label>
+                  <label className="text-ms font-bold text-slate-300 uppercase mb-2 block">動態網址路徑</label>
                   <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 group-focus-within:border-cyan-500/50 transition-all">
-                    <span className="text-blue-600 text-xs shrink-0">{managerWebsiteName}/</span>
+                    <span className="text-blue-600 text-ms shrink-0">{managerWebsiteName}/</span>
                     <input
                       type="text"
                       value={bookingDynamicUrl}
                       onChange={(e) => setBookingDynamicUrl(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                       placeholder="massage-spa"
-                      className="w-full bg-transparent text-white font-mono text-sm outline-none"
+                      className="w-full bg-transparent text-white font-mono text-xm outline-none"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="group">
-                <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">詳細描述</label>
+                <label className="text-ms font-bold text-slate-300 uppercase mb-2 block">詳細描述</label>
                 <textarea
                   rows={4}
                   value={description}
@@ -172,11 +172,11 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
                 <Layout size={16} className="text-cyan-400" />
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">服務選單</h3>
+                <h3 className="text-xm font-bold text-slate-400 uppercase tracking-widest">服務選單</h3>
               </div>
               <button
                 onClick={openOptionModal}
-                className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-cyan-400 hover:bg-cyan-500/20 text-xs font-bold flex items-center gap-2 transition-all"
+                className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-cyan-400 hover:bg-cyan-500/20 text-ms font-bold flex items-center gap-2 transition-all"
               >
                 <Edit2 size={14} /> 編輯項目
               </button>
@@ -192,7 +192,7 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
                   {options.items.map((item: any, idx: number) => (
                     <div key={idx} className="p-4 bg-white/5 border border-white/10 rounded-2xl flex justify-between items-center group/item hover:border-cyan-500/30 transition-all">
                       <span className="text-slate-200 font-semibold">{item.title}</span>
-                      <div className="flex items-center gap-2 text-slate-500 text-xs">
+                      <div className="flex items-center gap-2 text-slate-300 text-ms">
                         <Clock size={12} />
                         {item.duration} 分鐘
                       </div>
@@ -201,9 +201,9 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
                 </div>
               </div>
             ) : (
-              <div className="p-12 text-center bg-white/5 border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-slate-500">
+              <div className="p-12 text-center bg-white/5 border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-slate-300">
                 <Box className="w-10 h-10 mb-4 opacity-10" />
-                <p className="text-sm">尚未設定服務項目與分類</p>
+                <p className="text-xm">尚未設定服務項目與分類</p>
               </div>
             )}
           </div>
@@ -213,26 +213,26 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
         <div className="lg:col-span-4 space-y-6">
           {/* Data Requirements */}
           <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">客戶資料要求</h3>
+            <h3 className="text-ms font-bold text-slate-300 uppercase tracking-widest mb-6">客戶資料要求</h3>
             <div className="space-y-4">
               <button
                 onClick={() => setIsPhoneRequired(!isPhoneRequired)}
-                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${isPhoneRequired ? 'bg-purple-500/10 border-purple-500/30 text-white' : 'bg-white/5 border-white/10 text-slate-500'}`}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${isPhoneRequired ? 'bg-purple-500/10 border-purple-500/30 text-white' : 'bg-white/5 border-white/10 text-slate-300'}`}
               >
                 <div className="flex items-center gap-3">
                   <Phone size={18} className={isPhoneRequired ? 'text-purple-400' : ''} />
-                  <span className="text-sm font-semibold">手機號碼 (必填)</span>
+                  <span className="text-xm font-semibold">手機號碼 (必填)</span>
                 </div>
                 {isPhoneRequired && <CheckCircle2 size={18} className="text-purple-400" />}
               </button>
 
               <button
                 onClick={() => setIsEmailRequired(!isEmailRequired)}
-                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${isEmailRequired ? 'bg-purple-500/10 border-purple-500/30 text-white' : 'bg-white/5 border-white/10 text-slate-500'}`}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${isEmailRequired ? 'bg-purple-500/10 border-purple-500/30 text-white' : 'bg-white/5 border-white/10 text-slate-300'}`}
               >
                 <div className="flex items-center gap-3">
                   <Mail size={18} className={isEmailRequired ? 'text-purple-400' : ''} />
-                  <span className="text-sm font-semibold">電子郵件 (必填)</span>
+                  <span className="text-xm font-semibold">電子郵件 (必填)</span>
                 </div>
                 {isEmailRequired && <CheckCircle2 size={18} className="text-purple-400" />}
               </button>
@@ -243,12 +243,12 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
           <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
             <div className="flex items-center gap-2 mb-6">
               <Clock size={16} className="text-cyan-400" />
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">適用營業時間</h3>
+              <h3 className="text-ms font-bold text-slate-300 uppercase tracking-widest">適用營業時間</h3>
             </div>
 
             <div className="space-y-2">
               {menus.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-600 bg-white/5 border border-dashed border-white/10 rounded-2xl">
+                <div className="p-6 text-center text-ms text-slate-600 bg-white/5 border border-dashed border-white/10 rounded-2xl">
                   尚未建立時程模板
                 </div>
               ) : (
@@ -258,19 +258,19 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
                     <button
                       key={menu.uid}
                       onClick={() => toggleMenuVisibility(menu.uid)}
-                      className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all text-left ${isSelected ? 'bg-cyan-500/10 border-cyan-500/30 text-white' : 'bg-white/5 border-white/10 text-slate-500'}`}
+                      className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all text-left ${isSelected ? 'bg-cyan-500/10 border-cyan-500/30 text-white' : 'bg-white/5 border-white/10 text-slate-300'}`}
                     >
                       <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-cyan-500 border-cyan-500 text-black' : 'border-white/10'}`}>
                         {isSelected && <CheckCircle2 size={14} strokeWidth={3} />}
                       </div>
-                      <span className="text-sm font-bold flex-1">{menu.name}</span>
+                      <span className="text-xm font-bold flex-1">{menu.name}</span>
                       <ArrowRight size={14} className={isSelected ? 'text-cyan-400' : 'text-slate-800'} />
                     </button>
                   )
                 })
               )}
             </div>
-            <p className="text-[10px] text-slate-600 mt-4 px-2">※ 選擇此預約項目適用的時間範本。</p>
+            <p className="text-[14px] text-slate-600 mt-4 px-2">※ 選擇此預約項目適用的時間範本。</p>
           </div>
         </div>
       </div>
@@ -290,7 +290,7 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
 
               <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
                 <div className="space-y-3">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">選單分類名稱</label>
+                  <label className="text-ms font-bold text-slate-300 uppercase tracking-widest pl-1">選單分類名稱</label>
                   <input
                     type="text"
                     value={tempOptions.name}
@@ -302,10 +302,10 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">服務項目</label>
+                    <label className="text-ms font-bold text-slate-300 uppercase tracking-widest pl-1">服務項目</label>
                     <button
                       onClick={() => setTempOptions({ ...tempOptions, items: [...tempOptions.items, { title: '', duration: 30 }] })}
-                      className="text-xs font-bold text-cyan-400 flex items-center gap-1 hover:text-cyan-300"
+                      className="text-ms font-bold text-cyan-400 flex items-center gap-1 hover:text-cyan-300"
                     >
                       <Plus size={14} /> 新增項目
                     </button>
@@ -334,9 +334,9 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
                               newItems[idx].duration = parseInt(e.target.value) || 0
                               setTempOptions({ ...tempOptions, items: newItems })
                             }}
-                            className="w-12 bg-transparent text-center text-white font-mono text-sm outline-none"
+                            className="w-12 bg-transparent text-center text-white font-mono text-xm outline-none"
                           />
-                          <span className="text-slate-600 text-xs">min</span>
+                          <span className="text-slate-600 text-ms">min</span>
                         </div>
                         <button
                           onClick={() => {

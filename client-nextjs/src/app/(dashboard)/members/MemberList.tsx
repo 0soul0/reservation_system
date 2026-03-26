@@ -113,11 +113,11 @@ export default function MemberList({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">會員姓名</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">聯絡資訊</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">狀態</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider">註冊日期</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-300 uppercase tracking-wider text-right">操作</th>
+                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider">會員姓名</th>
+                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider">聯絡資訊</th>
+                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider">狀態</th>
+                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider">註冊日期</th>
+                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider text-right">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -130,12 +130,12 @@ export default function MemberList({
                   <td className="px-6 py-5 font-bold text-white whitespace-nowrap">{member.name || '未命名'}</td>
                   <td className="px-6 py-5">
                     <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-sm text-slate-200">
+                      <div className="flex items-center gap-2 text-xm text-slate-200">
                         <Phone size={14} className="text-cyan-400 shrink-0" />
                         <span className="font-mono">{member.phone || '-'}</span>
                       </div>
                       {member.email && (
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <div className="flex items-center gap-2 text-ms text-slate-400">
                           <Mail size={14} className="text-purple-400 shrink-0" />
                           <span className="truncate max-w-[200px]">{member.email}</span>
                         </div>
@@ -143,14 +143,14 @@ export default function MemberList({
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-bold tracking-wide ${member.status
+                    <span className={`inline-flex px-3 py-1 rounded-full text-[13px] font-bold tracking-wide ${member.status
                       ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                       : 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
                       }`}>
                       {showStatusText(member.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-5 text-sm text-slate-400 font-mono whitespace-nowrap">
+                  <td className="px-6 py-5 text-xm text-slate-400 font-mono whitespace-nowrap">
                     {new Date(member.create_at).toLocaleDateString('zh-TW')}
                   </td>
                   <td className="px-6 py-5 text-right">
@@ -175,16 +175,16 @@ export default function MemberList({
         {/* 分頁控制項 */}
         <div className="px-6 py-5 border-t border-white/10 flex flex-col lg:flex-row items-center justify-between gap-6 bg-white/[0.02]">
           <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-            <p className="text-sm text-slate-400 font-medium">
+            <p className="text-xm text-slate-400 font-medium">
               顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆資料，共 <span className="text-white font-bold">{totalCount}</span> 筆
             </p>
             <div className="h-4 w-px bg-white/10 hidden sm:block" />
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 uppercase font-bold tracking-tighter">每頁</span>
+              <span className="text-ms text-slate-300 uppercase font-bold tracking-tighter">每頁</span>
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer font-bold"
+                className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-ms text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer font-bold"
               >
                 {[10, 20, 50, 100].map(size => (
                   <option key={size} value={size} className="bg-[#111]">{size} 筆</option>
@@ -207,7 +207,7 @@ export default function MemberList({
                 <button
                   key={i}
                   onClick={() => handlePageChange(i + 1)}
-                  className={`min-w-[40px] h-10 rounded-xl text-sm font-bold transition-all ${currentPage === i + 1
+                  className={`min-w-[40px] h-10 rounded-xl text-xm font-bold transition-all ${currentPage === i + 1
                     ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/30'
                     : 'hover:bg-white/10 text-slate-400 hover:text-white border border-transparent hover:border-white/10'
                     }`}
@@ -215,7 +215,7 @@ export default function MemberList({
                   {i + 1}
                 </button>
               )) : (
-                <button className="min-w-[40px] h-10 rounded-xl text-sm font-medium bg-gradient-to-br from-purple-600/50 to-cyan-600/50 text-white opacity-50 cursor-default">
+                <button className="min-w-[40px] h-10 rounded-xl text-xm font-medium bg-gradient-to-br from-purple-600/50 to-cyan-600/50 text-white opacity-50 cursor-default">
                   1
                 </button>
               )}
@@ -257,7 +257,7 @@ export default function MemberList({
                   </div>
                   <div>
                     <h2 className="text-xl md:text-2xl font-bold text-white leading-tight">{selectedMember.name}</h2>
-                    <p className="text-slate-500 font-mono text-xs mt-1">{selectedMember.uid}</p>
+                    <p className="text-slate-300 font-mono text-ms mt-1">{selectedMember.uid}</p>
                   </div>
                 </div>
                 <button
@@ -275,20 +275,20 @@ export default function MemberList({
                   <InfoItem icon={<Mail className="text-purple-400" size={18} />} label="Email" value={selectedMember.email || '未提供'} />
                   <InfoItem icon={<MessageSquare className="text-emerald-400" size={18} />} label="LINE ID" value={selectedMember.line_uid || '未連動'} />
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                    <div className="flex items-center gap-2 text-slate-400 text-[14px] font-bold uppercase tracking-widest">
                       <ShieldCheck className="text-yellow-400" size={18} />
                       <span>會員狀態</span>
                     </div>
                     <div className="pl-6 flex items-center gap-3">
                       <Switch checked={tempStatus} onChange={setTempStatus} />
-                      <span className="font-bold text-sm text-white">{showStatusText(tempStatus)}</span>
+                      <span className="font-bold text-xm text-white">{showStatusText(tempStatus)}</span>
                     </div>
                   </div>
                 </div>
 
                 {selectedMember.questionnaire && (
                   <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-xm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                       <Calendar size={16} className="text-purple-400" /> 訪談問卷答案
                     </h3>
                     <div className="grid grid-cols-1 gap-4">
@@ -301,7 +301,7 @@ export default function MemberList({
                           if (Array.isArray(qData) && qData.length > 0) {
                             return qData.map((item: any, idx: number) => (
                               <div key={idx} className="p-4 bg-white/[0.03] border border-white/10 rounded-2xl">
-                                <p className="text-xs font-bold text-purple-400 mb-1 uppercase tracking-wider">{item.title}</p>
+                                <p className="text-ms font-bold text-purple-400 mb-1 uppercase tracking-wider">{item.title}</p>
                                 <p className="text-slate-100 font-medium">{item.ans || '(未填寫)'}</p>
                               </div>
                             ));
@@ -310,7 +310,7 @@ export default function MemberList({
                           if (typeof qData === 'object' && qData !== null && Object.keys(qData).length > 0) {
                             return Object.entries(qData).map(([key, value]: [string, any]) => (
                               <div key={key} className="p-4 bg-white/[0.03] border border-white/10 rounded-2xl">
-                                <p className="text-xs font-bold text-purple-400 mb-1 uppercase tracking-wider">{key}</p>
+                                <p className="text-ms font-bold text-purple-400 mb-1 uppercase tracking-wider">{key}</p>
                                 <p className="text-slate-100 font-medium whitespace-pre-wrap">
                                   {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                                 </p>
@@ -319,19 +319,19 @@ export default function MemberList({
                           }
 
                           return (
-                            <div className="p-8 text-center bg-white/5 border border-dashed border-white/10 rounded-2xl text-slate-500 italic">
+                            <div className="p-8 text-center bg-white/5 border border-dashed border-white/10 rounded-2xl text-slate-300 italic">
                               尚無填寫問卷紀錄
                             </div>
                           );
                         } catch (e) {
-                          return <p className="text-slate-500 italic">解析失敗</p>;
+                          return <p className="text-slate-300 italic">解析失敗</p>;
                         }
                       })()}
                     </div>
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-white/10 flex justify-between text-xs text-slate-600 font-mono">
+                <div className="pt-4 border-t border-white/10 flex justify-between text-ms text-slate-600 font-mono">
                   <span>註冊日期: {new Date(selectedMember.create_at).toLocaleString('zh-TW')}</span>
                   <span>最後更新: {new Date(selectedMember.update_at).toLocaleString('zh-TW')}</span>
                 </div>
@@ -380,7 +380,7 @@ function Switch({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-2 text-slate-500 text-xs">
+      <div className="flex items-center gap-2 text-slate-300 text-ms">
         {icon}
         <span>{label}</span>
       </div>

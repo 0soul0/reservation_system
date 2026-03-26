@@ -62,13 +62,13 @@ export default function LoginPage() {
                 後台管理系統 <br />
                 <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">立即登入</span>
               </h1>
-              <p className="text-slate-400 font-bold text-sm tracking-widest opacity-60">ADMINISTRATION PORTAL</p>
+              <p className="text-slate-400 font-bold text-xm tracking-widest opacity-60">ADMINISTRATION PORTAL</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-5">
                 <div className="relative group">
-                  <User className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-purple-400 transition-colors pointer-events-none" />
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-purple-400 transition-colors pointer-events-none" />
                   <input
                     name="account"
                     type="text"
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="relative group">
-                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-purple-400 transition-colors pointer-events-none" />
+                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-purple-400 transition-colors pointer-events-none" />
                   <input
                     name="password"
                     type="password"
@@ -96,7 +96,7 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg text-center"
+                    className="text-red-400 text-xm bg-red-400/10 p-3 rounded-lg text-center"
                   >
                     {error}
                   </motion.p>
@@ -105,7 +105,7 @@ export default function LoginPage() {
                   <motion.p
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="text-emerald-400 text-sm bg-emerald-400/10 p-3 rounded-lg text-center"
+                    className="text-emerald-400 text-xm bg-emerald-400/10 p-3 rounded-lg text-center"
                   >
                     登入成功！正為您跳轉...
                   </motion.p>
@@ -131,7 +131,7 @@ export default function LoginPage() {
           </div>
 
           <div className="p-8 bg-white/5 border-t border-white/10 text-center relative overflow-hidden">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em] relative z-10">
+            <p className="text-ms text-slate-300 font-bold uppercase tracking-[0.2em] relative z-10">
               © 2024 RESERVATION PRO. ALL RIGHTS RESERVED.
             </p>
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />

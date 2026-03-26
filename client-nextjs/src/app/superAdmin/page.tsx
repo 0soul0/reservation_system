@@ -64,19 +64,19 @@ export default function SuperAdminPage() {
             <h1 className="text-2xl font-black text-white tracking-widest italic uppercase">
               SUPER <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">ADMIN</span>
             </h1>
-            <p className="text-slate-500 text-[10px] font-black tracking-[0.4em] uppercase opacity-70">SYSTEM AUTHORITY PORTAL</p>
+            <p className="text-slate-300 text-[14px] font-black tracking-[0.4em] uppercase opacity-70">SYSTEM AUTHORITY PORTAL</p>
           </div>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={async () => { await superLogoutAction(); router.push('/superAdmin/login') }}
-            className="flex-1 md:flex-none px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 transition-all active:scale-95 text-slate-400 shadow-lg"
+            className="flex-1 md:flex-none px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[14px] font-black uppercase tracking-widest hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 transition-all active:scale-95 text-slate-400 shadow-lg"
           >
             登出
           </button>
           <button
             onClick={() => router.push('/superAdmin/new/edit')}
-            className="flex-1 md:flex-none px-8 py-3 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:shadow-[0_15px_40px_-5px_rgba(147,51,234,0.6)] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-purple-500/30 border border-white/10"
+            className="flex-1 md:flex-none px-8 py-3 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-2xl font-black text-[14px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:shadow-[0_15px_40px_-5px_rgba(147,51,234,0.6)] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-purple-500/30 border border-white/10"
           >
             <UserPlus size={16} /> 建立管理員建立管理員
           </button>
@@ -94,7 +94,7 @@ export default function SuperAdminPage() {
             placeholder="搜尋管理員姓名、帳號、網站識別識別碼..."
             className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[2rem] py-5.5 pl-14 pr-6 text-white font-bold outline-none focus:border-cyan-500/50 focus:bg-white/[0.08] transition-all placeholder-slate-600 shadow-inner text-base"
           />
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/5 px-2 py-1 rounded-md border border-white/5 text-[10px] text-slate-600 font-mono tracking-tighter uppercase hidden sm:block">
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/5 px-2 py-1 rounded-md border border-white/5 text-[14px] text-slate-600 font-mono tracking-tighter uppercase hidden sm:block">
             Search Portal
           </div>
         </div>
@@ -102,7 +102,7 @@ export default function SuperAdminPage() {
         {loading ? (
           <div className="py-40 flex flex-col items-center justify-center gap-4 opacity-30">
             <Loader2 className="animate-spin text-purple-500" size={48} strokeWidth={1} />
-            <p className="text-xs font-black tracking-widest uppercase">載入中...</p>
+            <p className="text-ms font-black tracking-widest uppercase">載入中...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -140,29 +140,29 @@ export default function SuperAdminPage() {
                       <h2 className="text-2xl font-black text-white italic tracking-tighter leading-none mb-1 uppercase bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent group-hover:to-white transition-all">{manager.name}</h2>
                       <div className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-glow shadow-purple-500/50" />
-                        <p className="text-slate-500 font-black text-[11px] uppercase tracking-[0.25em]">@{manager.account}</p>
+                        <p className="text-slate-300 font-black text-[13px] uppercase tracking-[0.25em]">@{manager.account}</p>
                       </div>
                     </div>
                     <div className="space-y-3">
                       <div className="flex items-center gap-4 py-4 px-5 bg-white/[0.05] border border-white/5 rounded-2xl transition-all group-hover:bg-white/[0.08] shadow-inner">
                         <Globe size={18} className="text-cyan-400 shrink-0" />
                         <div className="flex-1 overflow-hidden">
-                          <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-0.5 opacity-60">WEBSITE IDENTITY</p>
-                          <p className="text-sm font-black text-slate-200 truncate font-mono italic">{manager.website_name}</p>
+                          <p className="text-[14px] text-slate-300 font-black uppercase tracking-widest mb-0.5 opacity-60">WEBSITE IDENTITY</p>
+                          <p className="text-xm font-black text-slate-200 truncate font-mono italic">{manager.website_name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 py-4 px-5 bg-white/[0.05] border border-white/5 rounded-2xl transition-all group-hover:bg-white/[0.08] shadow-inner">
                         <Settings size={18} className="text-purple-400 shrink-0" />
                         <div>
-                          <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-0.5 opacity-60">QUESTIONNAIRE DATA</p>
-                          <p className="text-sm font-black text-slate-200 italic">
+                          <p className="text-[14px] text-slate-300 font-black uppercase tracking-widest mb-0.5 opacity-60">QUESTIONNAIRE DATA</p>
+                          <p className="text-xm font-black text-slate-200 italic">
                             {(() => {
                               try {
                                 const raw = manager.questionnaire
                                 const q = typeof raw === 'string' ? JSON.parse(raw || '[]') : (Array.isArray(raw) ? raw : [])
                                 return q.length
                               } catch { return 0 }
-                            })()} <span className="text-[10px] text-slate-500 not-italic ml-1 opacity-50 uppercase tracking-tighter">Questions Defined</span>
+                            })()} <span className="text-[14px] text-slate-300 not-italic ml-1 opacity-50 uppercase tracking-tighter">Questions Defined</span>
                           </p>
                         </div>
                       </div>
