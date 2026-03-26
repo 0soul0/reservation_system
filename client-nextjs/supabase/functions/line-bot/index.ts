@@ -49,7 +49,10 @@ Deno.serve(async (req) => {
         console.log("searchData:", searchData);
         //取得回復文字
         if (managerData) {
-          responseText = getResponseText(searchData, managerData)
+          responseText = getResponseText(searchData, {
+            ...managerData,
+            line_uid: lineId
+          })
         }
 
         console.log("responseText:", responseText);

@@ -2,6 +2,7 @@ import { getAuthSession } from '@/services/auth'
 import { getBookings } from '@/services/data'
 import { Calendar, Clock, DollarSign, Filter } from 'lucide-react'
 import BookingList from './BookingList'
+import { BOOKING_STATUS } from '@/constants/common'
 
 export default async function BookingsPage({
   searchParams,
@@ -25,8 +26,7 @@ export default async function BookingsPage({
   // 這裡統計建議還是從資料庫另外抓或用目前的數據 (分頁會導致統計不準，但通常後台首頁會顯示總計)
   // 為了演示，我們這裡暫且以目前分頁資料為例，或者你之後可以新增一個 getBookingStats 的 service
   const todayCount = bookings.filter(b => new Date(b.booking_start_time).toDateString() === new Date().toDateString()).length
-  const pendingDeposit = bookings.filter(b => !b.is_deposit_received && !b.is_cancelled).length
-  const cancelledCount = bookings.filter(b => b.is_cancelled).length
+  const pendingDeposit = bookings.filter(b => !b.is_deposit_received && b.status != BOOKING_STATUS.CANCELLED).length
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

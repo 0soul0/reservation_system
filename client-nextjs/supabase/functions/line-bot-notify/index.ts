@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
       console.log("JSON 解析失敗:", parseError);
       responseText = "系統資料格式錯誤。";
     }
-
+    console.log("notifyJson:", notifyJson)
     const searchData = notifyJson.find(item => item.key === action)
     console.log("searchData:", searchData);
 
@@ -44,7 +44,10 @@ Deno.serve(async (req) => {
 
 
     if (searchData && searchData.has_text) {
-      responseText = replaceResponseText(responseText, payload)
+      responseText = replaceResponseText(responseText, {
+        ...payload,
+        line_uid: line_uid
+      })
     }
 
     console.log("responseText bookingHistory:", responseText);

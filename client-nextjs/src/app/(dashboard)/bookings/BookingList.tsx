@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Phone, Mail, ExternalLink, X, ChevronLeft, ChevronRight, User, Calendar, Clock, Tag, DollarSign, Ban, CheckCircle2, Loader2 } from 'lucide-react'
 import type { Booking, BookingListProps } from '@/types'
 import { cancelBooking, updateBookingDepositStatus } from '@/app/actions/bookings'
-import { TIME_SLOT_INTERVAL } from '@/constants/common'
+import { BOOKING_STATUS, TIME_SLOT_INTERVAL } from '@/constants/common'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
@@ -124,7 +124,7 @@ export default function BookingList({
                 <tr
                   key={booking.uid}
                   onClick={() => setSelectedBooking(booking)}
-                  className={`hover:bg-white/10 transition-colors group cursor-pointer ${booking.is_cancelled ? 'opacity-40' : ''}`}
+                  className={`hover:bg-white/10 transition-colors group cursor-pointer ${booking.status === BOOKING_STATUS.CANCELLED ? 'opacity-40' : ''}`}
                 >
                   <td className="px-6 py-5 space-y-1.5 whitespace-nowrap">
                     <div className="flex items-center gap-2 text-sm text-white font-bold">
@@ -156,7 +156,7 @@ export default function BookingList({
                         }`}>
                         {booking.is_deposit_received ? '已付訂金' : '待付訂金'}
                       </span>
-                      {booking.is_cancelled && (
+                      {booking.status === BOOKING_STATUS.CANCELLED && (
                         <span className="inline-flex px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500/30">
                           已取消
                         </span>
@@ -285,9 +285,9 @@ export default function BookingList({
                         onClick={() => setTempDepositStatus(!tempDepositStatus)}
                         className={`relative w-12 h-6 rounded-full transition-all duration-200 outline-none flex items-center ${tempDepositStatus ? 'bg-emerald-600 shadow-inner' : 'bg-slate-700 shadow-inner'}`}
                       >
-                        <motion.div 
+                        <motion.div
                           animate={{ x: tempDepositStatus ? 26 : 4 }}
-                          className="w-4 h-4 bg-white rounded-full shadow-lg" 
+                          className="w-4 h-4 bg-white rounded-full shadow-lg"
                         />
                       </button>
                       <span className={`text-sm font-bold ${tempDepositStatus ? 'text-emerald-400' : 'text-slate-300'}`}>
@@ -318,7 +318,7 @@ export default function BookingList({
                     儲存訂金狀態
                   </button>
                 )}
-                {!selectedBooking.is_cancelled && (
+                {selectedBooking.status !== BOOKING_STATUS.CANCELLED && (
                   <button
                     disabled={isCancelling || isSaving}
                     onClick={() => handleCancel(1)}

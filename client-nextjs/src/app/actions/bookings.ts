@@ -1,5 +1,6 @@
 'use server'
 
+import { BOOKING_STATUS } from '@/constants/common'
 import { GoogleCalendarService } from '@/lib/google_calendar'
 import { supabaseAdmin, SUPABASE_EDGE_FUNCTION } from '@/lib/supabase'
 import { nanoid } from 'nanoid'
@@ -15,7 +16,7 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
       uid,
       create_at: now,
       update_at: now,
-      is_cancelled: false,
+      status: BOOKING_STATUS.BOOKING,
       is_deposit_received: false
     }
 
@@ -62,7 +63,8 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
           booking_end_time: payload.booking_end_time,
           line_uid: payload.line_uid || result.line_uid,
           manager_uid: payload.manager_uid,
-          action: 'BOOKING'
+          action: 'BOOKING',
+          displayTime: `${payload.booking_start_time} - ${payload.booking_end_time.slice(-5)}`
         },
       })
     }

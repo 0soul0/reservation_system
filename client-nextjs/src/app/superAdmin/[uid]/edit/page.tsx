@@ -61,11 +61,25 @@ function LineNotifyBuilder({
 
 function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
   const [isOpen, setIsOpen] = useState(false)
-  const newProcedures = [{ uid: 0, name: '自訂義訊息', sample: '', has_text: true, key: '' }, ...procedures];
+
+  const defaultColumnsJson = [
+    { key: 'line_uid', value: 'line_uid' },
+    // { key: 'name', value: '姓名' },
+    // { key: 'phone', value: '電話' },
+    // { key: 'email', value: 'Email' },
+    // { key: 'service_item', value: '服務項目' },
+    // { key: 'booking_start_time', value: '預約開始時間' },
+    // { key: 'booking_end_time', value: '預約結束時間' },
+    // { key: 'status', value: '狀態' },
+  ]
+
+  const newProcedures = [{ uid: 0, name: '自訂義訊息', sample: '', has_text: true, key: '', columns_json: defaultColumnsJson }, ...procedures];
   // 比對邏輯現在基於 name 和 sample (或內容屬性)
   const selectedProc = newProcedures.find((p: any) =>
     p.uid === entry.uid
   )
+
+
   console.log("newProcedures", newProcedures)
   return (
     <motion.div
@@ -149,18 +163,32 @@ function NotifyEntryRow({ index, entry, procedures, onUpdate, onRemove }: any) {
       </div>
 
       {(!selectedProc || selectedProc.has_text) && (<>
-        {selectedProc?.columns_json && (
-          <div className="flex flex-wrap gap-2"> {/* 建議加個容器控制間距 */}
-            {JSON.parse(selectedProc.columns_json).map((item: string, index: number) => (
+
+
+        <div className="flex flex-wrap gap-2">
+          {/* 1. 靜態預設的欄位 */}
+          {defaultColumnsJson.map((item, index) => (
+            <span
+              key={`default-${index}`}
+              // 移除 group-hover:，直接使用 text-emerald-400 (或 green-400)
+              className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 rounded-md px-2 py-0.5 font-bold text-emerald-400 transition-colors"
+            >
+              {`{${item.key}}`}
+            </span>
+          ))}
+
+          {/* 2. 動態從 JSON 字串解析出來的欄位 */}
+          {selectedProc?.columns_json &&
+            JSON.parse(selectedProc.columns_json).map((item: string, index: number) => (
               <span
-                key={index} // 因為 item 只是字串，建議用 index 或 item 本身當 key
-                className='text-[10px] bg-white/5 border border-white/10 rounded-md px-2 py-0.5 font-bold text-slate-400 group-hover:text-emerald-400 transition-colors'
+                key={`dynamic-${index}`}
+                className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 rounded-md px-2 py-0.5 font-bold text-emerald-400 transition-colors"
               >
-                {`{${item}}`} {/* 顯示成 {name} 的格式，方便用戶辨識變數 */}
+                {`{${item}}`}
               </span>
-            ))}
-          </div>
-        )}
+            ))
+          }
+        </div>
 
         <textarea
           value={entry.value}
