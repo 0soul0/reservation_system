@@ -10,7 +10,7 @@ import {
 import { getAllManagers, deleteManager } from '@/app/actions/superManagers'
 import { getSuperSession, superLogoutAction } from '@/app/actions/superAuth'
 import { useAlert } from '@/components/ui/DialogProvider'
-import { CONGIG_ENV } from '@/lib/env'
+import { CONFIG_ENV } from '@/lib/env'
 import CopyButton from '@/components/ui/CopyButton'
 
 
@@ -24,7 +24,7 @@ export default function SuperAdminPage() {
   const router = useRouter()
   const { showAlert, showConfirm } = useAlert()
 
-  const shareLink = CONGIG_ENV.services.lineNotifyEdge;
+  const shareLink = CONFIG_ENV.services.lineNotifyEdge;
 
   useEffect(() => {
     async function checkSession() {

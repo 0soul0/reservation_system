@@ -520,10 +520,10 @@ export default function ManagerEditPage() {
         <Section title="基本資料" color="purple">
           <div className="grid grid-cols-2 gap-4">
             <Field label="展示名稱">
-              <input name="name" defaultValue={manager?.name} required placeholder="如: 極速美業店" className={inputCls} />
+              <input name="name" defaultValue={manager?.name} required className={inputCls} />
             </Field>
             <Field label="登入帳號">
-              <input name="account" defaultValue={manager?.account} required placeholder="admin_fast" className={`${inputCls} font-mono`} />
+              <input name="account" defaultValue={manager?.account} required className={`${inputCls} font-mono`} />
             </Field>
             <Field label="帳號密碼">
               <input
@@ -531,18 +531,17 @@ export default function ManagerEditPage() {
                 type="password"
                 defaultValue={manager?.password}
                 required={isNew}
-                placeholder={isNew ? '••••••••' : '若不修改請留空'}
                 className={`${inputCls} font-mono`}
               />
             </Field>
             <Field label="專屬網址碼">
-              <input name="website_name" defaultValue={manager?.website_name} required placeholder="my-shop-id" className={`${inputCls} font-mono`} />
+              <input name="website_name" defaultValue={manager?.website_name} required className={`${inputCls} font-mono`} />
             </Field>
             <Field label="Logo 連結">
-              <input name="logo_url" defaultValue={manager?.logo_url} placeholder="/logo.png" className={`${inputCls} font-mono`} />
+              <input name="logo_url" defaultValue={manager?.logo_url} className={`${inputCls} font-mono`} />
             </Field>
             <Field label="權限等級 (level)">
-              <input name="level" type="number" defaultValue={manager?.level ?? 1} min={1} max={9} className={inputCls} />
+              <input name="level" type="number" defaultValue={manager?.level ?? 0} min={0} max={1} className={inputCls} />
             </Field>
           </div>
         </Section>
