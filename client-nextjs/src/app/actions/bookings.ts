@@ -37,6 +37,7 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
     }
 
     if (result.google_calendar_id) {
+
       await GoogleCalendarService.sync({
         action: 'CREATE',
         googleCalendarId: result.google_calendar_id,
@@ -49,7 +50,7 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
           booking_end_time: payload.booking_end_time,
           line_uid: payload.line_uid || result.line_uid
         }
-      });
+      })
     }
 
     if (result.line_uid && result.line_channel_access_token) {

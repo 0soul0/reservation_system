@@ -572,9 +572,6 @@ export default function ManagerEditPage() {
           <Field label="Google Calendar ID">
             <input name="google_calendar_id" defaultValue={manager?.google_calendar_id} placeholder="xxxx@group.calendar.google.com" className={`${inputCls} font-mono text-ms`} />
           </Field>
-          <Field label="Google Calendar Access Token">
-            <input name="google_calendar_access_token" defaultValue={manager?.google_calendar_access_token} placeholder="ya29.xxx..." className={`${inputCls} font-mono text-ms`} />
-          </Field>
         </Section>
 
         {/* LINE Notify 關鍵字回覆 */}

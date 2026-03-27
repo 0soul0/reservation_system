@@ -10,6 +10,9 @@ import {
 import { getAllManagers, deleteManager } from '@/app/actions/superManagers'
 import { getSuperSession, superLogoutAction } from '@/app/actions/superAuth'
 import { useAlert } from '@/components/ui/DialogProvider'
+import { CONGIG_ENV } from '@/lib/env'
+import CopyButton from '@/components/ui/CopyButton'
+
 
 
 
@@ -20,6 +23,8 @@ export default function SuperAdminPage() {
   const [searchValue, setSearchValue] = useState('')
   const router = useRouter()
   const { showAlert, showConfirm } = useAlert()
+
+  const shareLink = CONGIG_ENV.services.lineNotifyEdge;
 
   useEffect(() => {
     async function checkSession() {
@@ -70,9 +75,9 @@ export default function SuperAdminPage() {
           </div>
           <div className="flex flex-col">
             <h1 className="text-2xl font-black text-white tracking-widest italic uppercase">
-              SUPER <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">ADMIN</span>
+              超級 <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">管理員</span>
             </h1>
-            <p className="text-slate-300 text-[14px] font-black tracking-[0.4em] uppercase opacity-70">SYSTEM AUTHORITY PORTAL</p>
+            <p className="text-slate-300 text-[14px] font-black tracking-[0.4em] uppercase opacity-70">內部係通用於新增管理員與管理員權限</p>
           </div>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
@@ -103,7 +108,7 @@ export default function SuperAdminPage() {
             className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[2rem] py-5.5 pl-14 pr-6 text-white font-bold outline-none focus:border-cyan-500/50 focus:bg-white/[0.08] transition-all placeholder-slate-600 shadow-inner text-base"
           />
           <div className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/5 px-2 py-1 rounded-md border border-white/5 text-[14px] text-slate-600 font-mono tracking-tighter uppercase hidden sm:block">
-            Search Portal
+            搜尋
           </div>
         </div>
 
@@ -150,19 +155,22 @@ export default function SuperAdminPage() {
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-glow shadow-purple-500/50" />
                         <p className="text-slate-300 font-black text-[13px] uppercase tracking-[0.25em]">@{manager.account}</p>
                       </div>
+                      <div className="flex items-center mt-2">
+                        <CopyButton text={`${shareLink}?uid=${manager.uid}`} />
+                      </div>
                     </div>
                     <div className="space-y-3">
                       <div className="flex items-center gap-4 py-4 px-5 bg-white/[0.05] border border-white/5 rounded-2xl transition-all group-hover:bg-white/[0.08] shadow-inner">
                         <Globe size={18} className="text-cyan-400 shrink-0" />
                         <div className="flex-1 overflow-hidden">
-                          <p className="text-[14px] text-slate-300 font-black uppercase tracking-widest mb-0.5 opacity-60">WEBSITE IDENTITY</p>
+                          <p className="text-[14px] text-slate-300 font-black uppercase tracking-widest mb-0.5 opacity-60">網站名稱</p>
                           <p className="text-xm font-black text-slate-200 truncate font-mono italic">{manager.website_name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 py-4 px-5 bg-white/[0.05] border border-white/5 rounded-2xl transition-all group-hover:bg-white/[0.08] shadow-inner">
                         <Settings size={18} className="text-purple-400 shrink-0" />
                         <div>
-                          <p className="text-[14px] text-slate-300 font-black uppercase tracking-widest mb-0.5 opacity-60">QUESTIONNAIRE DATA</p>
+                          <p className="text-[14px] text-slate-300 font-black uppercase tracking-widest mb-0.5 opacity-60">問卷題目</p>
                           <p className="text-xm font-black text-slate-200 italic">
                             {(() => {
                               try {
@@ -170,7 +178,7 @@ export default function SuperAdminPage() {
                                 const q = typeof raw === 'string' ? JSON.parse(raw || '[]') : (Array.isArray(raw) ? raw : [])
                                 return q.length
                               } catch { return 0 }
-                            })()} <span className="text-[14px] text-slate-300 not-italic ml-1 opacity-50 uppercase tracking-tighter">Questions Defined</span>
+                            })()} <span className="text-[14px] text-slate-300 not-italic ml-1 opacity-50 uppercase tracking-tighter">題</span>
                           </p>
                         </div>
                       </div>

@@ -18,7 +18,6 @@ export function SuperAdminProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     async function fetchProcedures() {
       const data = await getNotifyProcedures()
-      console.log("data", data)
       setNotifyProcedures(data)
       setLoading(false)
     }
