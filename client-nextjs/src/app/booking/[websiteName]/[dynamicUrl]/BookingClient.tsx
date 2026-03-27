@@ -224,9 +224,10 @@ export default function BookingClient(props: BookingClientProps) {
     const minStart = Math.min(...activeRules.map(r => r.start));
     const maxEnd = Math.max(...activeRules.map(r => r.end));
 
+    let currentLastBooking = 0;
     for (let time = minStart; time + TIME_SLOT_INTERVAL <= maxEnd; time += TIME_SLOT_INTERVAL) {
       let bestCap = -1;
-      let currentLastBooking = 0;
+
 
       // 尋找涵蓋此時間點的規則
       for (const rule of activeRules) {
@@ -239,10 +240,9 @@ export default function BookingClient(props: BookingClientProps) {
       if (bestCap > 0) {
         const slotStartStr = minutesToTime(time); // 格式如 "09:00"
         const cacheKey = `${dateStr} ${slotStartStr}`; // 格式如 "2026-03-27 09:00"
-
         // 計算已預約人數
-        const cacheEntry = booking_cache.find(c => {
-          if (!c.booking_start_time) return false;
+        const cacheEntry = (booking_cache || []).find(c => {
+          if (!c || !c.booking_start_time) return false;
           // 確保 TimeUtils.getDateTime 回傳格式也是 "YYYY-MM-DD HH:mm"
           return TimeUtils.getDateTime(c.booking_start_time) === cacheKey;
         });
@@ -251,7 +251,7 @@ export default function BookingClient(props: BookingClientProps) {
         const available = bestCap - bookedCount;
 
         // 關鍵判定：當前時間必須早於最後預約時間
-        if (available > 0 && time < currentLastBooking) {
+        if (available > 0) {
           rawSlots.push({
             uid: `${dateStr}_${slotStartStr}`,
             time_label: slotStartStr,
@@ -279,6 +279,11 @@ export default function BookingClient(props: BookingClientProps) {
           break;
         }
       }
+
+      if (rawSlots[i].start_minutes >= currentLastBooking) {
+        isValid = false;
+      }
+
       if (isValid) {
         validSlots.push(rawSlots[i]);
       }
@@ -286,6 +291,7 @@ export default function BookingClient(props: BookingClientProps) {
 
     // 存入 Map 以供後續快速讀取
     bookingCacheSlotMap.set(dateStr, validSlots);
+    console.log("validSlots", validSlots)
     return validSlots;
   };
 
@@ -295,23 +301,29 @@ export default function BookingClient(props: BookingClientProps) {
     setIsSubmitting(true)
     const dateStr = formatDate(selectedDate)
     const startTimePart = selectedTimeSlot.split('_')[1]
-    const startDateTime = `${dateStr} ${startTimePart}`
+    const startDateTime = TimeUtils.combineDateTime(dateStr, startTimePart)
     const duration = Math.ceil(Number(formData.selectedService.duration) / TIME_SLOT_INTERVAL) * TIME_SLOT_INTERVAL
-    const endDateTime = `${dateStr} ${minutesToTime(timeToMinutes(startTimePart) + duration)}`
+    const endTimePart = minutesToTime(timeToMinutes(startTimePart) + duration)
+    const endDateTime = TimeUtils.combineDateTime(dateStr, endTimePart)
 
     const payload = {
       manager_uid: event.manager_uid,
       name: formData.name,
       phone: formData.phone,
       service_item: formData.selectedService.title,
-      booking_start_time: startDateTime,
-      booking_end_time: endDateTime,
+      booking_start_time: TimeUtils.toUTC(startDateTime),
+      booking_end_time: TimeUtils.toUTC(endDateTime),
       service_computed_duration: duration,
       line_uid: formData.line_uid || '',
     }
-    setSlotTime(`${startTimePart}-${minutesToTime(timeToMinutes(startTimePart) + duration)} (${duration}分鐘)`)
+    console.log("payload", payload)
+
+    setSlotTime(`${startTimePart}-${endTimePart} (${duration}分鐘)`)
+
+
     const startMins = timeToMinutes(startTimePart)
     const maxCapacityArray = bookingCacheSlotMap.get(dateStr).filter((slot: { start_minutes: number; booked_count: any }) => {
+
       if (slot.start_minutes >= startMins && slot.start_minutes < startMins + duration) {
         return slot
       }
@@ -525,7 +537,7 @@ export default function BookingClient(props: BookingClientProps) {
                             ${selectedTimeSlot === slot.uid ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-slate-50 bg-slate-50 text-slate-300 hover:border-slate-200'}
                           `}
                         >
-                          <span className={`text-ms font-black ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-emerald-600'}`}>{slot.time_range}</span>
+                          <span className={`text-[14px] font-black ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-emerald-600'}`}>{slot.time_range}</span>
                           <span className={`text-[14px] font-bold ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-slate-900'}`} >可預約 {slot.available_capacity} 位</span>
                         </button>
                       ))}

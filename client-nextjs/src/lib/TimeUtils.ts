@@ -50,8 +50,8 @@ export const TimeUtils = {
         return dayjs(date).tz(tz).format('YYYY-MM-DDTHH:mm:ssZ');
     },
 
-    toUTC(date: Date | string | number = new Date(), tz = DEFAULT_TIMEZONE): string {
-        return dayjs.tz(date, tz).utc().format();
+    toUTC(date: Date | string | number = new Date()): string {
+        return dayjs(date).utc().format();
     },
 
     /**
