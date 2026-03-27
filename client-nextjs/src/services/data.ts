@@ -18,40 +18,6 @@ export async function getScheduleMenus(managerUid: string): Promise<ScheduleMenu
   }
 }
 
-// export async function getScheduleDetails(menuUid: string): Promise<{
-//   menu: ScheduleMenu | null;
-//   times: ScheduleTime[];
-//   overrides: ScheduleOverride[];
-// }> {
-//   try {
-//     const [menuRes, timesRes, overridesRes] = await Promise.all([
-//       supabaseAdmin.from('schedule_menu').select('*').eq('uid', menuUid).single(),
-//       supabaseAdmin.from('schedule_time').select('*').eq('schedule_menu_uid', menuUid).order('day_of_week', { ascending: true }),
-//       supabaseAdmin.from('schedule_override').select('*').eq('schedule_menu_uid', menuUid).order('override_date', { ascending: false })
-//     ])
-
-//     if (menuRes.error && menuRes.error.code !== 'PGRST116') throw menuRes.error
-//     if (timesRes.error) throw timesRes.error
-//     if (overridesRes.error) throw overridesRes.error
-
-//     return {
-//       menu: menuRes.data as ScheduleMenu,
-//       times: ((timesRes.data as any[]) || []).map(t => ({
-//         ...t,
-//         is_open: Boolean(t.is_open),
-//         is_open_last_booking_time: Boolean(t.is_open_last_booking_time)
-//       })) as ScheduleTime[],
-//       overrides: ((overridesRes.data as any[]) || []).map(o => ({
-//         ...o,
-//         is_closed: Boolean(o.is_closed)
-//       })) as ScheduleOverride[]
-//     }
-//   } catch (err) {
-//     console.error('getScheduleDetails Error:', err)
-//     return { menu: null, times: [], overrides: [] }
-//   }
-// }
-
 export async function getScheduleDetails(menuUid: string): Promise<{
   menu: ScheduleMenu | null;
   times: ScheduleTime[];

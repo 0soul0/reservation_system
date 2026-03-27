@@ -1,6 +1,7 @@
 import { getAuthSession } from '@/services/auth'
 import { redirect } from 'next/navigation'
 import DashboardNav from './DashboardNav'
+import { ROUTES } from '@/constants/routes'
 
 export default async function DashboardLayout({
   children,
@@ -10,7 +11,7 @@ export default async function DashboardLayout({
   const session = await getAuthSession()
 
   if (!session) {
-    redirect('/login')
+    redirect(ROUTES.LOGIN)
   }
 
   return (

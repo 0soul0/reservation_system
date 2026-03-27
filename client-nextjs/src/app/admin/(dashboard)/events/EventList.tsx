@@ -7,6 +7,7 @@ import type { EventListProps } from '@/types'
 import { deleteEvent } from '@/app/actions/events'
 import { useRouter } from 'next/navigation'
 import { useAlert } from '@/components/ui/DialogProvider'
+import { ROUTES } from '@/constants/routes'
 
 
 export default function EventList({ events, menus, managerUid, managerWebsiteName }: EventListProps) {
@@ -53,7 +54,7 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
           />
         </div>
         <Link
-          href="/events/new"
+          href={ROUTES.ADMIN.EVENT_NEW}
           className="px-8 py-3.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl font-black hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all text-white flex items-center justify-center gap-2 shadow-xl"
         >
           <Plus size={20} />
@@ -134,7 +135,7 @@ export default function EventList({ events, menus, managerUid, managerWebsiteNam
 
                   <div className="mt-auto pt-6 border-t border-white/5">
                     <Link
-                      href={`/events/${event.uid}`}
+                      href={ROUTES.ADMIN.EVENT_EDIT(event.uid)}
                       className="w-full py-4 bg-white/10 border border-white/10 rounded-2xl text-ms font-black text-slate-200 hover:bg-white/15 hover:text-white hover:border-white/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm uppercase tracking-widest"
                     >
                       <Edit2 size={16} />

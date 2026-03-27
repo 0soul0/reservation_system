@@ -7,6 +7,8 @@ import { Plus, Calendar, Clock, Edit2, Trash2, ArrowRight, Loader2 } from 'lucid
 import type { ScheduleMenu } from '@/types'
 import { createScheduleMenu, deleteScheduleMenu } from '@/app/actions/schedules'
 import { useAlert } from '@/components/ui/DialogProvider'
+import { TimeUtils } from '@/lib/TimeUtils'
+import { ROUTES } from '@/constants/routes'
 
 interface ScheduleListProps {
   menus: ScheduleMenu[]
@@ -105,13 +107,8 @@ export default function ScheduleList({ menus, managerUid }: ScheduleListProps) {
                 </h3>
 
                 <div className="space-y-4 mt-auto pt-6 border-t border-white/5">
-                  <div className="flex items-center gap-2 text-ms text-slate-300 font-bold font-mono">
-                    <Clock size={14} className="text-cyan-400" />
-                    <span>更新於 {new Date(menu.update_at).toLocaleDateString('zh-TW')}</span>
-                  </div>
-
                   <Link
-                    href={`/schedules/${menu.uid}`}
+                    href={ROUTES.ADMIN.SCHEDULE_EDIT(menu.uid)}
                     className="w-full py-4 mt-2 bg-white/5 border border-white/10 rounded-2xl text-xm font-bold text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 flex items-center justify-center gap-2 group/btn transition-all shadow-sm"
                   >
                     <span>設定時段時程</span>

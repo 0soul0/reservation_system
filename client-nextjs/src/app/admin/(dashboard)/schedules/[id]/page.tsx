@@ -1,7 +1,6 @@
 import { getAuthSession } from '@/services/auth'
 import { getScheduleDetails } from '@/services/data'
 import ScheduleForm from './ScheduleForm'
-import { notFound } from 'next/navigation'
 import { ScheduleData } from '@/types'
 
 export default async function ScheduleEditPage({

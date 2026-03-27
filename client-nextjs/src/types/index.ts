@@ -76,8 +76,8 @@ export type ScheduleTime = {
 export type ScheduleOverride = {
   uid: string
   schedule_menu_uid: string
-  override_date: string
-  override_time: string
+  override_end_time: string
+  override_start_time: string
   max_capacity: number
   is_closed: boolean
   create_at: string

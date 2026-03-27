@@ -3,6 +3,7 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { revalidatePath } from 'next/cache'
 import { nanoid } from 'nanoid'
+import { ROUTES } from '@/constants/routes'
 
 export async function saveEvent(payload: any) {
   try {
@@ -26,7 +27,7 @@ export async function saveEvent(payload: any) {
 
     if (error) throw error
 
-    revalidatePath('/events')
+    revalidatePath(ROUTES.ADMIN.EVENTS)
     return { success: true, uid }
   } catch (err: any) {
     console.error('saveEvent Error:', err)
@@ -43,7 +44,7 @@ export async function deleteEvent(uid: string) {
 
     if (error) throw error
 
-    revalidatePath('/events')
+    revalidatePath(ROUTES.ADMIN.EVENTS)
     return { success: true }
   } catch (err: any) {
     console.error('deleteEvent Error:', err)

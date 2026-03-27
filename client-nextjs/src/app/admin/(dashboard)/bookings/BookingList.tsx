@@ -10,6 +10,7 @@ import { cancelBooking, updateBookingDepositStatus } from '@/app/actions/booking
 import { BOOKING_STATUS, TIME_SLOT_INTERVAL } from '@/constants/common'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { TimeUtils } from '@/lib/TimeUtils'
 dayjs.extend(utc);
 
 export default function BookingList({
@@ -137,13 +138,13 @@ export default function BookingList({
                   <td className="px-6 py-5 space-y-1.5 whitespace-nowrap">
                     <div className="flex items-center gap-2 text-xm text-white font-bold">
                       <Calendar size={14} className="text-cyan-400 shrink-0" />
-                      <span>{dayjs.utc(booking.booking_start_time).format('YYYY-MM-DD')}</span>
+                      <span>{TimeUtils.getDatePart(booking.booking_start_time)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-slate-300 font-mono font-bold tracking-tight">
                       <Clock size={14} className="text-cyan-400 shrink-0" />
-                      <span>{dayjs.utc(booking.booking_start_time).format('HH:mm')}</span>
+                      <span>{TimeUtils.getTimePart(booking.booking_start_time)}</span>
                       <span className="opacity-40">—</span>
-                      <span>{dayjs.utc(booking.booking_end_time).format('HH:mm')}</span>
+                      <span>{TimeUtils.getTimePart(booking.booking_end_time)}</span>
                     </div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
@@ -283,7 +284,7 @@ export default function BookingList({
                   <div className="col-span-1 sm:col-span-2">
                     <InfoItem icon={<Tag className="text-emerald-400" size={16} />} label="服務項目" value={selectedBooking.service_item} />
                   </div>
-                  <InfoItem icon={<Clock className="text-yellow-400" size={16} />} label="開始時間" value={new Date(selectedBooking.booking_start_time).toLocaleString('zh-TW')} />
+                  <InfoItem icon={<Clock className="text-yellow-400" size={16} />} label="開始時間" value={TimeUtils.getDateTime(selectedBooking.booking_start_time)} />
                   <div className="space-y-2">
                     <p className="text-[14px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-2">
                       <DollarSign size={14} className="text-emerald-400" /> 訂金支付狀態

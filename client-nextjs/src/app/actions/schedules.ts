@@ -2,6 +2,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 import { revalidatePath } from 'next/cache'
+import { ROUTES, PATH_PATTERNS } from '@/constants/routes'
 
 export async function saveScheduleConfig(payload: {
   menu: { uid: string; manager_uid: string; name: string },
@@ -14,7 +15,7 @@ export async function saveScheduleConfig(payload: {
 
     if (error) throw error
 
-    revalidatePath('/schedules')
+    revalidatePath(ROUTES.ADMIN.SCHEDULES)
     return { success: true }
   } catch (err: any) {
     console.error('saveScheduleConfig RPC Error:', err)
@@ -30,7 +31,7 @@ export async function saveOverride(data: any) {
       .upsert({ ...data, update_at: now })
 
     if (error) throw error
-    revalidatePath('/schedules/[id]', 'page')
+    revalidatePath(PATH_PATTERNS.ADMIN_SCHEDULE_DETAIL, 'page')
     return { success: true }
   } catch (err: any) {
     console.error('saveOverride Error:', err)
@@ -45,7 +46,7 @@ export async function deleteOverride(uid: string) {
       .delete()
       .eq('uid', uid)
     if (error) throw error
-    revalidatePath('/schedules/[id]', 'page')
+    revalidatePath(PATH_PATTERNS.ADMIN_SCHEDULE_DETAIL, 'page')
     return { success: true }
   } catch (err: any) {
     console.error('deleteOverride Error:', err)
@@ -70,7 +71,7 @@ export async function createScheduleMenu(managerUid: string) {
       .single()
 
     if (error) throw error
-    revalidatePath('/schedules')
+    revalidatePath(ROUTES.ADMIN.SCHEDULES)
     return { success: true, uid }
   } catch (err: any) {
     console.error('createScheduleMenu Error:', err)
@@ -84,7 +85,7 @@ export async function deleteScheduleMenu(uid: string) {
       menu_uid: uid
     })
     if (data.success) {
-      revalidatePath('/schedules')
+      revalidatePath(ROUTES.ADMIN.SCHEDULES)
       return { success: true }
     } else {
       return { success: false, message: data.message }

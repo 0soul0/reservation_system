@@ -10,6 +10,8 @@ import type { ScheduleTime, ScheduleOverride, ScheduleFormProps } from '@/types'
 import { saveScheduleConfig, saveOverride, deleteOverride } from '@/app/actions/schedules'
 import { useAlert } from '@/components/ui/DialogProvider'
 import { nanoid } from 'nanoid'
+import { TimeUtils } from '@/lib/TimeUtils'
+import { ROUTES } from '@/constants/routes'
 
 
 const DAY_LABELS = ['週一', '週二', '週三', '週四', '週五', '週六', '週日']
@@ -135,7 +137,7 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
     try {
       const res = await saveScheduleConfig(payload)
       if (res.success) {
-        router.push('/schedules')
+        router.push(ROUTES.ADMIN.SCHEDULES)
         router.refresh()
       } else {
         showAlert({ message: '儲存失敗: ' + res.message, type: 'error' })
@@ -164,6 +166,21 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
     setIsModalOpen(true)
   }
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedDate = e.target.value
+    if (!selectedDate) return
+
+    const isDuplicate = overrides.some(o =>
+      TimeUtils.getDatePart(o.override_start_time) === selectedDate &&
+      o.uid !== editingOverride?.uid
+    )
+
+    if (isDuplicate) {
+      showAlert({ message: `日期 ${selectedDate} 已經設定過覆寫規則了。請重新選擇其他日期。`, type: 'warning' })
+      e.target.value = '' // 清除選取
+    }
+  }
+
   const handleDeleteOverride = async (uid: string) => {
     const isConfirmed = await showConfirm({
       message: '確定要刪除此特別日期設定嗎？',
@@ -184,15 +201,32 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
     const formData = new FormData(e.currentTarget)
 
     const overrideDate = formData.get('date') as string
+
+    // 檢查日期是否重複 (排除目前正在編輯的項目)
+    const isDuplicate = overrides.some(o =>
+      TimeUtils.getDatePart(o.override_start_time) === overrideDate &&
+      o.uid !== editingOverride?.uid
+    )
+
+    if (isDuplicate) {
+      showAlert({ message: `日期 ${overrideDate} 已經設定過覆寫規則了。`, type: 'warning' })
+      setIsSavingOverride(false)
+      return
+    }
+
     const start = formData.get('startTime') as string
     const end = formData.get('endTime') as string
+    console.log(overrideDate, start, end)
+    const startTime = TimeUtils.toUTC(`${overrideDate} ${start || '00:00'}`)
+    const endTime = TimeUtils.toUTC(`${overrideDate} ${end || '23:59'}`)
+
     const capacity = Number(formData.get('capacity'))
 
     const overrideData = {
       uid: editingOverride?.uid || generateUid(),
       schedule_menu_uid: isNew ? '' : id, // 注意！若為 new 可能需要先暫存。但 reference 是 id! == 'new' 才能加。
-      override_date: overrideDate,
-      override_time: `${start}-${end}`,
+      override_start_time: startTime,
+      override_end_time: endTime,
       max_capacity: capacity,
       is_closed: tempIsClosed ? 1 : 0
     }
@@ -204,16 +238,14 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
     }
 
     const targetUid = isNew ? '' : id
-    // @ts-ignore
+
     overrideData.schedule_menu_uid = targetUid
 
     const res = await saveOverride(overrideData)
     if (res.success) {
       const newOverride = {
         ...overrideData,
-        is_closed: tempIsClosed,
-        create_at: new Date().toISOString(),
-        update_at: new Date().toISOString()
+        is_closed: tempIsClosed
       } as ScheduleOverride
 
       if (editingOverride) {
@@ -415,20 +447,38 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
                 </div>
               ) : (
                 overrides.map(o => (
-                  <div key={o.uid} className="p-5 bg-white/10 border border-white/10 rounded-[1.5rem] group hover:border-purple-500/30 transition-all border-l-4 border-l-purple-500/50 shadow-sm relative overflow-hidden">
+                  <div key={o.uid} className="p-2 bg-white/10 border border-white/10 rounded-[1.5rem] group hover:border-purple-500/30 transition-all border-l-4 border-l-purple-500/50 shadow-sm relative overflow-hidden">
                     <div className="flex justify-between items-start mb-3 relative z-10">
-                      <div className="font-black text-white text-[15px] flex items-center gap-2">
-                        {o.override_date}
-                        {o.is_closed && <span className="text-[14px] font-black bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-full border border-rose-500/20 tracking-tighter">全天公休</span>}
+                      {/* 左側資訊區塊：改為 flex-col 並使用 items-start 靠左 */}
+                      <div className="font-black text-white text-[14px] flex flex-col items-start gap-1 flex-1 min-w-0">
+
+                        {/* 日期列 */}
+                        <span className="flex items-center gap-1.5">
+                          <Calendar size={14} className="text-cyan-400 shrink-0" />
+                          {TimeUtils.getDatePart(o.override_start_time)}
+                        </span>
+
+                        {/* 時間列 */}
+                        {!o.is_closed && (
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1.5">
+                              <Clock size={14} className="text-cyan-400 shrink-0" />
+                              {TimeUtils.formatTimeRange(o.override_start_time, o.override_end_time)}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <div className="items-center gap-1 shrink-0">
                         <button onClick={() => openEditOverride(o)} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"><Edit size={16} /></button>
                         <button onClick={() => handleDeleteOverride(o.uid)} className="p-2 hover:bg-rose-500/10 rounded-lg text-rose-500/60 hover:text-rose-400 transition-colors"><Trash2 size={16} /></button>
                       </div>
                     </div>
-                    {!o.is_closed && (
+                    {o.is_closed ? (
+                      <span className="text-[12px] font-black bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-full border border-rose-500/20 tracking-tighter shrink-0">
+                        全天公休
+                      </span>
+                    ) : (
                       <div className="flex flex-wrap items-center gap-4 text-[13px] text-slate-400 font-black font-mono tracking-tight relative z-10">
-                        <span className="flex items-center gap-1.5"><Clock size={14} className="text-cyan-400" /> {o.override_time}</span>
                         <span className="flex items-center gap-1.5"><Users size={14} className="text-cyan-400" /> {o.max_capacity} 人</span>
                       </div>
                     )}
@@ -492,7 +542,9 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
                     name="date"
                     type="date"
                     required
-                    defaultValue={editingOverride?.override_date}
+                    min={TimeUtils.getDatePart()}
+                    onChange={handleDateChange}
+                    defaultValue={TimeUtils.getDatePart(editingOverride?.override_start_time)}
                     className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-4 text-white font-bold outline-none focus:border-purple-500/50 focus:bg-white/15 transition-all shadow-inner [color-scheme:dark]"
                   />
                 </div>
@@ -504,7 +556,7 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
                         <label className="text-[14px] font-black text-slate-300 uppercase tracking-widest pl-1">開始</label>
                         <select
                           name="startTime"
-                          defaultValue={editingOverride?.override_time.split('-')[0] || '09:00'}
+                          defaultValue={TimeUtils.getTimePart(editingOverride?.override_start_time) || '09:00'}
                           className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-4 text-white font-black font-mono outline-none focus:border-purple-500/50 appearance-none shadow-inner cursor-pointer"
                         >
                           {TIME_OPTIONS.map(t => <option key={t} value={t} className="bg-[#111]">{t}</option>)}
@@ -514,7 +566,7 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
                         <label className="text-[14px] font-black text-slate-300 uppercase tracking-widest pl-1">結束</label>
                         <select
                           name="endTime"
-                          defaultValue={editingOverride?.override_time.split('-')[1] || '18:00'}
+                          defaultValue={TimeUtils.getTimePart(editingOverride?.override_end_time) || '18:00'}
                           className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-4 text-white font-black font-mono outline-none focus:border-purple-500/50 appearance-none shadow-inner cursor-pointer"
                         >
                           {END_TIME_OPTIONS.map(t => <option key={t} value={t} className="bg-[#111]">{t}</option>)}

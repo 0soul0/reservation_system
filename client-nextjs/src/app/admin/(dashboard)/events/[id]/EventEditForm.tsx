@@ -11,6 +11,7 @@ import {
 import type { EventEditFormProps } from '@/types'
 import { saveEvent } from '@/app/actions/events'
 import { useAlert } from '@/components/ui/DialogProvider'
+import { ROUTES } from '@/constants/routes'
 
 export default function EventEditForm({ id, managerUid, managerWebsiteName, initialEvent, menus }: EventEditFormProps) {
   const router = useRouter()
@@ -76,7 +77,7 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
     console.log(payload)
     const res = await saveEvent(payload)
     if (res.success) {
-      router.push('/events')
+      router.push(ROUTES.ADMIN.EVENTS)
       router.refresh()
     } else {
       showAlert({ message: '儲存失敗: ' + res.message, type: 'error' })
@@ -110,7 +111,7 @@ export default function EventEditForm({ id, managerUid, managerWebsiteName, init
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={() => router.push('/events')} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:bg-white/10 transition-all font-semibold">取消</button>
+          <button onClick={() => router.push(ROUTES.ADMIN.EVENTS)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:bg-white/10 transition-all font-semibold">取消</button>
           <button onClick={handleSave} disabled={isSaving} className="px-8 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-bold text-white shadow-xl shadow-purple-500/20 hover:scale-[1.02] flex items-center gap-2">
             {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
             {isSaving ? '正在儲存' : '儲存活動'}

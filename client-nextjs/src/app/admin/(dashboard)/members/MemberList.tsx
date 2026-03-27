@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Phone, Mail, ExternalLink, X, ChevronLeft, ChevronRight, User, Calendar, MessageSquare, ShieldCheck } from 'lucide-react'
 import type { Member, MemberListProps } from '@/types'
 import { useAlert } from '@/components/ui/DialogProvider'
+import { TimeUtils } from '@/lib/TimeUtils'
 
 
 export default function MemberList({
@@ -153,7 +154,7 @@ export default function MemberList({
                     </span>
                   </td>
                   <td className="px-6 py-5 text-xm text-slate-400 font-mono whitespace-nowrap">
-                    {new Date(member.create_at).toLocaleDateString('zh-TW')}
+                    {TimeUtils.getDatePart(member.create_at)}
                   </td>
                   <td className="px-6 py-5 text-right">
                     <button
@@ -334,8 +335,8 @@ export default function MemberList({
                 )}
 
                 <div className="pt-4 border-t border-white/10 flex justify-between text-ms text-slate-600 font-mono">
-                  <span>註冊日期: {new Date(selectedMember.create_at).toLocaleString('zh-TW')}</span>
-                  <span>最後更新: {new Date(selectedMember.update_at).toLocaleString('zh-TW')}</span>
+                  <span>註冊日期: {TimeUtils.getDatePart(selectedMember.create_at)}</span>
+                  <span>最後更新: {TimeUtils.getDatePart(selectedMember.update_at)}</span>
                 </div>
               </div>
 

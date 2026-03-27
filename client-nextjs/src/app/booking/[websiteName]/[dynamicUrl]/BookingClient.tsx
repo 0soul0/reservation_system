@@ -21,6 +21,7 @@ import { submitBooking } from '@/app/actions/bookings'
 import { TIME_SLOT_INTERVAL } from '@/constants/common'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'
+import { TimeUtils } from '@/lib/TimeUtils'
 
 dayjs.extend(utc);
 const formatDate = (date: Date | string) => {
@@ -173,98 +174,120 @@ export default function BookingClient(props: BookingClientProps) {
 
   // -- Slot Calculation --
   const getAvailableSlots = (date: Date) => {
-    if (!schedule) return []
-    const dateStr = formatDate(date)
-    const dow = date.getDay() === 0 ? 7 : date.getDay()
+    if (!schedule) return [];
 
-    // 1. Get rules
-    const dayOverrides = schedule.overrides.filter(o => formatDate(new Date(o.override_date)) === dateStr)
-    let activeRules: { start: number, end: number, cap: number, last: number }[] = []
+    // 基礎參數設定
+    const TIME_SLOT_INTERVAL = 30; // 假設間隔為 30 分鐘
+    const dateStr = formatDate(date); // 預期格式: "2026-03-27"
+    const dow = date.getDay() === 0 ? 7 : date.getDay();
+
+    // 1. 取得規則 (Rules Extraction)
+    // 過濾出符合當天日期的 Override
+    const dayOverrides = schedule.overrides.filter(o =>
+      TimeUtils.getDatePart(o.override_start_time) === dateStr
+    );
+
+    let activeRules: { start: number, end: number, cap: number, last: number }[] = [];
 
     if (dayOverrides.length > 0) {
-      activeRules = dayOverrides.filter(o => !o.is_closed).map(o => {
-        const parts = o.override_time.split('-').map(s => s.trim())
-        const s = timeToMinutes(parts[0])
-        const e = timeToMinutes(parts[1])
-        return { start: s, end: e, cap: o.max_capacity, last: e }
-      })
+      // 優先使用特別排班 (Overrides)
+      activeRules = dayOverrides
+        .filter(o => !o.is_closed)
+        .map(o => {
+          const s = timeToMinutes(TimeUtils.getTimePart(o.override_start_time));
+          const e = timeToMinutes(TimeUtils.getTimePart(o.override_end_time));
+          // Override 通常直接以結束時間作為最後預約限制
+          return { start: s, end: e, cap: o.max_capacity, last: e };
+        });
     } else {
+      // 使用常規排班 (Standard Times)
       activeRules = schedule.times
         .filter(t => t.day_of_week === dow && t.is_open)
         .map(t => {
-          const parts = t.time_range.split('-').map(s => s.trim())
-          const s = timeToMinutes(parts[0])
-          const e = timeToMinutes(parts[1])
-          const last = (String(t.is_open_last_booking_time) === 'true' || t.is_open_last_booking_time === true || Number(t.is_open_last_booking_time) === 1)
-            ? timeToMinutes(t.last_booking_time) : 0;
-          return { start: s, end: e, cap: t.max_capacity, last: last }
-        })
+          const part = t.time_range.split('-')
+          const s = timeToMinutes(part[0]);
+          const e = timeToMinutes(part[1]);
+
+          // 判斷是否開啟「最後預約時間」限制
+          const isOpenLast = String(t.is_open_last_booking_time) === 'true' || t.is_open_last_booking_time === true;
+          // 如果沒開，最後預約時間就是結束時間 e；如果有開，解析 last_booking_time
+          const last = isOpenLast ? timeToMinutes(t.last_booking_time) : e;
+
+          return { start: s, end: e, cap: t.max_capacity, last: last };
+        });
     }
+    console.log("activeRules", activeRules)
+    if (activeRules.length === 0) return [];
 
-    if (activeRules.length === 0) return []
-
-    // 2. Split slots (30 min blocks)
-    const rawSlots: any[] = []
-    const minStart = Math.min(...activeRules.map(r => r.start))
-    const maxEnd = Math.max(...activeRules.map(r => r.end))
+    // 2. 切分時段 (Slot Splitting)
+    const rawSlots: any[] = [];
+    const minStart = Math.min(...activeRules.map(r => r.start));
+    const maxEnd = Math.max(...activeRules.map(r => r.end));
 
     for (let time = minStart; time + TIME_SLOT_INTERVAL <= maxEnd; time += TIME_SLOT_INTERVAL) {
-      let bestCap = -1
-      let lastBookingTime = 0
+      let bestCap = -1;
+      let currentLastBooking = 0;
+
+      // 尋找涵蓋此時間點的規則
       for (const rule of activeRules) {
-        if (time >= rule.start && (time + TIME_SLOT_INTERVAL) <= rule.end && time <= rule.last) {
-          bestCap = Math.max(bestCap, rule.cap)
-          lastBookingTime = Math.max(lastBookingTime, rule.last)
+        if (time >= rule.start && (time + TIME_SLOT_INTERVAL) <= rule.end) {
+          bestCap = Math.max(bestCap, rule.cap);
+          currentLastBooking = Math.max(currentLastBooking, rule.last);
         }
       }
+
       if (bestCap > 0) {
-        // 計算該 30 分鐘區間內的已預約人數
-        const slotStart = time
-        const cacheKey = `${dateStr} ${minutesToTime(slotStart)}`
+        const slotStartStr = minutesToTime(time); // 格式如 "09:00"
+        const cacheKey = `${dateStr} ${slotStartStr}`; // 格式如 "2026-03-27 09:00"
+
+        // 計算已預約人數
         const cacheEntry = booking_cache.find(c => {
           if (!c.booking_start_time) return false;
-          return dayjs.utc(c.booking_start_time).format('YYYY-MM-DD HH:mm') === cacheKey;
+          // 確保 TimeUtils.getDateTime 回傳格式也是 "YYYY-MM-DD HH:mm"
+          return TimeUtils.getDateTime(c.booking_start_time) === cacheKey;
         });
-        const bookedCount = cacheEntry ? cacheEntry.booked_count : 0
+        const bookedCount = cacheEntry ? cacheEntry.booked_count : 0;
 
-        const available = bestCap - bookedCount
-        const isLastSlot = time >= lastBookingTime
-        console.log(time)
-        if (available > 0 && !isLastSlot) {
+        const available = bestCap - bookedCount;
+
+        // 關鍵判定：當前時間必須早於最後預約時間
+        if (available > 0 && time < currentLastBooking) {
           rawSlots.push({
-            uid: `${dateStr}_${minutesToTime(time)}`,
-            time_range: `${minutesToTime(time)}-${minutesToTime(time + 30)}`,
+            uid: `${dateStr}_${slotStartStr}`,
+            time_label: slotStartStr,
+            time_range: `${slotStartStr}-${minutesToTime(time + TIME_SLOT_INTERVAL)}`,
             max_capacity: bestCap,
             available_capacity: available,
             start_minutes: time
-          })
+          });
         }
       }
-
     }
 
-    // 3. Continue check for multi-block services
-    const serviceDuration = formData.selectedService ? Number(formData.selectedService.duration) : TIME_SLOT_INTERVAL
-    const requiredBlocks = Math.ceil(serviceDuration / TIME_SLOT_INTERVAL)
+    // 3. 檢查服務所需區間 (Multi-block Check)
+    const serviceDuration = formData.selectedService ? Number(formData.selectedService.duration) : TIME_SLOT_INTERVAL;
+    const requiredBlocks = Math.ceil(serviceDuration / TIME_SLOT_INTERVAL);
 
-    const validSlots = []
+    const validSlots = [];
     for (let i = 0; i < rawSlots.length; i++) {
-      let isValid = true
+      let isValid = true;
       for (let j = 0; j < requiredBlocks; j++) {
-        const target = rawSlots[i + j]
+        const target = rawSlots[i + j];
+        // 檢查後續的 block 是否連續存在
         if (!target || target.start_minutes !== (rawSlots[i].start_minutes + j * TIME_SLOT_INTERVAL)) {
-          isValid = false
-          break
+          isValid = false;
+          break;
         }
       }
       if (isValid) {
-        validSlots.push(rawSlots[i])
+        validSlots.push(rawSlots[i]);
       }
     }
-    bookingCacheSlotMap.set(dateStr, validSlots)
-    console.log("validSlots", validSlots)
-    return validSlots
-  }
+
+    // 存入 Map 以供後續快速讀取
+    bookingCacheSlotMap.set(dateStr, validSlots);
+    return validSlots;
+  };
 
   const handleConfirmBooking = async () => {
     if (!event || !selectedDate || !selectedTimeSlot || !formData.selectedService) return
