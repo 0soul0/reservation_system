@@ -1,5 +1,6 @@
 'use server'
 
+import { comparePassword } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 
@@ -15,14 +16,18 @@ export async function superLoginAction(formData: FormData) {
     .from('manager')
     .select('*')
     .eq('account', account)
-    .eq('password', password)
     .eq('level', '1')
     .single()
 
   if (error || !user) {
-    return { success: false, message: '管理員帳號或密碼錯誤' }
+    return { success: false, message: '管理員帳號錯誤' }
   }
 
+  const isPasswordValid = await comparePassword(password, user.password)
+  if (!isPasswordValid) {
+    return { success: false, message: '管理員密碼錯誤' }
+  }
+  user.password = ''
   const cookieStore = await cookies()
   cookieStore.set('super_session', JSON.stringify({ uid: user.uid, account: user.account }), {
     httpOnly: true,

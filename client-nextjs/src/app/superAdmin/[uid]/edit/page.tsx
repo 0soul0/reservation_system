@@ -17,6 +17,7 @@ import { useSuperAdmin } from '../../SuperAdminContext'
 import { NotifyEntry, QItem } from '@/types'
 import { useAlert } from '@/components/ui/DialogProvider'
 import { supabaseAdmin } from '@/lib/supabase' // 引入供 Storage 使用
+import { hashPassword } from '@/lib/auth'
 
 
 // ─── 多選下拉選單組件 ──────────────────────────────────────────
@@ -570,6 +571,19 @@ export default function ManagerEditPage() {
       payload.questionnaire = JSON.stringify(questionnaire)
       payload.line_notify_content = entriesToJson(notifyEntries)
 
+      // ─── 密碼加密處理 ──────────────────────────
+      if (isNew) {
+        // 新建帳號：必填密碼並加密
+        payload.password = await hashPassword(payload.password)
+      } else {
+        // 編輯帳號：只有當密碼欄位有填寫時才加密並更新
+        if (payload.password && payload.password.trim() !== "") {
+          payload.password = await hashPassword(payload.password)
+        } else {
+          delete payload.password // 移除欄位，不更新資料庫中的密碼
+        }
+      }
+
       const res = await upsertManager(payload)
       if (res.success) {
         router.push('/superAdmin')
@@ -644,11 +658,10 @@ export default function ManagerEditPage() {
             <Field label="登入帳號">
               <input name="account" defaultValue={manager?.account} required className={`${inputCls} font-mono`} />
             </Field>
-            <Field label="帳號密碼">
+            <Field label="密碼">
               <input
                 name="password"
-                type="password"
-                defaultValue={manager?.password}
+                type="text"
                 required={isNew}
                 className={`${inputCls} font-mono`}
               />
@@ -684,7 +697,7 @@ export default function ManagerEditPage() {
                 </div>
               </div>
             </Field>
-            <Field label="權限等級 (level)">
+            <Field label="權限等級 (1:最高權限, 0:一般管理員)">
               <input name="level" type="number" defaultValue={manager?.level ?? 0} min={0} max={1} className={inputCls} />
             </Field>
           </div>
