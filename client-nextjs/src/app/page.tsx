@@ -1,5 +1,6 @@
 'use client'
 
+import React, { useEffect } from 'react'
 import { ROUTES } from '@/constants/routes'
 import { motion } from 'framer-motion'
 import {
@@ -19,11 +20,13 @@ import Link from 'next/link'
  */
 export default function LandingPage() {
 
-  const line_back_url = localStorage.getItem('line_back_url')
-  if (line_back_url) {
-    window.location.replace(line_back_url)
-    localStorage.removeItem('line_back_url')
-  }
+  useEffect(() => {
+    const line_back_url = localStorage.getItem('line_back_url')
+    if (line_back_url) {
+      window.location.replace(line_back_url)
+      localStorage.removeItem('line_back_url')
+    }
+  }, [])
 
   const features = [
     {
