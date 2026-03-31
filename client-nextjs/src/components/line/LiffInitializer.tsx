@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { initLiff, getLiffProfile } from '@/lib/liff'
 import { Loader2 } from 'lucide-react'
 import { CONFIG_ENV } from '@/lib/env'
-import { cookies } from 'next/headers'
 
 /**
  * LIFF 身份初始化組件
@@ -29,9 +28,8 @@ export default function LiffInitializer() {
           // 3. 關鍵：檢查參數是否已存在，避免無限循環
           if (url.searchParams.get('line_uid') !== profile.userId) {
             url.searchParams.set('line_uid', profile.userId)
-
-            console.log("導向至：", url.toString())
             window.location.replace(url.toString())
+            localStorage.removeItem('line_back_url')
           }
         }
       } catch (err) {
