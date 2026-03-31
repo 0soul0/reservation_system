@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { initLiff, getLiffProfile } from '@/lib/liff'
 import { Loader2 } from 'lucide-react'
 import { CONFIG_ENV } from '@/lib/env'
+import { delay } from 'framer-motion'
 
 /**
  * LIFF 身份初始化組件
@@ -25,9 +26,11 @@ export default function LiffInitializer() {
           // 將取得的 UID 加入 URL 參數並重新載入頁面 (讓 Server Component 可以讀到)
           const url = new URL(window.location.href)
           url.searchParams.set('line_uid', profile.userId)
-          window.location.replace(url.toString())
           console.log("url", url.toString())
           console.log("profile.userId", profile.userId)
+          setTimeout(() => {
+            window.location.replace(url.toString())
+          }, 10000);
         }
       } catch (err) {
         console.error("取得 LINE Profile 失敗:", err)
