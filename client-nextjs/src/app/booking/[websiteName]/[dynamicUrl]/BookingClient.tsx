@@ -348,7 +348,7 @@ export default function BookingClient(props: BookingClientProps) {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-12 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-slate-50 pb-12 relative overflow-x-hidden font-sans">
       {/* Background Decor */}
       <div className="absolute -top-32 -right-32 w-[60vw] h-[60vw] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-[50vw] h-[50vw] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
@@ -483,7 +483,7 @@ export default function BookingClient(props: BookingClientProps) {
                                     setFormData(p => ({ ...p, selectedService: item }))
                                     setIsDropdownOpen(false)
                                   }}
-                                  className={`p-3 rounded-xl cursor-pointer flex justify-between items-center transition-colors ${formData.selectedService === item ? 'bg-purple-50 text-purple-600' : 'hover:bg-slate-50'}`}
+                                  className={`p-2 rounded-xl cursor-pointer flex justify-between items-center transition-colors ${formData.selectedService === item ? 'bg-purple-50 text-purple-600' : 'hover:bg-slate-50'}`}
                                 >
                                   <div>
                                     <div className="font-bold text-xm">{item.title}</div>
@@ -586,39 +586,38 @@ export default function BookingClient(props: BookingClientProps) {
                 </div>
                 <h2 className="text-3xl font-black text-slate-800 mb-2">預約成功！</h2>
                 <p className="text-slate-300 text-xm mb-10 leading-relaxed font-bold">
-                  感謝您的預約，系統已收到您的申請。<br />
-                  我們將盡快與您聯繫確認。
+                  感謝您的預約，系統已收到您的申請。
                 </p>
 
                 <div className="bg-slate-50 p-6 rounded-3xl text-left space-y-4 mb-10 border border-slate-100">
                   <p className="text-[14px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">預約明細</p>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center text-xm">
-                      <span className="text-slate-900 font-bold">姓名</span>
+                    <div className="flex flex-col gap-1 text-xm">
+                      <span className="text-slate-500 font-bold text-xs">姓名</span>
                       <span className="text-slate-800 font-black">{formData.name}</span>
                     </div>
                     {formData.phone && (
-                      <div className="flex justify-between items-center text-xm">
-                        <span className="text-slate-900 font-bold">電話</span>
+                      <div className="flex flex-col gap-1 text-xm">
+                        <span className="text-slate-500 font-bold text-xs">電話</span>
                         <span className="text-slate-800 font-black">{formData.phone}</span>
                       </div>
                     )}
                     {formData.email && (
-                      <div className="flex justify-between items-center text-xm">
-                        <span className="text-slate-900 font-bold">信箱</span>
+                      <div className="flex flex-col gap-1 text-xm">
+                        <span className="text-slate-500 font-bold text-xs">信箱</span>
                         <span className="text-slate-800 font-black">{formData.email}</span>
                       </div>
                     )}
-                    <div className="flex justify-between items-center text-xm">
-                      <span className="text-slate-900 font-bold">服務項目</span>
+                    <div className="flex flex-col gap-1 text-xm">
+                      <span className="text-slate-500 font-bold text-xs">服務項目</span>
                       <span className="text-slate-800 font-black">{formData.selectedService?.title}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xm">
-                      <span className="text-slate-900 font-bold">預約日期</span>
+                    <div className="flex flex-col gap-1 text-xm">
+                      <span className="text-slate-500 font-bold text-xs">預約日期</span>
                       <span className="text-slate-800 font-black">{selectedDate ? formatDate(selectedDate) : ''}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xm">
-                      <span className="text-slate-900 font-bold">時段</span>
+                    <div className="flex flex-col gap-1 text-xm">
+                      <span className="text-slate-500 font-bold text-xs">時段</span>
                       <span className="text-slate-800 font-black">{slotTime}</span>
                     </div>
                   </div>

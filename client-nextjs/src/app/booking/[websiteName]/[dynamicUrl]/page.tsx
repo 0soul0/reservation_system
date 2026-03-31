@@ -4,6 +4,7 @@ import BookingClient from './BookingClient'
 import LiffInitializer from '@/components/line/LiffInitializer'
 import { BookingClientProps } from '@/types';
 import { ROUTES } from '@/constants/routes';
+import { CONFIG_ENV } from '@/lib/env';
 
 type Props = {
   params: Promise<{ websiteName: string; dynamicUrl: string }>;
@@ -15,7 +16,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
   const { schedule_menu_uid, line_uid } = await searchParams
 
   // 1. 如果 URL 缺少 line_uid，則先進入 Client Side 的 LIFF 初始化與身分確認
-  if (!line_uid) {
+  if (CONFIG_ENV.nodeEnv != 'development' && !line_uid) {
     return <LiffInitializer />
   }
 

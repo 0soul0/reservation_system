@@ -41,15 +41,23 @@ export default function LiffInitializer() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0a] text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#fafafa] text-slate-900">
+      {/* 背景裝飾：將原本深紫色的發光改為更柔和的淺紫色/藍色暈染 */}
       <div className="relative">
-        <div className="absolute inset-0 bg-purple-500/20 blur-[50px] rounded-full" />
-        <Loader2 className="animate-spin mb-6 text-cyan-400 relative z-10" size={48} />
+        <div className="absolute inset-0 bg-purple-200/50 blur-[40px] rounded-full" />
+        {/* 調整 Loader 顏色，使其在淺色背景下更顯眼 */}
+        <Loader2 className="animate-spin mb-6 text-cyan-600 relative z-10" size={48} />
       </div>
-      <h2 className="text-xl font-black tracking-[0.2em] mb-2 uppercase bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+
+      {/* 標題：調整漸層色深一點，確保閱讀清晰度 */}
+      <h2 className="text-xl font-black tracking-[0.2em] mb-2 uppercase bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
         Secure Access
       </h2>
-      <p className="font-bold tracking-widest text-slate-500 text-sm">正在完成 LINE 身份安全驗證...</p>
+
+      {/* 副標題：將原本的 slate-500 改為稍深的 slate-400/500，在淺色背景更協調 */}
+      <p className="font-bold tracking-widest text-slate-400 text-xs sm:text-sm">
+        正在完成 LINE 身份安全驗證...
+      </p>
     </div>
   )
 }
