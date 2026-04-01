@@ -15,6 +15,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { registerMember } from '@/app/actions/members'
 import { useAlert } from '@/components/ui/DialogProvider'
 
+export const runtime = 'edge'
+
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
