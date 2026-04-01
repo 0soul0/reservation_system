@@ -1,0 +1,9 @@
+name = "reservation"
+compatibility_date = "2026-04-01"
+
+# 關鍵：告訴 Cloudflare Pages 編譯後的輸出位置
+pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+# 確保 Node 版本夠新
+NODE_VERSION = "20"
