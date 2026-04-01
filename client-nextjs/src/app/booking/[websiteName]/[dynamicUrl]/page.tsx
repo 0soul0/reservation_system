@@ -1,10 +1,10 @@
 import { getBookingInfo } from '@/services/data'
 import { notFound, redirect } from 'next/navigation'
-import BookingWrapper from './BookingWrapper'
 import LiffInitializer from '@/components/line/LiffInitializer'
 import { BookingClientProps } from '@/types';
 import { ROUTES } from '@/constants/routes';
 import { CONFIG_ENV } from '@/lib/env';
+import BookingClient from './BookingClient';
 
 export const runtime = "edge";
 
@@ -46,5 +46,5 @@ export default async function BookingPage({ params, searchParams }: Props) {
     line_uid: line_uid || '',
   }
 
-  return <BookingWrapper {...info} />
+  return <BookingClient {...info} />
 }

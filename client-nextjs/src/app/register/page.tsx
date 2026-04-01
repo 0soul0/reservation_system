@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   User,
@@ -8,8 +8,7 @@ import {
   Mail,
   Loader2,
   ListTodo,
-  ArrowRight,
-  CheckCircle2
+  ArrowRight
 } from 'lucide-react'
 
 import { registerMember } from '@/app/actions/members'

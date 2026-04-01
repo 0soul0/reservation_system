@@ -1,11 +1,6 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-
-const LandingClient = dynamic(() => import('@/components/landing/LandingClient'), {
-  ssr: false,
-  loading: () => <div className="min-h-screen bg-[#050505]" />
-})
+import LandingClient from '@/components/landing/LandingClient'
 
 export default function LandingPage() {
   return <LandingClient />
