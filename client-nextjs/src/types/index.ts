@@ -196,3 +196,13 @@ export type NotifyEntry = {
   next_service_keys?: string[],
   no_data_keys?: string[]
 }
+
+export interface ScheduleSlotProps {
+  uid: string;
+  time_label: string;
+  time_range: string;
+  time_start: string;
+  max_capacity: number;
+  available_capacity: number;
+  start_minutes: number;
+}

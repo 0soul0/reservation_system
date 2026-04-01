@@ -15,7 +15,7 @@ import {
   Check
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import type { BookingClientProps } from '@/types'
+import type { BookingClientProps, ScheduleSlotProps } from '@/types'
 import { useAlert } from '@/components/ui/DialogProvider'
 import { submitBooking } from '@/app/actions/bookings'
 import { TIME_SLOT_INTERVAL } from '@/constants/common'
@@ -220,7 +220,7 @@ export default function BookingClient(props: BookingClientProps) {
     if (activeRules.length === 0) return [];
 
     // 2. 切分時段 (Slot Splitting)
-    const rawSlots: any[] = [];
+    const rawSlots: ScheduleSlotProps[] = [];
     const minStart = Math.min(...activeRules.map(r => r.start));
     const maxEnd = Math.max(...activeRules.map(r => r.end));
 
@@ -256,6 +256,7 @@ export default function BookingClient(props: BookingClientProps) {
             uid: `${dateStr}_${slotStartStr}`,
             time_label: slotStartStr,
             time_range: `${slotStartStr}-${minutesToTime(time + TIME_SLOT_INTERVAL)}`,
+            time_start: `${slotStartStr}`,
             max_capacity: bestCap,
             available_capacity: available,
             start_minutes: time
@@ -534,7 +535,7 @@ export default function BookingClient(props: BookingClientProps) {
                   </h2>
                   {selectedDate ? (
                     <div className="grid grid-cols-3 gap-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-                      {getAvailableSlots(selectedDate).map((slot: { uid: React.SetStateAction<string | null>; time_range: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; available_capacity: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined }, idx: React.Key | null | undefined) => (
+                      {getAvailableSlots(selectedDate).map((slot: ScheduleSlotProps, idx: React.Key | null | undefined) => (
                         <button
                           key={idx}
                           onClick={() => setSelectedTimeSlot(slot.uid)}
@@ -543,7 +544,7 @@ export default function BookingClient(props: BookingClientProps) {
                             ${selectedTimeSlot === slot.uid ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-slate-50 bg-slate-50 text-slate-300 hover:border-slate-200'}
                           `}
                         >
-                          <span className={`text-[14px] font-black ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-emerald-600'}`}>{slot.time_range}</span>
+                          <span className={`text-[14px] font-black ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-emerald-600'}`}>{slot.time_start}</span>
                           <span className={`text-[14px] font-bold ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-slate-900'}`} >可預約 {slot.available_capacity} 位</span>
                         </button>
                       ))}
