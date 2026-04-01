@@ -27,14 +27,14 @@ export default function SuperAdminPage() {
 
   const shareLink = CONFIG_ENV.services.lineNotifyEdge;
 
-  useEffect(() => {
-    async function checkSession() {
-      const session = await getSession(MANAGER_LEVEL.SUPER)
-      if (!session) { router.push(ROUTES.SUPER_ADMIN.LOGIN); return }
-      loadManagers()
-    }
-    checkSession()
-  }, [])
+  // useEffect(() => {
+  //   async function checkSession() {
+  //     const session = await getSession(MANAGER_LEVEL.SUPER)
+  //     if (!session) { router.push(ROUTES.SUPER_ADMIN.LOGIN); return }
+  //     loadManagers()
+  //   }
+  //   checkSession()
+  // }, [])
 
   const loadManagers = async () => {
     setLoading(true)
