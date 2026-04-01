@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 import { DialogProvider } from "@/components/ui/DialogProvider";
 
-export const runtime = 'edge'
+
 
 export default function RootLayout({
   children,

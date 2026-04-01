@@ -14,7 +14,7 @@ import {
 import { registerMember } from '@/app/actions/members'
 import { useAlert } from '@/components/ui/DialogProvider'
 
-export const runtime = 'edge'
+
 
 function RegisterForm() {
   const router = useRouter()
