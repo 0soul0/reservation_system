@@ -6,6 +6,8 @@ import { MANAGER_LEVEL } from '@/constants/common'
 import { getSession } from '@/app/actions/superAuth'
 import { ROUTES } from '@/constants/routes'
 
+export const runtime = "edge";
+
 export default async function EventsPage() {
   const session = await getSession(MANAGER_LEVEL.ADMIN)
   if (!session) redirect(ROUTES.LOGIN)

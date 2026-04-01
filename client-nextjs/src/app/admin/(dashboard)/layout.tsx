@@ -5,6 +5,9 @@ import { ROUTES } from '@/constants/routes'
 import { MANAGER_LEVEL } from '@/constants/common'
 import { getSession } from '@/app/actions/superAuth'
 
+
+export const runtime = "edge";
+
 export default async function DashboardLayout({
   children,
 }: {

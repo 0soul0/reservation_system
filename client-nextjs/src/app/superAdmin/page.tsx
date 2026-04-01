@@ -16,8 +16,7 @@ import { ROUTES } from '@/constants/routes'
 import { MANAGER_LEVEL } from '@/constants/common'
 
 
-
-
+export const runtime = "edge";
 // ─── 主頁面 ────────────────────────────────────────────────────
 export default function SuperAdminPage() {
   const [managers, setManagers] = useState<any[]>([])

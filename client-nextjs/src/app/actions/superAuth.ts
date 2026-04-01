@@ -1,7 +1,8 @@
 'use server'
 
 import { MANAGER_LEVEL } from '@/constants/common'
-import { comparePassword } from '@/lib/auth'
+import { verifyPassword } from '@/lib/auth'
+
 import { supabaseAdmin } from '@/lib/supabase'
 import { Manager } from '@/types'
 import { cookies } from 'next/headers'
@@ -26,7 +27,7 @@ export async function loginAction(formData: FormData, type: number) {
     return { success: false, message: '管理員帳號錯誤' }
   }
 
-  const isPasswordValid = await comparePassword(password, user.password)
+  const isPasswordValid = await verifyPassword(password, user.password)
   if (!isPasswordValid) {
     return { success: false, message: '管理員密碼錯誤' }
   }

@@ -1,3 +1,8 @@
+if (typeof setImmediate === 'undefined') {
+  (globalThis as any).setImmediate = (cb: (...args: any[]) => void) => setTimeout(cb, 0);
+}
+
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";

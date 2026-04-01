@@ -20,7 +20,7 @@ import { supabaseAdmin } from '@/lib/supabase' // 引入供 Storage 使用
 import { hashPassword } from '@/lib/auth'
 import { ROUTES } from '@/constants/routes'
 import { MANAGER_LEVEL } from '@/constants/common'
-
+export const runtime = "edge";
 
 // ─── 多選下拉選單組件 ──────────────────────────────────────────
 function MultiSelect({

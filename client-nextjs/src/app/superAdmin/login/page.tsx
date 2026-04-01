@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -7,6 +6,7 @@ import { Lock, User, Loader2, ArrowRight, Shield } from 'lucide-react'
 import { loginAction } from '@/app/actions/superAuth'
 import { ROUTES } from '@/constants/routes'
 import { MANAGER_LEVEL } from '@/constants/common'
+export const runtime = "edge";
 
 export default function SuperAdminLoginPage() {
   const [error, setError] = useState<string | null>(null)

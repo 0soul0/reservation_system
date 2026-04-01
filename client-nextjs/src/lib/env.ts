@@ -13,4 +13,6 @@ export const CONFIG_ENV = {
     },
     nodeEnv: process.env.NODE_ENV,
     liffId: process.env.NEXT_PUBLIC_LIFF_ID,
+    liffUrl: process.env.NEXT_PUBLIC_LIFF_URL,
+    deployEnv: process.env.NEXT_PUBLIC_DEPLOY_ENV,
 } as const;

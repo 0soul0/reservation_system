@@ -1,9 +1,12 @@
 
+
 import { redirect } from 'next/navigation'
 import LoginClient from './LoginClient'
 import { ROUTES } from '@/constants/routes'
 import { MANAGER_LEVEL } from '@/constants/common'
 import { getSession } from '@/app/actions/superAuth'
+
+export const runtime = "edge";
 
 export default async function LoginPage() {
   const session = await getSession(MANAGER_LEVEL.ADMIN)

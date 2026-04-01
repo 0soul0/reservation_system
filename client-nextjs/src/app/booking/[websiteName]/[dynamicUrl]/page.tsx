@@ -5,6 +5,7 @@ import LiffInitializer from '@/components/line/LiffInitializer'
 import { BookingClientProps } from '@/types';
 import { ROUTES } from '@/constants/routes';
 import { CONFIG_ENV } from '@/lib/env';
+export const runtime = "edge";
 
 type Props = {
   params: Promise<{ websiteName: string; dynamicUrl: string }>;

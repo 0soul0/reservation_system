@@ -4,6 +4,8 @@ import BookingList from './BookingList'
 import { BOOKING_STATUS, MANAGER_LEVEL } from '@/constants/common'
 import { getSession } from '@/app/actions/superAuth'
 
+export const runtime = "edge";
+
 export default async function BookingsPage({
   searchParams,
 }: {
