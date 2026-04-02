@@ -3,7 +3,7 @@ import { getSession } from '@/app/actions/superAuth'
 import { SuperAdminProvider } from './SuperAdminContext'
 import { MANAGER_LEVEL } from '@/constants/common'
 
-export const runtime = 'edge'
+
 
 export default async function SuperAdminLayout({
   children,

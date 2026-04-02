@@ -5,7 +5,7 @@ import { ScheduleData } from '@/types'
 import { getSession } from '@/app/actions/superAuth'
 import { MANAGER_LEVEL } from '@/constants/common'
 
-export const runtime = "edge";
+
 
 export default async function ScheduleEditPage({
   params,

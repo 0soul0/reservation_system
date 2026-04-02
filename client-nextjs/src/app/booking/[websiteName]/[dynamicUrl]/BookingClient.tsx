@@ -15,7 +15,7 @@ import {
   Check
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import type { BookingClientProps } from '@/types'
+import type { BookingClientProps, ScheduleSlotProps } from '@/types'
 import { useAlert } from '@/components/ui/DialogProvider'
 import { submitBooking } from '@/app/actions/bookings'
 import { TIME_SLOT_INTERVAL } from '@/constants/common'
@@ -220,7 +220,7 @@ export default function BookingClient(props: BookingClientProps) {
     if (activeRules.length === 0) return [];
 
     // 2. 切分時段 (Slot Splitting)
-    const rawSlots: any[] = [];
+    const rawSlots: ScheduleSlotProps[] = [];
     const minStart = Math.min(...activeRules.map(r => r.start));
     const maxEnd = Math.max(...activeRules.map(r => r.end));
 
@@ -256,6 +256,7 @@ export default function BookingClient(props: BookingClientProps) {
             uid: `${dateStr}_${slotStartStr}`,
             time_label: slotStartStr,
             time_range: `${slotStartStr}-${minutesToTime(time + TIME_SLOT_INTERVAL)}`,
+            time_start: `${slotStartStr}`,
             max_capacity: bestCap,
             available_capacity: available,
             start_minutes: time
@@ -339,7 +340,6 @@ export default function BookingClient(props: BookingClientProps) {
         showAlert({ message: res.message || '預約失敗，請稍後再試。', type: 'error' })
       }
     } catch (err) {
-      console.error(err)
       showAlert({ message: '預約發生錯誤', type: 'error' })
     } finally {
       setIsSubmitting(false)
@@ -407,7 +407,7 @@ export default function BookingClient(props: BookingClientProps) {
                     <div className="space-y-4">
                       {/* Name */}
                       <div className="space-y-1.5">
-                        <label className="text-[14px] font-bold text-slate-300 ml-1">姓名 <span className="text-rose-500">*</span></label>
+                        <label className="text-[14px] font-bold text-slate-500 ml-1">姓名 <span className="text-rose-500">*</span></label>
                         <div className="relative group">
                           <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-500 transition-colors" />
                           <input
@@ -415,7 +415,7 @@ export default function BookingClient(props: BookingClientProps) {
                             value={formData.name}
                             onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
                             placeholder="您的姓名"
-                            className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-xm outline-none transition-all ${isFirstStepAttempted && !formData.name ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
+                            className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-sm outline-none transition-all ${isFirstStepAttempted && !formData.name ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
                           />
                         </div>
                       </div>
@@ -423,7 +423,7 @@ export default function BookingClient(props: BookingClientProps) {
                       {/* Phone */}
                       {event.is_phone_required && (
                         <div className="space-y-1.5">
-                          <label className="text-[14px] font-bold text-slate-300 ml-1">電話 <span className="text-rose-500">*</span></label>
+                          <label className="text-[14px] font-bold text-slate-500 ml-1">電話 <span className="text-rose-500">*</span></label>
                           <div className="relative group">
                             <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-500 transition-colors" />
                             <input
@@ -431,7 +431,7 @@ export default function BookingClient(props: BookingClientProps) {
                               value={formData.phone}
                               onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
                               placeholder="09XXXXXXXX"
-                              className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-xm outline-none transition-all ${(isFirstStepAttempted && !formData.phone) || (formData.phone && !isPhoneValid) ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
+                              className={`w-full bg-slate-50 border-2 rounded-2xl pl-12 pr-4 py-3.5 text-sm outline-none transition-all ${(isFirstStepAttempted && !formData.phone) || (formData.phone && !isPhoneValid) ? 'border-rose-200 bg-rose-50' : 'border-transparent focus:border-purple-600/20 focus:bg-white'}`}
                             />
                           </div>
                           {formData.phone && !isPhoneValid && <p className="text-[14px] text-rose-500 font-bold ml-1">格式不正確</p>}
@@ -458,11 +458,11 @@ export default function BookingClient(props: BookingClientProps) {
 
                       {/* Service Dropdown */}
                       <div className="space-y-1.5">
-                        <label className="text-[14px] font-bold text-slate-300 ml-1">預約項目 <span className="text-rose-500">*</span></label>
+                        <label className="text-[14px] font-bold text-slate-500 ml-1">預約項目 <span className="text-rose-500">*</span></label>
                         <div className="relative">
                           <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className={`w-full bg-slate-50 border-2 rounded-2xl px-5 py-3.5 text-xm flex justify-between items-center transition-all ${isFirstStepAttempted && !formData.selectedService ? 'border-rose-200 bg-rose-50' : (isDropdownOpen ? 'border-purple-600/20 bg-white ring-4 ring-purple-600/5' : 'border-transparent')}`}
+                            className={`w-full bg-slate-50 border-2 rounded-2xl px-5 py-3.5 text-sm flex justify-between items-center transition-all ${isFirstStepAttempted && !formData.selectedService ? 'border-rose-200 bg-rose-50' : (isDropdownOpen ? 'border-purple-600/20 bg-white ring-4 ring-purple-600/5' : 'border-transparent')}`}
                           >
                             <div className="flex items-center gap-2">
                               {formData.selectedService ? (
@@ -486,8 +486,8 @@ export default function BookingClient(props: BookingClientProps) {
                                   className={`p-2 rounded-xl cursor-pointer flex justify-between items-center transition-colors ${formData.selectedService === item ? 'bg-purple-50 text-purple-600' : 'hover:bg-slate-50'}`}
                                 >
                                   <div>
-                                    <div className="font-bold text-xm">{item.title}</div>
-                                    <div className="text-[14px] opacity-60">{item.duration} 分鐘</div>
+                                    <div className="font-bold text-sm">{item.title}</div>
+                                    <div className="text-sm opacity-60">{item.duration} 分鐘</div>
                                   </div>
                                   {formData.selectedService === item && <Check size={14} />}
                                 </div>
@@ -533,8 +533,8 @@ export default function BookingClient(props: BookingClientProps) {
                     <Clock size={14} className="text-purple-600" /> 開放時段
                   </h2>
                   {selectedDate ? (
-                    <div className="grid grid-cols-3 gap-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-                      {getAvailableSlots(selectedDate).map((slot: { uid: React.SetStateAction<string | null>; time_range: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; available_capacity: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined }, idx: React.Key | null | undefined) => (
+                    <div className="grid grid-cols-2 gap-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
+                      {getAvailableSlots(selectedDate).map((slot: ScheduleSlotProps, idx: React.Key | null | undefined) => (
                         <button
                           key={idx}
                           onClick={() => setSelectedTimeSlot(slot.uid)}
@@ -543,7 +543,7 @@ export default function BookingClient(props: BookingClientProps) {
                             ${selectedTimeSlot === slot.uid ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-slate-50 bg-slate-50 text-slate-300 hover:border-slate-200'}
                           `}
                         >
-                          <span className={`text-[14px] font-black ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-emerald-600'}`}>{slot.time_range}</span>
+                          <span className={`text-[14px] font-black ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-emerald-600'}`}>{slot.time_start}</span>
                           <span className={`text-[14px] font-bold ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-slate-900'}`} >可預約 {slot.available_capacity} 位</span>
                         </button>
                       ))}

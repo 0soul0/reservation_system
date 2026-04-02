@@ -1,23 +1,23 @@
 import { getBookingInfo } from '@/services/data'
 import { notFound, redirect } from 'next/navigation'
-import BookingWrapper from './BookingWrapper'
 import LiffInitializer from '@/components/line/LiffInitializer'
 import { BookingClientProps } from '@/types';
 import { ROUTES } from '@/constants/routes';
 import { CONFIG_ENV } from '@/lib/env';
+import BookingClient from './BookingClient';
 
-export const runtime = "edge";
+
 
 type Props = {
   params: Promise<{ websiteName: string; dynamicUrl: string }>;
-  searchParams: Promise<{ schedule_menu_uid?: string; line_uid?: string }>;
+  searchParams: Promise<{ schedule_menu_uid?: string; line_uid?: string; limit?: string }>;
 };
 
 export default async function BookingPage({ params, searchParams }: Props) {
   const { websiteName, dynamicUrl } = await params
-  const { schedule_menu_uid, line_uid } = await searchParams
+  const { schedule_menu_uid, line_uid, limit } = await searchParams
 
-  if (CONFIG_ENV.nodeEnv != 'development' && !line_uid) {
+  if (CONFIG_ENV.nodeEnv != 'development' && !line_uid && limit != 'false') {
     return <LiffInitializer />
   }
 
@@ -43,8 +43,8 @@ export default async function BookingPage({ params, searchParams }: Props) {
     event: data.event,
     schedule: data.schedule,
     booking_cache: data.booking_cache,
-    line_uid: line_uid || '',
+    line_uid: line_uid || ''
   }
 
-  return <BookingWrapper {...info} />
+  return <BookingClient {...info} />
 }

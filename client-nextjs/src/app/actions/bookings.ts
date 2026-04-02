@@ -2,9 +2,9 @@
 
 import { BOOKING_STATUS } from '@/constants/common'
 import { ROUTES } from '@/constants/routes'
-import { GoogleCalendarService } from '@/lib/google_calendar'
+import { GOOGLE_CALENDAR_COLOR_ID, GoogleCalendarService } from '@/lib/google_calendar'
 import { supabaseAdmin, SUPABASE_EDGE_FUNCTION } from '@/lib/supabase'
-import { Manager } from '@/types'
+import { Booking, Manager } from '@/types'
 import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
 
@@ -21,7 +21,7 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
       status: BOOKING_STATUS.BOOKING,
       is_deposit_received: false
     }
-
+    console.log("data", data)
     const { data: result, error } = await supabaseAdmin
       .rpc('submit_booking', {
         p_booking_data: data,
@@ -29,7 +29,7 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
         p_time_slot_interval: timeSlotInterval
       })
 
-
+    console.log("result", result)
     if (error) throw error
 
     if (!result.booking_success) {
@@ -49,7 +49,8 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
           service_item: payload.service_item,
           booking_start_time: payload.booking_start_time,
           booking_end_time: payload.booking_end_time,
-          line_uid: payload.line_uid || result.line_uid
+          line_uid: payload.line_uid || result.line_uid,
+          color_id: GOOGLE_CALENDAR_COLOR_ID.GRAY.toString()
         }
       })
 
@@ -75,10 +76,8 @@ export async function submitBooking(payload: any, maxCapacityArray: number[], ti
       })
     }
 
-    revalidatePath('/bookings')
+    revalidatePath(ROUTES.ADMIN.BOOKINGS)
     return { success: true, uid }
-
-
 
   } catch (err: any) {
     console.error('submitBooking Error:', err)
@@ -92,6 +91,7 @@ export async function cancelBooking(bookingUid: string, session: Manager, timeSl
     const { data: result, error } = await supabaseAdmin.rpc('cancel_booking', {
       _booking_uid: bookingUid,
       _time_slot_interval: timeSlotInterval,
+      _manager_uid: session.uid,
       _delete_type: deleteType
     })
 
@@ -99,12 +99,10 @@ export async function cancelBooking(bookingUid: string, session: Manager, timeSl
       return { success: false, message: result.error || error }
     }
 
-    if (result.data?.google_calendar_event_id) {
-
-
-      await GoogleCalendarService.sync({
+    if (result.data?.google_calendar_event_id && result.data.google_calendar_id) {
+      GoogleCalendarService.sync({
         action: 'DELETE',
-        googleCalendarId: session.google_calendar_id,
+        googleCalendarId: result.data.google_calendar_id,
         eventId: result.data.google_calendar_event_id
       })
     }
@@ -133,6 +131,39 @@ export async function updateBookingDepositStatus(uid: string, isDepositReceived:
     return { success: true }
   } catch (err: any) {
     console.error('updateBookingDepositStatus Error:', err)
+    return { success: false, message: err.message }
+  }
+}
+
+export async function updateBookingStatus(booking: Booking, session: Manager, status: number) {
+  try {
+
+    const { data: result, error } = await supabaseAdmin.rpc('update_booking_status', {
+      _booking_uid: booking.uid,
+      _new_status: status,
+    })
+
+    if (error || !result.success) {
+      return { success: false, message: result.error || error }
+    }
+
+    if (result.data?.google_calendar_event_id && result.data.google_calendar_id) {
+      GoogleCalendarService.sync({
+        action: 'UPDATE',
+        googleCalendarId: result.data.google_calendar_id,
+        eventId: result.data.google_calendar_event_id,
+        data: {
+          color_id: status == BOOKING_STATUS.BOOKING ? GOOGLE_CALENDAR_COLOR_ID.GRAY.toString() : GOOGLE_CALENDAR_COLOR_ID.PURPLE.toString()
+        }
+      }).catch(err => {
+        console.error("背景同步日曆失敗:", err);
+      });
+    }
+
+    revalidatePath(ROUTES.ADMIN.BOOKINGS)
+    return { success: true }
+  } catch (err: any) {
+    console.error('updateBookingStatus Error:', err)
     return { success: false, message: err.message }
   }
 }

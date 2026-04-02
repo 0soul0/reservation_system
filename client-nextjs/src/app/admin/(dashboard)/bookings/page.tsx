@@ -1,10 +1,10 @@
 import { getBookings } from '@/services/data'
 import { Calendar, Clock, DollarSign } from 'lucide-react'
-import BookingListWrapper from './BookingListWrapper'
 import { BOOKING_STATUS, MANAGER_LEVEL } from '@/constants/common'
 import { getSession } from '@/app/actions/superAuth'
+import BookingList from './BookingList'
 
-export const runtime = "edge";
+
 
 export default async function BookingsPage({
   searchParams,
@@ -56,7 +56,7 @@ export default async function BookingsPage({
         />
       </div>
 
-      <BookingListWrapper
+      <BookingList
         initialBookings={bookings}
         totalCount={totalCount}
         currentPage={page}

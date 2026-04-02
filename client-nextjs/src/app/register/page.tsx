@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   User,
@@ -8,14 +8,13 @@ import {
   Mail,
   Loader2,
   ListTodo,
-  ArrowRight,
-  CheckCircle2
+  ArrowRight
 } from 'lucide-react'
 
 import { registerMember } from '@/app/actions/members'
 import { useAlert } from '@/components/ui/DialogProvider'
 
-export const runtime = 'edge'
+
 
 function RegisterForm() {
   const router = useRouter()
@@ -59,11 +58,6 @@ function RegisterForm() {
     return /^09\d{8}$/.test(cleanPhone)
   }, [formData.phone])
 
-  const isEmailValid = useMemo(() => {
-    if (!formData.email) return false
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-  }, [formData.email])
-
   const isQuestionnaireComplete = useMemo(() => {
     if (!parsedQuestionnaire || parsedQuestionnaire.length === 0) return true
     for (const q of parsedQuestionnaire) {
@@ -81,7 +75,7 @@ function RegisterForm() {
 
   const handleRegister = async () => {
     setIsAttempted(true)
-    if (!formData.name || !isPhoneValid || !isEmailValid || !isQuestionnaireComplete) {
+    if (!formData.name || !isPhoneValid || !isQuestionnaireComplete) {
       return
     }
 
@@ -148,13 +142,13 @@ function RegisterForm() {
         >
           <div className="space-y-6">
             <h2 className="text-[12px] font-black text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2 opacity-60">
-              <User size={14} className="text-cyan-400" /> 基本資料 BASIC INFO
+              <User size={14} className="text-cyan-400" /> 基本資料
             </h2>
 
             <div className="space-y-5">
               {/* Name */}
               <div className="space-y-2">
-                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">姓名 NAME</label>
+                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">姓名</label>
                 <div className="relative group">
                   <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
                   <input
@@ -169,7 +163,7 @@ function RegisterForm() {
 
               {/* Phone */}
               <div className="space-y-2">
-                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">電話 PHONE</label>
+                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">電話</label>
                 <div className="relative group">
                   <Phone size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
                   <input
@@ -185,7 +179,7 @@ function RegisterForm() {
 
               {/* Email */}
               <div className="space-y-2">
-                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">電子信箱 EMAIL</label>
+                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">電子信箱</label>
                 <div className="relative group">
                   <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
                   <input
@@ -193,10 +187,10 @@ function RegisterForm() {
                     value={formData.email}
                     onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
                     placeholder="example@mail.com"
-                    className={`w-full bg-white/5 border-2 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-slate-600 font-bold outline-none transition-all shadow-inner ${isAttempted && !isEmailValid ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/5 focus:border-purple-500/40 focus:bg-white/10'}`}
+                    className={`w-full bg-white/5 border-2 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-slate-600 font-bold outline-none transition-all shadow-inner border-white/5 focus:border-purple-500/40 focus:bg-white/10`}
                   />
                 </div>
-                {isAttempted && !isEmailValid && <p className="text-[13px] text-rose-400 font-black ml-1 tracking-tighter">請輸入正確的信箱格式</p>}
+
               </div>
             </div>
           </div>

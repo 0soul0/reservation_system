@@ -1,11 +1,11 @@
 import { getEvents, getScheduleMenus } from '@/services/data'
 import { redirect } from 'next/navigation'
-import EventListWrapper from './EventListWrapper'
 import { MANAGER_LEVEL } from '@/constants/common'
 import { getSession } from '@/app/actions/superAuth'
 import { ROUTES } from '@/constants/routes'
+import EventList from './EventList'
 
-export const runtime = "edge";
+
 
 export default async function EventsPage() {
   const session = await getSession(MANAGER_LEVEL.ADMIN)
@@ -25,7 +25,7 @@ export default async function EventsPage() {
         </div>
       </div>
 
-      <EventListWrapper events={events} menus={menus} managerUid={session.uid} managerWebsiteName={session.website_name} />
+      <EventList events={events} menus={menus} managerUid={session.uid} managerWebsiteName={session.website_name} />
     </div>
   )
 }

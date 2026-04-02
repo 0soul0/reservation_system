@@ -49,7 +49,7 @@ export const Dialog: React.FC<DialogProps> = ({
 
   return ReactDOM.createPortal(
     <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-      <div 
+      <div
         onClick={onClose}
         className="fixed inset-0 bg-black/40 backdrop-blur-md"
       />
@@ -57,7 +57,7 @@ export const Dialog: React.FC<DialogProps> = ({
       <div
         className={`relative w-full ${sizeClasses[size]} bg-white dark:bg-[#0f1011] rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 overflow-hidden z-20 transition-all duration-300 transform ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'} ${className}`}
       >
-        <div className="px-6 py-5 flex items-start justify-between">
+        <div className="px-2 py-1 flex items-start justify-between">
           <div className="flex-1">
             {title && (
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
@@ -83,7 +83,7 @@ export const Dialog: React.FC<DialogProps> = ({
         </div>
 
         {footer && (
-          <div className="px-6 py-5 mt-4 flex items-center justify-end gap-3 bg-gray-50/50 dark:bg-white/5 border-t border-gray-100 dark:border-white/10">
+          <div className="px-2 py-1 mt-4 flex items-center justify-end gap-3 bg-gray-50/50 dark:bg-white/5 border-t border-gray-100 dark:border-white/10">
             {footer}
           </div>
         )}

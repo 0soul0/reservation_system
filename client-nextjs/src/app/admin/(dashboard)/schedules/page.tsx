@@ -4,7 +4,7 @@ import ScheduleList from './ScheduleList'
 import { getSession } from '@/app/actions/superAuth'
 import { MANAGER_LEVEL } from '@/constants/common'
 
-export const runtime = "edge";
+
 
 export default async function SchedulesPage() {
   const session = await getSession(MANAGER_LEVEL.ADMIN)

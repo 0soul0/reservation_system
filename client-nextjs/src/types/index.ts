@@ -157,13 +157,14 @@ export type GasPayload = {
   googleCalendarId: string;
   eventId?: string;
   data?: {
-    name: string;
-    phone: string;
-    email: string;
-    service_item: string;
-    booking_start_time: string;
-    booking_end_time: string;
+    name?: string;
+    phone?: string;
+    email?: string;
+    service_item?: string;
+    booking_start_time?: string;
+    booking_end_time?: string;
     line_uid?: string;
+    color_id?: string;
   };
 }
 
@@ -185,6 +186,7 @@ export type QItem = {
 
 // ─── Line Notify 問卷式填寫元件 ───────────────────────────────
 export type NotifyEntry = {
+  instanceId?: string;
   key: string;
   value: string,
   sample: string,
@@ -193,6 +195,16 @@ export type NotifyEntry = {
   has_text: boolean,
   procedure_name: string,
   columns_json: string,
-  next_service_keys?: string[],
+  more_keys?: string[],
   no_data_keys?: string[]
+}
+
+export interface ScheduleSlotProps {
+  uid: string;
+  time_label: string;
+  time_range: string;
+  time_start: string;
+  max_capacity: number;
+  available_capacity: number;
+  start_minutes: number;
 }

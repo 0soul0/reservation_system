@@ -6,7 +6,7 @@ NEXT_PUBLIC_EDGE_FUNCTION_PUSH="" #line notify
 
 NEXT_PUBLIC_EDGE_FUNCTION="" #貼到line bot 上面網址
 
-NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY="" # For backend logic
+SUPABASE_SERVICE_ROLE_K="" # For backend logic
 
 
 NODE_ENV=""
