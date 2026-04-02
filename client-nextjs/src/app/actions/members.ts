@@ -50,3 +50,37 @@ export async function registerMember(payload: {
     return { success: false, message: err.message }
   }
 }
+
+export async function updateMember(payload: {
+  uid: string
+  status: boolean
+  name: string
+  phone: string
+  email: string
+}) {
+  try {
+    const now = new Date().toISOString()
+    const { uid, status, name, phone, email } = payload
+
+    const { error } = await supabaseAdmin
+      .from('member')
+      .update({
+        status,
+        name,
+        phone,
+        email,
+        update_at: now
+      })
+      .eq('uid', uid)
+
+    if (error) {
+      throw error
+    }
+
+    revalidatePath('/members')
+    return { success: true }
+  } catch (err: any) {
+    console.error('updateMember Error:', err)
+    return { success: false, message: err.message }
+  }
+}

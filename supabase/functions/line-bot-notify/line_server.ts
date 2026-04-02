@@ -11,13 +11,13 @@ export const LineService = {
     reply: async function (supabase?: any, replyData?: any) {
         const { accessToken, replyToken, responseText, searchData, procedureData } = replyData;
         if (!accessToken || !replyToken) return;
-
+        console.log("replyData", replyData)
         const messages: any[] = [];
 
         // 1. 基本文字訊息
-        if (responseText && searchData.has_text) {
+        if (searchData.has_text) {
             let text = responseText
-            if (responseText === '[]' || responseText === '{}') {
+            if (!responseText || responseText === '[]' || responseText === '{}') {
                 text = "查無資料"
             }
             messages.push({
@@ -288,22 +288,27 @@ function createQuickActionsFlex_(more_keys: string[] = []) {
 function createButtons_(keys: string[], isPrimary = true) {
     if (!keys || keys.length === 0) return [];
 
-    // 將 key 陣列轉為按鈕物件
     return keys.map(key => {
-        return {
+        // 先定義基礎結構
+        const button = {
             "type": "button",
             "action": {
                 "type": "message",
                 "label": key,
                 "text": key
             },
-            // --- 這裡開始根據 flag 切換 ---
             "style": isPrimary ? "primary" : "link",
-            "color": isPrimary ? "#463ec9" : null,      // link 模式下通常不設背景色
-            "cornerRadius": isPrimary ? "md" : null,   // link 模式不支援圓角
             "height": "sm",
             "margin": "md"
         };
+
+        // 只有在 Primary 模式下才加入這些屬性，避免 null
+        if (isPrimary) {
+            button["color"] = "#463ec9";
+            button["cornerRadius"] = "md";
+        }
+
+        return button;
     });
 }
 

@@ -122,11 +122,11 @@ export default function BookingList({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider">預約時間</th>
-                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider">預約人</th>
-                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider">服務項目</th>
-                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider">狀態</th>
-                <th className="px-6 py-5 text-xm font-bold text-slate-300 uppercase tracking-wider text-right">操作</th>
+                <th className="px-4 py-3 text-xm font-bold text-slate-300 uppercase tracking-wider">預約時間</th>
+                <th className="px-4 py-3 text-xm font-bold text-slate-300 uppercase tracking-wider">預約人</th>
+                <th className="px-4 py-3 text-xm font-bold text-slate-300 uppercase tracking-wider">服務項目</th>
+                <th className="px-4 py-3 text-xm font-bold text-slate-300 uppercase tracking-wider">狀態</th>
+                <th className="px-4 py-3 text-xm font-bold text-slate-300 uppercase tracking-wider text-right">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -136,7 +136,7 @@ export default function BookingList({
                   onClick={() => setSelectedBooking(booking)}
                   className={`hover:bg-white/10 transition-colors group cursor-pointer ${booking.status === BOOKING_STATUS.CANCELLED ? 'opacity-40' : ''}`}
                 >
-                  <td className="px-6 py-5 space-y-1.5 whitespace-nowrap">
+                  <td className="px-4 py-3 space-y-1.5 whitespace-nowrap">
                     <div className="flex items-center gap-2 text-xm text-white font-bold">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400 shrink-0"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                       <span>{TimeUtils.getDatePart(booking.booking_start_time)}</span>
@@ -148,32 +148,32 @@ export default function BookingList({
                       <span>{TimeUtils.getTimePart(booking.booking_end_time)}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <div className="font-bold text-white text-[15px]">{booking.name}</div>
                     <div className="text-[13px] text-slate-400 mt-1 font-mono font-bold tracking-wider">{booking.phone}</div>
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400 shrink-0"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg>
                       <span className="text-slate-100 font-bold text-xm whitespace-nowrap">{booking.service_item}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1.5">
-                      <span className={`inline-flex px-2 py-1 rounded-full text-[14px] font-black uppercase tracking-widest border ${booking.is_deposit_received
+                      <span className={`inline-flex px-4 py-3 rounded-full text-[14px] font-black uppercase tracking-widest border ${booking.is_deposit_received
                         ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                         : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
                         }`}>
                         {booking.is_deposit_received ? '已付訂金' : '待付訂金'}
                       </span>
                       {booking.status === BOOKING_STATUS.CANCELLED && (
-                        <span className="inline-flex px-2 py-1 rounded-full text-[14px] font-black uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                        <span className="inline-flex px-4 py-3 rounded-full text-[14px] font-black uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500/30">
                           已取消
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-right">
+                  <td className="px-4 py-3 text-right">
                     <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all inline-flex items-center cursor-pointer">
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                     </button>
@@ -190,7 +190,7 @@ export default function BookingList({
           </table>
         </div>
 
-        <div className="px-6 py-5 border-t border-white/10 flex flex-col lg:flex-row items-center justify-between gap-6 bg-white/[0.02]">
+        <div className="px-4 py-3 border-t border-white/10 flex flex-col lg:flex-row items-center justify-between gap-6 bg-white/[0.02]">
           <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
             <p className="text-xm text-slate-400 font-bold">
               顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆，共 <span className="text-white font-black">{totalCount}</span> 筆
@@ -201,7 +201,7 @@ export default function BookingList({
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-ms text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer font-bold"
+                className="bg-white/10 border border-white/10 rounded-lg px-4 py-3 text-ms text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer font-bold"
               >
                 {[10, 20, 50, 100].map(size => (
                   <option key={size} value={size} className="bg-[#111]">{size} 筆</option>

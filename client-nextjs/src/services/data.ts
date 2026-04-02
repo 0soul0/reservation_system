@@ -89,21 +89,6 @@ export async function getMembers(managerUid: string, filter: MemberFilter = {}):
   }
 }
 
-export async function updateMember(uid: string, data: Partial<Member>) {
-  try {
-    const { error } = await supabaseAdmin
-      .from('member')
-      .update(data)
-      .eq('uid', uid)
-
-    if (error) throw error
-    return { success: true }
-  } catch (err) {
-    console.error('updateMember Error:', err)
-    throw err
-  }
-}
-
 export interface BookingFilter {
   searchTerm?: string
   page?: number
