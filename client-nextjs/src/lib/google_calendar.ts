@@ -3,6 +3,11 @@ import { CONFIG_ENV } from "./env";
 
 const GAS_URL = CONFIG_ENV.google.gasUrl;
 
+export const GOOGLE_CALENDAR_COLOR_ID = {
+    PURPLE: 3,
+    GRAY: 8,
+}
+
 export class GoogleCalendarService {
 
     static async sync(payload: GasPayload) {

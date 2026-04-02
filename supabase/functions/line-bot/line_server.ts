@@ -227,7 +227,7 @@ function createBookingFlex_(searchData: any, procedureData?: any) {
     if (bookings) {
         bubbles = bookings.map((b: any) => {
 
-            const showTime = formatDateTime(b.booking_date)
+            const showTime = formatDateTime(b.booking_start_time)
             return {
                 "type": "bubble",
                 "header": {
@@ -320,7 +320,7 @@ const statusMap: Record<string, { text: string, color: string }> = {
         color: '#1877F2'
     },
     '2': {
-        text: '完成',
+        text: '預約成功',
         color: '#888888'
     },
     '0': {

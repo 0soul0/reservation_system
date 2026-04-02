@@ -157,13 +157,14 @@ export type GasPayload = {
   googleCalendarId: string;
   eventId?: string;
   data?: {
-    name: string;
-    phone: string;
-    email: string;
-    service_item: string;
-    booking_start_time: string;
-    booking_end_time: string;
+    name?: string;
+    phone?: string;
+    email?: string;
+    service_item?: string;
+    booking_start_time?: string;
+    booking_end_time?: string;
     line_uid?: string;
+    color_id?: string;
   };
 }
 

@@ -11,7 +11,7 @@
 function doPost(e) {
     try {
         const params = JSON.parse(e.postData.contents);
-        log("params", params)
+        log("params1", params)
         // 將判斷邏輯交給 Router
         const result = Router.handle(params);
 
