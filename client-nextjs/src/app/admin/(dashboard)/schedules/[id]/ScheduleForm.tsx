@@ -109,7 +109,7 @@ export default function ScheduleForm({ id, managerUid, initialData }: ScheduleFo
     const isDirty = isNameChanged || isTimesDirty || isNew
 
     if (!isDirty) {
-      router.push('/schedules')
+      router.push(ROUTES.ADMIN.SCHEDULES)
       return
     }
 

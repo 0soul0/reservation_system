@@ -5,15 +5,10 @@ import { usePathname } from 'next/navigation'
 import { ROUTES } from '@/constants/routes'
 import { logoutAction } from '@/app/actions/superAuth'
 import { MANAGER_LEVEL } from '@/constants/common'
+import { Manager } from '@/types'
 
-interface DashboardNavProps {
-  session: {
-    name: string
-    account: string
-  }
-}
 
-export default function DashboardNav({ session }: DashboardNavProps) {
+export default function DashboardNav(session: Manager) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
 
@@ -26,7 +21,8 @@ export default function DashboardNav({ session }: DashboardNavProps) {
       <header className="md:hidden flex items-center justify-between p-4 border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-40 font-bold">
         <Link href={ROUTES.ADMIN.MEMBERS} className="flex items-center gap-2 group">
           <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center text-white">R</div>
-          <span className="text-xl tracking-tight text-white">管理系統</span>
+          {/* <span className="text-xl tracking-tight text-white">{session.name}</span>
+          <span className="text-xl tracking-tight text-white">{session.website_name}</span> */}
         </Link>
         <button onClick={toggleSidebar} className="p-2 text-slate-400 hover:text-white cursor-pointer">
           {isOpen ? <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> : <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>}
@@ -36,9 +32,18 @@ export default function DashboardNav({ session }: DashboardNavProps) {
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-white/10 flex flex-col backdrop-blur-xl bg-black/90 md:bg-white/5 md:relative transform transition-transform duration-300 ease-in-out font-bold ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="p-8 hidden md:block">
-          <Link href={ROUTES.ADMIN.MEMBERS} className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center text-white group-hover:scale-110 transition-transform font-black">R</div>
-            <span className="text-xl tracking-tight text-white font-black">管理系統</span>
+          <Link href={ROUTES.ADMIN.MEMBERS} className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center text-white group-hover:scale-110 transition-transform font-black shrink-0">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xl tracking-tight text-white font-black leading-tight">
+                {session.account}
+              </span>
+              <p className="text-base tracking-tight text-gray-400 font-bold leading-tight">
+                {session.website_name}
+              </p>
+            </div>
           </Link>
         </div>
 
