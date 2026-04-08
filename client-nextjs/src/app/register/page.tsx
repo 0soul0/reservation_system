@@ -120,93 +120,77 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center relative overflow-x-hidden font-sans pb-12">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center relative overflow-x-hidden font-sans pb-12">
       {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full z-0 opacity-40">
-        <div className="absolute -top-32 -right-32 w-[80vw] h-[80vw] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-[60vw] h-[60vw] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-full z-0 opacity-20">
+        <div className="absolute -top-32 -right-32 w-[80vw] h-[80vw] bg-purple-400/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-[60vw] h-[60vw] bg-cyan-400/20 rounded-full blur-[120px] pointer-events-none" />
       </div>
 
       <div className="w-full max-w-[540px] px-6 relative z-10 pt-16">
         <header className="text-center mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="inline-block p-5 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-[2rem] shadow-2xl shadow-purple-500/30 mb-6 border border-white/20">
+          <div className="inline-block p-5 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-[2rem] shadow-2xl shadow-purple-500/20 mb-6 border border-white/40">
             <User className="text-white w-10 h-10" />
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight leading-tight uppercase">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight uppercase">
             成為會員 <br />
           </h1>
         </header>
 
         <div
-          className="bg-white/[0.03] backdrop-blur-[40px] border border-white/10 rounded-[3rem] p-8 md:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)]"
+          className="bg-white/80 backdrop-blur-xl border border-white rounded-[3rem] p-8 md:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08)]"
         >
           <div className="space-y-6">
-            <h2 className="text-[12px] font-black text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2 opacity-60">
-              <User size={14} className="text-cyan-400" /> 基本資料
+            <h2 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+              <User size={14} className="text-cyan-500" /> 基本資料
             </h2>
 
             <div className="space-y-5">
               {/* Name */}
               <div className="space-y-2">
-                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">姓名</label>
+                <label className="text-[13px] font-black text-slate-500 ml-1 uppercase tracking-wider">姓名</label>
                 <div className="relative group">
-                  <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
+                  <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-600 transition-colors" />
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
                     placeholder="您的稱呼"
-                    className={`w-full bg-white/5 border-2 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-slate-600 font-bold outline-none transition-all shadow-inner ${isAttempted && !formData.name ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/5 focus:border-purple-500/40 focus:bg-white/10'}`}
+                    className={`w-full bg-slate-100/50 border-2 rounded-2xl pl-14 pr-6 py-4 text-slate-900 placeholder-slate-400 font-bold outline-none transition-all shadow-inner ${isAttempted && !formData.name ? 'border-rose-400 bg-rose-50' : 'border-transparent focus:border-purple-500/20 focus:bg-white'}`}
                   />
                 </div>
               </div>
 
               {/* Phone */}
               <div className="space-y-2">
-                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">電話</label>
+                <label className="text-[13px] font-black text-slate-500 ml-1 uppercase tracking-wider">電話</label>
                 <div className="relative group">
-                  <Phone size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
+                  <Phone size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-600 transition-colors" />
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
                     placeholder="09XX-XXX-XXX"
-                    className={`w-full bg-white/5 border-2 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-slate-600 font-bold outline-none transition-all shadow-inner ${isAttempted && !isPhoneValid ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/5 focus:border-purple-500/40 focus:bg-white/10'}`}
+                    className={`w-full bg-slate-100/50 border-2 rounded-2xl pl-14 pr-6 py-4 text-slate-900 placeholder-slate-400 font-bold outline-none transition-all shadow-inner ${isAttempted && !isPhoneValid ? 'border-rose-400 bg-rose-50' : 'border-transparent focus:border-purple-500/20 focus:bg-white'}`}
                   />
                 </div>
-                {isAttempted && !isPhoneValid && <p className="text-[13px] text-rose-400 font-black ml-1 tracking-tighter">請輸入正確的手機格式</p>}
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-black text-slate-400 ml-1 uppercase tracking-wider">電子信箱</label>
-                <div className="relative group">
-                  <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-purple-400 transition-colors" />
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
-                    placeholder="example@mail.com"
-                    className={`w-full bg-white/5 border-2 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-slate-600 font-bold outline-none transition-all shadow-inner border-white/5 focus:border-purple-500/40 focus:bg-white/10`}
-                  />
-                </div>
-
+                {isAttempted && !isPhoneValid && <p className="text-[13px] text-rose-500 font-black ml-1 tracking-tighter">請輸入正確的手機格式</p>}
               </div>
             </div>
           </div>
 
           {/* Questionnaire Section */}
           {parsedQuestionnaire.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-white/5 flex flex-col gap-10">
-              <h2 className="text-[12px] font-black text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2 opacity-60">
-                <ListTodo size={14} className="text-cyan-400" /> 偏好問卷 PREFERENCES
+            <div className="mt-8 pt-8 border-t border-slate-100 flex flex-col gap-10">
+              <h2 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                <ListTodo size={14} className="text-cyan-500" /> 偏好問卷 PREFERENCES
               </h2>
 
               {parsedQuestionnaire.map((q: any, idx: number) => {
                 const hasOptions = q.options && q.options.length > 0
                 return (
                   <div key={idx} className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${idx * 150}ms` }}>
-                    <label className="text-xm font-black text-white ml-1 block">{q.title}</label>
+                    <label className="text-xm font-black text-slate-800 ml-1 block">{q.title}</label>
 
                     {hasOptions ? (
                       <div className="flex flex-wrap gap-3">
@@ -218,7 +202,7 @@ function RegisterForm() {
                               onClick={() => setAnswers(prev => ({ ...prev, [q.title]: opt.title }))}
                               className={`
                                 px-6 py-3 rounded-2xl text-ms font-black transition-all border-2
-                                ${isSelected ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/40' : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10'}
+                                ${isSelected ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-100 border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-200/50'}
                               `}
                             >
                               {opt.title}
@@ -229,7 +213,7 @@ function RegisterForm() {
                           onClick={() => setAnswers(prev => ({ ...prev, [q.title]: '__OTHER__' }))}
                           className={`
                             px-6 py-3 rounded-2xl text-ms font-black transition-all border-2
-                            ${answers[q.title] === '__OTHER__' ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/40' : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10'}
+                            ${answers[q.title] === '__OTHER__' ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-100 border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-200/50'}
                           `}
                         >
                           其他
@@ -245,7 +229,7 @@ function RegisterForm() {
                           placeholder="請輸入詳情..."
                           value={otherInputs[q.title] || ''}
                           onChange={(e) => setOtherInputs(prev => ({ ...prev, [q.title]: e.target.value }))}
-                          className={`w-full bg-white/5 border-2 rounded-2xl px-6 py-4 text-white font-bold outline-none transition-all shadow-inner ${isAttempted && answers[q.title] === '__OTHER__' && !otherInputs[q.title]?.trim() ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/5 focus:border-purple-500/40 focus:bg-white/10'}`}
+                          className={`w-full bg-slate-100/50 border-2 rounded-2xl px-6 py-4 text-slate-900 font-bold outline-none transition-all shadow-inner ${isAttempted && answers[q.title] === '__OTHER__' && !otherInputs[q.title]?.trim() ? 'border-rose-400 bg-rose-50' : 'border-transparent focus:border-purple-500/20 focus:bg-white'}`}
                         />
                       </div>
                     )}
@@ -260,8 +244,8 @@ function RegisterForm() {
             onClick={handleRegister}
             disabled={isSubmitting}
             className={`
-              w-full mt-10 py-5 rounded-[1.5rem] text-white font-black text-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_15px_40px_-5px_rgba(147,51,234,0.4)]
-              ${isSubmitting ? 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5' : 'bg-gradient-to-r from-purple-600 to-cyan-600 hover:scale-[1.03] active:scale-95 border border-white/20'}
+              w-full mt-10 py-5 rounded-[1.5rem] text-white font-black text-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_15px_40px_-5px_rgba(147,51,234,0.3)]
+              ${isSubmitting ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-cyan-600 hover:scale-[1.03] active:scale-95 border border-white/20'}
             `}
           >
             {isSubmitting ? (
@@ -274,7 +258,7 @@ function RegisterForm() {
 
         {/* Footer */}
         <footer className="mt-12 text-center opacity-40">
-          <p className="text-[14px] font-black text-slate-300 tracking-[0.3em] uppercase">
+          <p className="text-[14px] font-black text-slate-400 tracking-[0.3em] uppercase">
             v0.2.0 © SECURE RESERVATION GATEWAY
           </p>
         </footer>
@@ -286,9 +270,9 @@ function RegisterForm() {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center">
-        <Loader2 className="animate-spin text-purple-500 w-12 h-12 mb-4" />
-        <p className="text-white font-bold animate-pulse">載入中...</p>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin text-purple-600 w-12 h-12 mb-4" />
+        <p className="text-slate-600 font-bold animate-pulse">載入中...</p>
       </div>
     }>
       <RegisterForm />
