@@ -344,9 +344,21 @@ export default function BookingList({
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 預約狀態
                   </p>
                   <div className="pl-6 flex items-center gap-3">
-                    <span className={`text-xm font-bold ${selectedBooking.status === BOOKING_STATUS.BOOKING_SUCCESS ? 'text-cyan-400' : 'text-purple-400'}`}>
-                      {selectedBooking.status === BOOKING_STATUS.BOOKING_SUCCESS ? '預約成功' : (selectedBooking.status === BOOKING_STATUS.CANCELLED ? '已取消' : '審核中')}
+
+
+                    <span className={`text-xm font-bold
+                      ${selectedBooking.status === BOOKING_STATUS.BOOKING_SUCCESS ? 'text-cyan-400' : ''}
+                      ${selectedBooking.status === BOOKING_STATUS.CANCELLED ? 'text-red-400' : ''}
+                      ${selectedBooking.status === BOOKING_STATUS.REVIEW ? 'text-purple-400' : ''}
+                      ${selectedBooking.status === BOOKING_STATUS.APPLY_CANCELED ? 'text-yellow-400' : ''}
+                      `}>
+                      {selectedBooking.status === BOOKING_STATUS.BOOKING_SUCCESS ? '預約成功' : ''}
+                      {selectedBooking.status === BOOKING_STATUS.CANCELLED ? '已取消' : ''}
+                      {selectedBooking.status === BOOKING_STATUS.REVIEW ? '審核中' : ''}
+                      {selectedBooking.status === BOOKING_STATUS.APPLY_CANCELED ? '申請取消' : ''}
                     </span>
+
+
                   </div>
                 </div>
               </div>
