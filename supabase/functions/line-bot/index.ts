@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
         }
 
         //4. line 官方管理員回復
-        if (searchData && searchData.line_oa_reply) {
+        if (searchData && searchData.line_oa_reply && managerData.line_official_account) {
           let responseAdminText = searchData.line_oa_reply;
           searchData.procedure_name = "line_get_member";
           const data = await executeProcedure(searchData, supabase, {
