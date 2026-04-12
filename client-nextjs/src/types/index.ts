@@ -52,6 +52,7 @@ export type Booking = {
   booking_start_time: string
   booking_end_time: string
   is_deposit_received: boolean
+  service_computed_duration: number
   status: number
   create_at: string
   update_at: string

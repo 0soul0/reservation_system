@@ -22,9 +22,9 @@ function supabaseRequest(method, endpoint, payload = null) {
 // 通用 LINE Push 訊息
 // 在 Config.gs 的 sendPush 裡面增加細節檢查
 function sendPush(token, to, messages) {
-  if(!token||!to){
+  if (!token || !to) {
     console.error(`param empty`);
-    return 
+    return
   }
   const url = "https://api.line.me/v2/bot/message/push";
   const options = {
@@ -35,13 +35,13 @@ function sendPush(token, to, messages) {
     },
     payload: JSON.stringify({ to: to, messages: Array.isArray(messages) ? messages : [messages] }),
     // 強烈建議開啟這個，可以看到更詳細的 LINE 報錯原因
-    muteHttpExceptions: true 
+    muteHttpExceptions: true
   };
-  
+
   const response = UrlFetchApp.fetch(url, options);
   const resCode = response.getResponseCode();
   const resText = response.getContentText();
-  
+
   if (resCode !== 200) {
     console.error(`LINE API Error: ${resText}`);
   }
