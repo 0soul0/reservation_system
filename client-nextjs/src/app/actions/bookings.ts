@@ -198,6 +198,7 @@ export async function updateBookingStatus(booking: Booking, session: Manager, st
           booking_end_time: booking.booking_end_time,
           line_uid: booking.line_uid || result.line_uid,
           manager_uid: session.uid,
+          service_computed_duration: booking.service_computed_duration,
           action: LINE_NOTIFY_ACTION.BOOKING_SUCCESS,
           displayTime: `${booking.booking_start_time} - ${booking.booking_end_time.slice(-5)}`
         },

@@ -1,17 +1,14 @@
 /**
- * 產生顧客預約提醒的 Flex Message (修復 URI 錯誤並加入地址)
+ * 產生顧客預約提醒的 Flex Message (保留原本的邏輯)
  */
 function getCustomerReminderFlex(title, color, bk, day, note) {
-  // 1. 設定基礎資訊 (請務必確保這裡是以 https:// 開頭)
-  const rawParkingUrl = "https://www.google.com/maps/search/?api=1&query=停車場"; 
-  const rawStoreUrl = "https://www.google.com/maps/search/?api=1&query=HNP健甲專家";
-  const STORE_ADDRESS = "台北市大安區某某路 123 號 1 樓"; // 👈 這裡顯示文字地址
+  const rawParkingUrl = "https://maps.app.goo.gl/ZQmrC1nkcchFv8KD8";
+  const rawStoreUrl = "https://maps.app.goo.gl/7tYZUuniXaugiSXY6?g_st=ipc";
+  const STORE_ADDRESS = "桃園市龜山區頂興路136號";
 
-  // 2. 重要：對 URI 進行編碼，防止 "invalid uri" 錯誤
   const PARKING_URL = encodeURI(rawParkingUrl);
   const STORE_URL = encodeURI(rawStoreUrl);
 
-  // 3. 格式化時間
   const timeStr = Utilities.formatDate(new Date(bk.booking_start_time), "GMT+8", "MM/dd HH:mm");
 
   return {
@@ -31,7 +28,7 @@ function getCustomerReminderFlex(title, color, bk, day, note) {
         spacing: "md",
         contents: [
           { type: "text", text: `親愛的 ${bk.name} 您好：溫馨提醒您，${day}有服務預約喔！`, wrap: true },
-          { 
+          {
             type: "box",
             layout: "vertical",
             spacing: "sm",
@@ -52,23 +49,13 @@ function getCustomerReminderFlex(title, color, bk, day, note) {
         contents: [
           {
             type: "button",
-            action: {
-              type: "uri",
-              label: "🅿️ 停車導航",
-              uri: PARKING_URL // 👈 已經過 encodeURI 處理
-            },
-            style: "primary",
-            color: "#4e73df"
+            action: { type: "uri", label: "🅿️ 停車導航", uri: PARKING_URL },
+            style: "primary", color: "#4e73df"
           },
           {
             type: "button",
-            action: {
-              type: "uri",
-              label: "📍 店家位置",
-              uri: STORE_URL // 👈 已經過 encodeURI 處理
-            },
-            style: "primary",
-            color: "#1cc88a"
+            action: { type: "uri", label: "📍 店家位置", uri: STORE_URL },
+            style: "primary", color: "#1cc88a"
           }
         ]
       }
@@ -77,84 +64,117 @@ function getCustomerReminderFlex(title, color, bk, day, note) {
 }
 
 /**
- * 管理員摘要卡片 (Carousel 內的 Bubble)
- */
-/**
- * 產生管理員摘要卡片 (Carousel 內的單個 Bubble)
- * 所有文字與樣式設定皆已內含，方便維護。
+ * 產生管理員摘要卡片 (完全對齊截圖的新版設計)
  */
 function createDigestBubble(dateStr, apps) {
-  // --- 內部設定區 (方便隨時修改文字與顏色) ---
-  const CONFIG = {
-    BG_COLOR: "#27406C",       // 標題區背景顏色
-    SUCCESS_LABEL: "已付",      // 定金已付文字
-    PENDING_LABEL: "未付",      // 定金未付文字
-    SUCCESS_COLOR: "#00bb00",  // 已付文字顏色 (綠)
-    PENDING_COLOR: "#ff0000",  // 未付文字顏色 (紅)
-    NO_BOOKING_TEXT: "本日目前無預約 🌴" // 當天沒人預約時顯示
-  };
+  // 1. 將 yyyy-MM-dd 轉換為 4/13 (一) 的格式
+  const [yyyy, MM, dd] = dateStr.split('-');
+  const dateObj = new Date(yyyy, MM - 1, dd);
+  const dayNames = ["(日)", "(一)", "(二)", "(三)", "(四)", "(五)", "(六)"];
+  const displayDate = `${parseInt(MM)}/${parseInt(dd)} ${dayNames[dateObj.getDay()]}`;
 
-  // 1. 處理預約清單 rows
-  const rows = apps.length > 0 ? apps.map(a => {
-    return {
-      type: "box",
-      layout: "horizontal",
-      contents: [
-        { 
-          type: "text", 
-          text: Utilities.formatDate(new Date(a.booking_start_time), "GMT+8", "HH:mm"), 
-          size: "xs", 
-          flex: 2  // 時間比例
-        },
-        { 
-          type: "text", 
-          text: a.is_deposit_received ? CONFIG.SUCCESS_LABEL : CONFIG.PENDING_LABEL, 
-          color: a.is_deposit_received ? CONFIG.SUCCESS_COLOR : CONFIG.PENDING_COLOR, 
-          size: "xs", 
-          flex: 2  // 狀態比例 (必須為整數，不可用 1.5)
-        },
-        { 
-          type: "text", 
-          text: a.name || "無姓名", 
-          size: "xs", 
-          flex: 4, // 姓名比例，給較寬空間
-          wrap: true 
-        }
-      ]
-    };
-  }) : [
-    { 
-      type: "text", 
-      text: CONFIG.NO_BOOKING_TEXT, 
-      align: "center", 
-      color: "#aaaaaa", 
-      size: "sm", 
-      margin: "md" 
-    }
-  ];
+  // 2. 處理預約清單
+  const rows = [];
+  if (apps.length > 0) {
+    apps.forEach((a, index) => {
+      // 處理時間 (若資料庫有 booking_end_time 就組成 11:30-12:30，沒有就單純顯示開始時間)
+      const startStr = Utilities.formatDate(new Date(a.booking_start_time), "GMT+8", "HH:mm");
+      const endStr = a.booking_end_time ? Utilities.formatDate(new Date(a.booking_end_time), "GMT+8", "HH:mm") : "";
+      const timeDisplay = endStr ? `${startStr}–${endStr}` : startStr;
 
-  // 2. 組裝並回傳 Bubble 物件
+      rows.push({
+        type: "box",
+        layout: "vertical",
+        margin: index === 0 ? "none" : "lg", // 第二筆以上增加上方間距
+        spacing: "sm",
+        contents: [
+          {
+            // [第一列] 時間 與 定金狀態
+            type: "box",
+            layout: "horizontal",
+            contents: [
+              { type: "text", text: timeDisplay, weight: "bold", size: "md", color: "#111111" },
+              {
+                type: "text",
+                text: a.is_deposit_received ? "已付定金" : "未付定金",
+                color: a.is_deposit_received ? "#00bb00" : "#ff0000",
+                size: "sm",
+                weight: "bold",
+                align: "end"
+              }
+            ]
+          },
+          {
+            // [第二列] 姓名 與 電話 (假設資料庫電話欄位為 phone)
+            type: "box",
+            layout: "horizontal",
+            spacing: "md",
+            contents: [
+              { type: "text", text: a.name || "無姓名", weight: "bold", size: "sm", color: "#111111", flex: 0 },
+              { type: "text", text: a.phone || "", size: "sm", color: "#888888" }
+            ]
+          },
+          {
+            // [第三列] 服務項目
+            type: "text",
+            text: `服務：${a.service_item || "未指定"}`,
+            size: "sm",
+            color: "#666666",
+            wrap: true
+          }
+        ]
+      });
+
+      // 如果不是最後一筆，就加入一條淡灰色的分隔線
+      if (index < apps.length - 1) {
+        rows.push({ type: "separator", margin: "lg", color: "#eeeeee" });
+      }
+    });
+  } else {
+    // 當天無預約的畫面
+    rows.push({
+      type: "text",
+      text: "本日目前無預約 🌴",
+      align: "center",
+      color: "#aaaaaa",
+      size: "sm",
+      margin: "md"
+    });
+  }
+
+  // 3. 組裝並回傳 Bubble 物件
   return {
     type: "bubble",
-    size: "mega",
+    size: "mega", // 讓卡片寬度足夠顯示完整資訊
     header: {
       type: "box",
       layout: "vertical",
-      backgroundColor: CONFIG.BG_COLOR,
+      backgroundColor: "#27406C",
+      paddingTop: "xl",
+      paddingBottom: "lg",
       contents: [
-        { 
-          type: "text", 
-          text: `${dateStr} (${apps.length} 筆)`, 
-          color: "#ffffff", 
-          weight: "bold", 
-          size: "sm" 
+        {
+          type: "text",
+          text: displayDate,
+          color: "#ffffff",
+          weight: "bold",
+          size: "xl",
+          align: "center"
+        },
+        {
+          type: "text",
+          text: `共 ${apps.length} 筆預約`,
+          color: "#ffffff",
+          size: "sm",
+          align: "center",
+          margin: "sm"
         }
       ]
     },
     body: {
       type: "box",
       layout: "vertical",
-      spacing: "md",
+      paddingTop: "lg",
       contents: rows
     }
   };
