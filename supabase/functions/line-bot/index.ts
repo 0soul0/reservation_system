@@ -3,7 +3,7 @@ import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "../_shared/constant.ts"
 import { LineService } from "../_shared/line_server.ts";
 import { executeProcedure } from "./action.ts";
 import { processCommand, formatDateTime } from "../_shared/tool.ts";
-//npx supabase functions deploy line-bot --project-ref rqczzxaxyntjdyqifalj --no-verify-jwt
+//npx supabase functions deploy line-bot --project-ref aemzljulwhovywbiipqd --no-verify-jwt
 // 初始化 Supabase Client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 Deno.serve(async (req) => {
