@@ -1,9 +1,18 @@
 const TABLE_NAME = 'member';
 const MANAGER_UID = "kX2p9W5y";
+const sheetId = "1gGmHcKcyhI7zvSwTz2eRNmuvEHiwCeUaDRN_m85HPl4";
+const sheetmember = "會員資料";
+const sheetbook = "預約資料";
+
+function all() {
+  syncSheetToSupabase()
+  processBookingsFromSheet()
+}
+
 
 function syncSheetToSupabase() {
-  const ss = SpreadsheetApp.openById("1GkdI4i5jJ4rZVHtEPr5N7dJeCXeOGI-ksSgpOuHx21Q")
-  const sheet = ss.getSheetByName('會員資料'); // 請改成你的分頁名稱
+  const ss = SpreadsheetApp.openById(sheetId)
+  const sheet = ss.getSheetByName(sheetmember); // 請改成你的分頁名稱
   const data = sheet.getDataRange().getValues();
 
   // 取得標頭 (第一列) 以確認欄位位置
@@ -20,7 +29,7 @@ function syncSheetToSupabase() {
       manager_uid: MANAGER_UID,
       line_uid: row[1],
       name: row[2],
-      phone: row[3].toString(), // 確保電話是字串
+      phone: row[3].toString().padStart(10, '0').trim(), // 確保電話是字串
       status: row[4] === true || row[4] === "TRUE", // 轉換 checkbox 為 boolean
       create_at: new Date(row[5]).toISOString(),
       update_at: new Date(row[6]).toISOString()
@@ -37,7 +46,7 @@ function syncSheetToSupabase() {
       'Authorization': `Bearer ${CONFIG.KEY}`,
       'Prefer': 'return=representation' // 回傳寫入的資料（選擇性）
     },
-    payload: JSON.stringify(payload.slice(0, 2)),
+    payload: JSON.stringify(payload),
     muteHttpExceptions: true
   };
 
@@ -45,7 +54,7 @@ function syncSheetToSupabase() {
     const response = UrlFetchApp.fetch(url, options);
     // const resContent = response.getContentText();
     // console.log(response)
-    console.log(payload.length)
+
   } catch (e) {
     console.log('執行發生異常：' + e.message);
   }
@@ -55,13 +64,21 @@ function syncSheetToSupabase() {
 
 // 根據你的需求設定常數
 const TIME_SLOT_INTERVAL = 30; // 分鐘
-const MAX_CAPACITY_ARRAY = [1, 1, 1, 1, 1, 1, 1, 1]; // 舉例：每個時段容量為 1
+const MAX_CAPACITY_ARRAY = [100, 100, 100, 100, 100, 100, 100, 100]; // 舉例：每個時段容量為 1
 
 function processBookingsFromSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('❌預約資料'); // 請確認分頁名稱
+  const ss = SpreadsheetApp.openById(sheetId)
+  const sheet = ss.getSheetByName(sheetbook); // 請改成你的分頁名稱
   const data = sheet.getDataRange().getValues();
   const rows = data.slice(1); // 排除標頭
+  let count = 0;
+  let cnacelCount = 0;
+
+
+  const sheet2 = ss.getSheetByName("管理員看的表格"); // 請確保分頁名稱正確
+  const data2 = sheet2.getDataRange().getValues();
+
+  // 從第二列開始找（索引 1），跳過標題列
 
   rows.forEach((row, index) => {
     // 欄位索引說明 (請依據你的試算表實際位置微調)
@@ -70,43 +87,80 @@ function processBookingsFromSheet() {
     // index 21: BookingID (String) - 假設在第 V 欄
 
     const lineUid = row[9];
-    const isCancelRequested = row[24] === true || row[4] === "TRUE"; // 「已處理取消」欄位
 
 
     if (!lineUid) return;
 
-    if (isCancelRequested) {
-      // 2. 如果「已處理取消」是 true -> 呼叫 cancel_booking
-      handleCancelBooking(lineUid);
-    } else {
-      // 1. 呼叫 submit_booking 重新預約
-      // 這裡需要預約的詳細資料，假設從 row 中提取
-      const bookingData = {
-        manager_uid: MANAGER_UID,
-        line_uid: lineUid,
-        name: row[2], // 姓名
-        phone: row[3].toString(),
-        booking_start_time: formatToSupabaseTz(row[6].toString()),
-        booking_end_time: formatToSupabaseTz(row[7].toString()),
-        service_item: row[5].toString(),
-        service_computed_duration: 30
-      };
-      handleSubmitBooking(bookingData);
-    }
-  });
+
+    count++;
 
 
-  rows.forEach((row, index) => {
-    const lineUid = row[9];
-    const booking_start_time = formatToSupabaseTz(row[6].toString());
-    const booking_end_time = formatToSupabaseTz(row[7].toString());
+    // 1. 先取得 ISO 字串
+    const startTimeStr = formatToSupabaseTz(row[6].toString());
+    const endTimeStr = formatToSupabaseTz(row[7].toString());
+
+    // 2. 轉換為 Date 物件並相減（得到毫秒）
+    const diffInMs = new Date(endTimeStr) - new Date(startTimeStr);
+
+    // 3. 換算成分鐘 (1分鐘 = 60,000 毫秒)
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+
+
+
+    const bookingData = {
+      manager_uid: MANAGER_UID,
+      line_uid: lineUid,
+      name: row[2], // 姓名
+      phone: row[3].toString(),
+      booking_start_time: startTimeStr,
+      booking_end_time: endTimeStr,
+      service_item: row[5].toString(),
+      service_computed_duration: diffInMinutes
+    };
+
+    const res = handleSubmitBooking(bookingData);
+
+
+    const targetRow = data2.find(row2 => row2[0] === row[0]);
+    if (!targetRow) return;
+    console.log("uid: index:", targetRow[0], index)
+
     const a1d = row[22] === true || row[4] === "TRUE";
     const a3d = row[25] === true || row[4] === "TRUE";
-    const is_deposit_received = row[17] === true || row[4] === "TRUE";
-    const apply_cancel = row[18] === true || row[4] === "TRUE"
-    updateBookingReminder(lineUid, booking_start_time, booking_end_time, a1d, a3d, is_deposit_received, apply_cancel)
+
+
+
+    const is_deposit_received = targetRow[8] === true || targetRow[8] === "TRUE";
+    const google_calendar_event_id = targetRow[14]
+
+
+    const success = targetRow[9] === true || targetRow[9] === "TRUE";
+    const applay_cancel = targetRow[10] === true || targetRow[10] === "TRUE";
+    const canceled = targetRow[11] === true || targetRow[11] === "TRUE";
+
+    let status = 10;
+    if (success) {
+      status = 13;
+    }
+    if (applay_cancel) {
+      status = 3;
+    }
+    if (canceled) {
+      status = 0;
+    }
+
+    updateBookingReminder(res.booking_uid, a1d, a3d, is_deposit_received, status, google_calendar_event_id)
+
+    if (status == 0) {
+      cnacelCount++;
+      handleCancelBooking(res.booking_uid, MANAGER_UID, 30.0);
+    }
+
   });
-  // 3. 最後呼叫自動存檔與清理
+
+  console.log("total: " + rows.length + " insert: " + count + " cancel: " + cnacelCount)
+
+  // // 3. 最後呼叫自動存檔與清理
   callRpc('auto_archive_old_bookings', {});
 }
 
@@ -118,39 +172,28 @@ function handleSubmitBooking(bookingData) {
     p_time_slot_interval: TIME_SLOT_INTERVAL
   };
   const res = callRpc('submit_booking', payload);
-  Logger.log('Submit Result: ' + JSON.stringify(res));
+
+  return res;
 }
 
 /** 處理取消預約：先找 UID 再取消 */
-function handleCancelBooking(lineUid) {
-  // 先去 Supabase 找該 line_uid 目前 status=1 (預約中) 的最新一筆資料
-  const queryUrl = `${CONFIG.URL}/rest/v1/booking?line_uid=eq.${lineUid}&status=eq.1&select=uid&order=create_at.desc&limit=1`;
-  const options = {
-    method: 'get',
-    headers: { 'apikey': CONFIG.KEY, 'Authorization': `Bearer ${CONFIG.KEY}` }
+function handleCancelBooking(_booking_uid, _manager_uid, _time_slot_interval, _delete_type) {
+
+  const payload = {
+    _booking_uid: _booking_uid,
+    _manager_uid: _manager_uid,
+    _time_slot_interval: _time_slot_interval,
+    _delete_type: _delete_type || 0
   };
 
-  const response = UrlFetchApp.fetch(queryUrl, options);
-  const result = JSON.parse(response.getContentText());
+  const res = callRpc('cancel_booking', payload);
 
-  if (result.length > 0) {
-    const bookingUid = result[0].uid;
-    const cancelPayload = {
-      _booking_uid: bookingUid,
-      _manager_uid: MANAGER_UID,
-      _time_slot_interval: TIME_SLOT_INTERVAL,
-      _delete_type: 0 // 0: 移至備份並刪除
-    };
-    const res = callRpc('cancel_booking', cancelPayload);
-    Logger.log('Cancel Result: ' + JSON.stringify(res));
-  } else {
-    Logger.log('找不到可取消的預約: ' + lineUid);
-  }
 }
 
 /** 通用 RPC 呼叫函式 */
 function callRpc(functionName, payload) {
-  const url = `${CONFIG.KEY}/rest/v1/rpc/${functionName}`;
+
+  const url = `${CONFIG.URL}/rest/v1/rpc/${functionName}`;
   const options = {
     method: 'post',
     contentType: 'application/json',
@@ -162,10 +205,14 @@ function callRpc(functionName, payload) {
     muteHttpExceptions: true
   };
   const response = UrlFetchApp.fetch(url, options);
-  return JSON.parse(response.getContentText());
+
+  if (response.getContentText()) {
+    return JSON.parse(response.getContentText());
+  }
+
 }
 
-function updateBookingReminder(lineUid, startTime, endTime, is_reminded_1d, is_reminded_3d, is_deposit_received, apply_cancel) {
+function updateBookingReminder(booking_uid, is_reminded_1d, is_reminded_3d, is_deposit_received, status, google_calendar_event_id) {
   const SUPABASE_URL = CONFIG.URL;
   const SUPABASE_KEY = CONFIG.KEY;
 
@@ -174,18 +221,22 @@ function updateBookingReminder(lineUid, startTime, endTime, is_reminded_1d, is_r
   payload.is_reminded_3d = is_reminded_3d;
   payload.is_reminded_1d = is_reminded_1d;
   payload.is_deposit_received = is_deposit_received;
-  if (apply_cancel) {
-    payload.status = 3;
-  }
+  payload.status = status;
+  payload.google_calendar_event_id = google_calendar_event_id;
 
 
 
   // 2. 建立帶有篩選條件的 URL
   // 使用 eq 運算子來比對 line_uid, booking_start_time, booking_end_time
   const url = `${SUPABASE_URL}/rest/v1/booking?` +
-    `line_uid=eq.${encodeURIComponent(lineUid)}&` +
-    `booking_start_time=eq.${encodeURIComponent(startTime)}&` +
-    `booking_end_time=eq.${encodeURIComponent(endTime)}`;
+    // `create_at=eq.${create_at}&` +
+    // `service_item=eq.${service_item}&` +
+    // `phone=eq.${phone}&` +
+    `uid=eq.${encodeURIComponent(booking_uid)}`;
+  // `booking_start_time=eq.${encodeURIComponent(startTime)}&` +
+  // `booking_end_time=eq.${encodeURIComponent(endTime)}`;
+
+
 
   const options = {
     method: 'patch', // 使用 patch 進行部分更新
@@ -204,10 +255,9 @@ function updateBookingReminder(lineUid, startTime, endTime, is_reminded_1d, is_r
     const result = JSON.parse(response.getContentText());
 
     if (response.getResponseCode() === 200 || response.getResponseCode() === 204) {
-      console.log(`成功更新 ${type} 提醒標記！`);
-      console.log(result);
+
     } else {
-      console.log(`更新失敗：${response.getContentText()}`);
+
     }
   } catch (e) {
     console.log(`執行異常：${e.message}`);

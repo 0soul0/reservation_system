@@ -37,6 +37,29 @@ export default function BookingList({
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const range = 2 // 鄰近頁碼顯示數
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      if (currentPage > range + 2) pages.push('...')
+
+      const start = Math.max(2, currentPage - range)
+      const end = Math.min(totalPages - 1, currentPage + range)
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+
+      if (currentPage < totalPages - range - 1) pages.push('...')
+      pages.push(totalPages)
+    }
+    return pages
+  }
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     const params = new URLSearchParams(searchParams.toString())
@@ -265,7 +288,7 @@ export default function BookingList({
 
         <div className="px-4 py-3 border-t border-white/10 flex flex-col lg:flex-row items-center justify-between gap-6 bg-white/[0.02]">
           <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-            <p className="text-xm text-slate-400 font-bold">
+            <p className="text-xm text-slate-400 font-bold whitespace-nowrap">
               顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆，共 <span className="text-white font-black">{totalCount}</span> 筆
             </p>
             <div className="h-4 w-px bg-white/10 hidden sm:block" />
@@ -291,17 +314,18 @@ export default function BookingList({
             >
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
-            <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar">
-              {totalPages > 0 ? [...Array(totalPages)].map((_, i) => (
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+              {totalPages > 0 ? getPageNumbers().map((page, i) => (
                 <button
                   key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`min-w-[40px] h-10 rounded-xl text-xm font-bold transition-all ${currentPage === i + 1
+                  disabled={page === '...'}
+                  onClick={() => typeof page === 'number' && handlePageChange(page)}
+                  className={`min-w-[40px] h-10 rounded-xl text-xm font-bold transition-all ${currentPage === page
                     ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/30'
                     : 'hover:bg-white/10 text-slate-400 hover:text-white border border-transparent hover:border-white/10'
-                    } cursor-pointer`}
+                    } ${page === '...' ? 'cursor-default' : 'cursor-pointer'}`}
                 >
-                  {i + 1}
+                  {page}
                 </button>
               )) : (
                 <button className="min-w-[40px] h-10 rounded-xl text-xm font-medium bg-gradient-to-br from-purple-600/50 to-cyan-600/50 text-white opacity-50 cursor-default">
