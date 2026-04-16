@@ -22,6 +22,7 @@ import { TIME_SLOT_INTERVAL } from '@/constants/common'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'
 import { TimeUtils } from '@/lib/TimeUtils'
+import pkg from '../../../../../package.json'
 
 dayjs.extend(utc);
 const formatDate = (date: Date | string) => {
@@ -316,7 +317,7 @@ export default function BookingClient(props: BookingClientProps) {
     const payload = {
       manager_uid: event.manager_uid,
       name: formData.name,
-      phone: formData.phone,
+      phone: formData.phone.replace(/[- ]/g, '').padStart(10, '0').trim(),
       service_item: formData.selectedService.title,
       booking_start_time: TimeUtils.toUTC(startDateTime),
       booking_end_time: TimeUtils.toUTC(endDateTime),
@@ -643,7 +644,7 @@ export default function BookingClient(props: BookingClientProps) {
         {/* Version */}
         <footer className="mt-12 text-center">
           <p className="text-[14px] font-bold text-slate-300 tracking-widest uppercase">
-            v0.1.1 © Triple Reservation System
+            v{pkg.version} © Triple Reservation System
           </p>
         </footer>
       </div>
