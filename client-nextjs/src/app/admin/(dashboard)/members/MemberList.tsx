@@ -36,6 +36,29 @@ export default function MemberList({
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const range = 2 // 鄰近頁碼顯示數
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      if (currentPage > range + 2) pages.push('...')
+
+      const start = Math.max(2, currentPage - range)
+      const end = Math.min(totalPages - 1, currentPage + range)
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+
+      if (currentPage < totalPages - range - 1) pages.push('...')
+      pages.push(totalPages)
+    }
+    return pages
+  }
+
   const showStatusText = (status: boolean) => {
     return status ? '已綁定' : '未綁定'
   }
@@ -188,9 +211,24 @@ export default function MemberList({
         </div>
 
         <div className="px-4 py-3 border-t border-white/10 flex flex-col lg:flex-row items-center justify-between gap-6 bg-white/[0.02] font-bold">
-          <p className="text-xm text-slate-400">
-            顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆資料，共 <span className="text-white font-black">{totalCount}</span> 筆
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <p className="text-xm text-slate-400 whitespace-nowrap">
+              顯示第 <span className="text-white">{(currentPage - 1) * pageSize + 1}</span> 到 <span className="text-white">{Math.min(currentPage * pageSize, totalCount)}</span> 筆資料，共 <span className="text-white font-black">{totalCount}</span> 筆
+            </p>
+            <div className="h-4 w-px bg-white/10 hidden sm:block" />
+            <div className="flex items-center gap-2">
+              <span className="text-ms text-slate-300 uppercase font-black tracking-tighter">每頁</span>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="bg-white/10 border border-white/10 rounded-lg px-4 py-3 text-ms text-white outline-none focus:border-purple-500/50 transition-all cursor-pointer font-bold"
+              >
+                {[10, 20, 50, 100].map(size => (
+                  <option key={size} value={size} className="bg-[#111]">{size} 筆</option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <button
               disabled={currentPage === 1}
@@ -199,14 +237,17 @@ export default function MemberList({
             >
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
-            <div className="flex items-center gap-1">
-              {[...Array(totalPages)].map((_, i) => (
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+              {getPageNumbers().map((page, i) => (
                 <button
                   key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`min-w-[40px] h-10 rounded-xl text-xm font-bold transition-all ${currentPage === i + 1 ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/30' : 'text-slate-400 hover:text-white border border-transparent hover:border-white/10'} cursor-pointer`}
+                  disabled={page === '...'}
+                  onClick={() => typeof page === 'number' && handlePageChange(page)}
+                  className={`min-w-[40px] h-10 rounded-xl text-xm font-bold transition-all 
+                    ${currentPage === page ? 'bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/30' : 'text-slate-400 hover:text-white border border-transparent hover:border-white/10'} 
+                    ${page === '...' ? 'cursor-default' : 'cursor-pointer'}`}
                 >
-                  {i + 1}
+                  {page}
                 </button>
               ))}
             </div>
