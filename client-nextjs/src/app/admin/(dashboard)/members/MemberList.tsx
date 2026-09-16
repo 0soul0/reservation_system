@@ -78,7 +78,7 @@ export default function MemberList({
     if (!selectedMember || isLocking) return
     setIsLocking(true)
     try {
-      const targetTime = new Date(Date.now() + 5 * 60 * 1000).toISOString()
+      const targetTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       const res = await updateMemberLockout(selectedMember.uid, targetTime)
       if (res.success) {
         setLockoutUntil(targetTime)
