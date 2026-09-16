@@ -8,6 +8,8 @@ export type Member = {
   update_at: string
   line_uid?: string
   questionnaire?: any
+  lockout_until?: string | null
+  verification_code?: string | null
 }
 
 export type Manager = {

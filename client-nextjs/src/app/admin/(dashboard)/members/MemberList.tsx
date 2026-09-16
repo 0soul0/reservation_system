@@ -1,10 +1,10 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import type { Member, MemberListProps } from '@/types'
 import { useAlert } from '@/components/ui/DialogProvider'
 import { TimeUtils } from '@/lib/TimeUtils'
-import { updateMember } from '@/app/actions/members'
+import { updateMember, updateMemberLockout } from '@/app/actions/members'
 
 
 export default function MemberList({
@@ -20,6 +20,10 @@ export default function MemberList({
   const [tempPhone, setTempPhone] = useState<string>('')
   const [tempEmail, setTempEmail] = useState<string>('')
   const [isUpdating, setIsUpdating] = useState(false)
+  const [lockoutUntil, setLockoutUntil] = useState<string | null>(null)
+  const [verificationCode, setVerificationCode] = useState<string | null>(null)
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(0)
+  const [isLocking, setIsLocking] = useState(false)
   const [searchValue, setSearchValue] = useState(initialSearch)
   const router = useRouter()
   const { showAlert } = useAlert()
@@ -32,6 +36,64 @@ export default function MemberList({
     setTempName(member.name || '')
     setTempPhone(member.phone || '')
     setTempEmail(member.email || '')
+    setLockoutUntil(member.lockout_until || null)
+    setVerificationCode(member.verification_code || null)
+  }
+
+  useEffect(() => {
+    if (!lockoutUntil) {
+      setRemainingSeconds(0)
+      return
+    }
+
+    const calcRemaining = () => {
+      const end = new Date(lockoutUntil).getTime()
+      const now = Date.now()
+      return Math.max(0, Math.floor((end - now) / 1000))
+    }
+
+    const initial = calcRemaining()
+    setRemainingSeconds(initial)
+
+    if (initial <= 0) return
+
+    const timer = setInterval(() => {
+      const rem = calcRemaining()
+      setRemainingSeconds(rem)
+      if (rem <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [lockoutUntil])
+
+  const formatCountdown = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
+
+  const handleRebind = async () => {
+    if (!selectedMember || isLocking) return
+    setIsLocking(true)
+    try {
+      const targetTime = new Date(Date.now() + 5 * 60 * 1000).toISOString()
+      const res = await updateMemberLockout(selectedMember.uid, targetTime)
+      if (res.success) {
+        setLockoutUntil(targetTime)
+        setVerificationCode(res.verificationCode || null)
+        setSelectedMember(prev => prev ? { ...prev, lockout_until: targetTime, verification_code: res.verificationCode } : null)
+        router.refresh()
+      } else {
+        showAlert({ message: '設定重新綁定失敗', type: 'error' })
+      }
+    } catch (err) {
+      console.error(err)
+      showAlert({ message: '網路錯誤', type: 'error' })
+    } finally {
+      setIsLocking(false)
+    }
   }
 
   const totalPages = Math.ceil(totalCount / pageSize)
@@ -323,9 +385,41 @@ export default function MemberList({
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
                     <span>會員狀態</span>
                   </div>
-                  <div className="pl-6 flex items-center gap-3">
+                  <div className="pl-6 flex items-center gap-3 pt-1">
                     <Switch checked={tempStatus} onChange={setTempStatus} />
                     <span className="font-black text-white">{showStatusText(tempStatus)}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="pt-1">
+                    {remainingSeconds > 0 ? (
+                      <div className="flex flex-wrap items-center gap-3 grid grid-cols-1 sm:grid-cols-2">
+                        {verificationCode && (
+                          <div className="flex flex-col items-center gap-1 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs font-mono font-bold">
+                            <span className="text-slate-400 font-sans text-[12px]">驗證碼</span>
+                            <span className="text-sm tracking-widest text-cyan-400 font-black">{verificationCode}</span>
+                          </div>
+                        )}
+
+                        {/* <div className="px-3.5 py-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-mono font-bold flex items-center gap-2 backdrop-blur-sm"> */}
+                        <div className="flex flex-col items-center gap-1 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs font-mono font-bold">
+                          <span className="text-slate-400 font-sans text-[12px]">有效時間</span>
+                          <span className="text-sm text-yellow-400"> {formatCountdown(remainingSeconds)}</span>
+                        </div>
+
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isLocking}
+                        onClick={handleRebind}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-600/90 to-cyan-600/90 hover:from-purple-600 hover:to-cyan-600 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer active:scale-95 shadow-md shadow-purple-500/20 border border-white/10"
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                        <span>{isLocking ? '設定中...' : '重新綁定'}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

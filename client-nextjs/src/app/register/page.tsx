@@ -8,10 +8,11 @@ import {
   Mail,
   Loader2,
   ListTodo,
-  ArrowRight
+  ArrowRight,
+  KeyRound
 } from 'lucide-react'
 
-import { registerMember } from '@/app/actions/members'
+import { registerMember, verifyAndRebindMember } from '@/app/actions/members'
 import { useAlert } from '@/components/ui/DialogProvider'
 import pkg from '../../../package.json'
 
@@ -34,6 +35,12 @@ function RegisterForm() {
     phone: '',
     email: '',
   })
+
+  // Rebind Verification State
+  const [rebindData, setRebindData] = useState<any>(null)
+  const [inputCode, setInputCode] = useState<string>('')
+  const [showCodeModal, setShowCodeModal] = useState<boolean>(false)
+  const [isVerifying, setIsVerifying] = useState<boolean>(false)
 
   // Questionnaire Logic
   const parsedQuestionnaire = useMemo(() => {
@@ -65,7 +72,7 @@ function RegisterForm() {
       const hasOptions = q.options && q.options.length > 0
       const selected = answers[q.title] || []
       const otherVal = otherInputs[q.title]?.trim()
-      
+
       if (hasOptions) {
         // 只要有選選項或是填寫其他，就算完成
         if (selected.length === 0 && !otherVal) return false
@@ -89,12 +96,12 @@ function RegisterForm() {
       const finalAnswers = parsedQuestionnaire.map((q: any) => {
         const selected = answers[q.title] || []
         const otherVal = otherInputs[q.title]?.trim() || ''
-        
+
         // 過濾掉內部的 __OTHER__ 標記（如果還有的話），並合併選中的選項與自定義輸入
         const cleanSelected = selected.filter(s => s !== '__OTHER__')
         const ansArr = [...cleanSelected]
         if (otherVal) ansArr.push(otherVal)
-        
+
         return { title: q.title, ans: ansArr.join(', ') }
       })
 
@@ -110,8 +117,15 @@ function RegisterForm() {
       const res = await registerMember(payload)
 
       if (res.success) {
-        // Redirect back with replacement to avoid back-button loop to register page
-        router.replace(return_url)
+        if (res.type == 1) {
+          setRebindData(res.data)
+          setInputCode('')
+          setShowCodeModal(true)
+        } else {
+          // Redirect back with replacement to avoid back-button loop to register page
+          router.replace(return_url)
+        }
+
       } else {
         showAlert({ message: res.message || '註冊失敗，請重試！', type: 'error' })
       }
@@ -120,6 +134,34 @@ function RegisterForm() {
       showAlert({ message: '系統發生錯誤，請稍後再試。', type: 'error' })
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleVerifyAndRebind = async () => {
+    if (!rebindData) return
+    if (!inputCode.trim()) {
+      showAlert({ message: '請輸入驗證碼', type: 'error' })
+      return
+    }
+
+    setIsVerifying(true)
+    try {
+      const res = await verifyAndRebindMember({
+        ...rebindData,
+        code: inputCode.trim()
+      })
+      if (res.success) {
+        // setShowCodeModal(false)
+        // showAlert({ message: '重新綁定成功！', type: 'success' })
+        router.replace(return_url)
+      } else {
+        showAlert({ message: res.message || '驗證失敗', type: 'error' })
+      }
+    } catch (err) {
+      console.error(err)
+      showAlert({ message: '網路錯誤', type: 'error' })
+    } finally {
+      setIsVerifying(false)
     }
   }
 
@@ -274,6 +316,52 @@ function RegisterForm() {
             )}
           </button>
         </div>
+
+        {/* Verification Code Modal */}
+        {showCodeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-6 md:p-8 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 duration-200">
+              <div className="text-center space-y-2">
+                <div className="inline-flex p-3 bg-purple-100 rounded-2xl text-purple-600 mb-1">
+                  <KeyRound size={28} />
+                </div>
+                <h3 className="text-xl font-black text-slate-900">輸入重新綁定驗證碼</h3>
+                <p className="text-xs font-bold text-slate-500 leading-relaxed">
+                  系統檢測到該手機號碼正處於重新綁定狀態。<br />請輸入管理員提供的 6 位數驗證碼以完成帳號移轉。
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={inputCode}
+                  onChange={(e) => setInputCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="6 位數驗證碼"
+                  className="w-full text-center text-2xl font-mono tracking-[0.4em] font-black bg-slate-100 border-2 border-transparent focus:border-purple-500 focus:bg-white rounded-2xl py-4 text-slate-900 outline-none transition-all shadow-inner placeholder:text-slate-300 placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCodeModal(false)}
+                  className="flex-1 py-3.5 rounded-2xl font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors text-sm cursor-pointer"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={handleVerifyAndRebind}
+                  disabled={isVerifying || inputCode.length !== 6}
+                  className="flex-1 py-3.5 rounded-2xl font-black text-white bg-gradient-to-r from-purple-600 to-cyan-600 hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all text-sm cursor-pointer shadow-lg shadow-purple-500/20"
+                >
+                  {isVerifying ? '驗證中...' : '確認驗證並綁定'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <footer className="mt-6 text-center opacity-40">
