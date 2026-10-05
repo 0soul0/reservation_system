@@ -145,9 +145,6 @@ export default function BookingClient(props: BookingClientProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isPhoneExist, setIsPhoneExist] = useState(false)
   const [isCheckingPhone, setIsCheckingPhone] = useState(false)
-
-  const bookingCacheSlotMap = new Map();
-
   // -- Cache --
   useEffect(() => {
     const cachedName = localStorage.getItem('booking_name')
@@ -216,85 +213,76 @@ export default function BookingClient(props: BookingClientProps) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
   }, [formData.email])
 
-  // -- Slot Calculation --
-  const getAvailableSlots = (date: Date) => {
-    if (!schedule) return [];
+  // -- Memoized Booked Count Map --
+  const bookedCountMap = useMemo(() => {
+    const map = new Map<string, number>()
+    if (!booking_cache) return map
+    for (const c of booking_cache) {
+      if (c?.booking_start_time) {
+        const cacheKey = TimeUtils.getDateTime(c.booking_start_time)
+        map.set(cacheKey, (map.get(cacheKey) || 0) + (c.booked_count || 0))
+      }
+    }
+    return map
+  }, [booking_cache])
 
-    // 基礎參數設定
-    const TIME_SLOT_INTERVAL = 30; // 假設間隔為 30 分鐘
-    const dateStr = formatDate(date); // 預期格式: "2026-03-27"
-    const dow = date.getDay() === 0 ? 7 : date.getDay();
+  // -- Memoized Available Slots --
+  const availableSlots = useMemo(() => {
+    if (!schedule || !selectedDate) return []
 
-    // 1. 取得規則 (Rules Extraction)
-    // 過濾出符合當天日期的 Override
+    const dateStr = formatDate(selectedDate)
+    const dow = selectedDate.getDay() === 0 ? 7 : selectedDate.getDay()
+
     const dayOverrides = schedule.overrides.filter(o =>
       TimeUtils.getDatePart(o.override_start_time) === dateStr
-    );
+    )
 
-    let activeRules: { start: number, end: number, cap: number, last: number }[] = [];
+    let activeRules: { start: number; end: number; cap: number; last: number }[] = []
 
     if (dayOverrides.length > 0) {
-      // 優先使用特別排班 (Overrides)
       activeRules = dayOverrides
         .filter(o => !o.is_closed)
         .map(o => {
-          const s = timeToMinutes(TimeUtils.getTimePart(o.override_start_time));
-          const e = timeToMinutes(TimeUtils.getTimePart(o.override_end_time));
-          // Override 通常直接以結束時間作為最後預約限制
-          return { start: s, end: e, cap: o.max_capacity, last: e };
-        });
+          const s = timeToMinutes(TimeUtils.getTimePart(o.override_start_time))
+          const e = timeToMinutes(TimeUtils.getTimePart(o.override_end_time))
+          return { start: s, end: e, cap: o.max_capacity, last: e }
+        })
     } else {
-      // 使用常規排班 (Standard Times)
       activeRules = schedule.times
         .filter(t => t.day_of_week === dow && t.is_open)
         .map(t => {
           const part = t.time_range.split('-')
-          const s = timeToMinutes(part[0]);
-          const e = timeToMinutes(part[1]);
-
-          // 判斷是否開啟「最後預約時間」限制
-          const isOpenLast = String(t.is_open_last_booking_time) === 'true' || t.is_open_last_booking_time === true;
-          // 如果沒開，最後預約時間就是結束時間 e；如果有開，解析 last_booking_time
-          const last = isOpenLast ? timeToMinutes(t.last_booking_time) : e;
-
-          return { start: s, end: e, cap: t.max_capacity, last: last };
-        });
+          const s = timeToMinutes(part[0])
+          const e = timeToMinutes(part[1])
+          const isOpenLast = String(t.is_open_last_booking_time) === 'true' || t.is_open_last_booking_time === true
+          const last = isOpenLast ? timeToMinutes(t.last_booking_time) : e
+          return { start: s, end: e, cap: t.max_capacity, last: last }
+        })
     }
 
-    if (activeRules.length === 0) return [];
+    if (activeRules.length === 0) return []
 
-    // 2. 切分時段 (Slot Splitting)
-    const rawSlots: ScheduleSlotProps[] = [];
-    const minStart = Math.min(...activeRules.map(r => r.start));
-    const maxEnd = Math.max(...activeRules.map(r => r.end));
+    const rawSlots: ScheduleSlotProps[] = []
+    const minStart = Math.min(...activeRules.map(r => r.start))
+    const maxEnd = Math.max(...activeRules.map(r => r.end))
 
-    let currentLastBooking = 0;
+    let currentLastBooking = 0
     for (let time = minStart; time + TIME_SLOT_INTERVAL <= maxEnd; time += TIME_SLOT_INTERVAL) {
-      let bestCap = -1;
+      let bestCap = -1
 
-
-      // 尋找涵蓋此時間點的規則
       for (const rule of activeRules) {
         if (time >= rule.start && (time + TIME_SLOT_INTERVAL) <= rule.end) {
-          bestCap = Math.max(bestCap, rule.cap);
-          currentLastBooking = Math.max(currentLastBooking, rule.last);
+          bestCap = Math.max(bestCap, rule.cap)
+          currentLastBooking = Math.max(currentLastBooking, rule.last)
         }
       }
 
       if (bestCap > 0) {
-        const slotStartStr = minutesToTime(time); // 格式如 "09:00"
-        const cacheKey = `${dateStr} ${slotStartStr}`; // 格式如 "2026-03-27 09:00"
-        // 計算已預約人數
-        const cacheEntry = (booking_cache || []).find(c => {
-          if (!c || !c.booking_start_time) return false;
-          // 確保 TimeUtils.getDateTime 回傳格式也是 "YYYY-MM-DD HH:mm"
-          return TimeUtils.getDateTime(c.booking_start_time) === cacheKey;
-        });
-        const bookedCount = cacheEntry ? cacheEntry.booked_count : 0;
+        const slotStartStr = minutesToTime(time)
+        const cacheKey = `${dateStr} ${slotStartStr}`
+        const bookedCount = bookedCountMap.get(cacheKey) || 0
+        const available = bestCap - bookedCount
 
-        const available = bestCap - bookedCount;
-
-        // 關鍵判定：當前時間必須早於最後預約時間
         if (available > 0) {
           rawSlots.push({
             uid: `${dateStr}_${slotStartStr}`,
@@ -304,42 +292,36 @@ export default function BookingClient(props: BookingClientProps) {
             max_capacity: bestCap,
             available_capacity: available,
             start_minutes: time
-          });
+          })
         }
       }
     }
 
-    // 3. 檢查服務所需區間 (Multi-block Check)
-    const serviceDuration = formData.selectedService ? Number(formData.selectedService.duration) : TIME_SLOT_INTERVAL;
-    const requiredBlocks = Math.ceil(serviceDuration / TIME_SLOT_INTERVAL);
+    const serviceDuration = formData.selectedService ? Number(formData.selectedService.duration) : TIME_SLOT_INTERVAL
+    const requiredBlocks = Math.ceil(serviceDuration / TIME_SLOT_INTERVAL)
 
-    const validSlots = [];
+    const validSlots: ScheduleSlotProps[] = []
     for (let i = 0; i < rawSlots.length; i++) {
-      let isValid = true;
+      let isValid = true
       for (let j = 0; j < requiredBlocks; j++) {
-        const target = rawSlots[i + j];
-        // 檢查後續的 block 是否連續存在
+        const target = rawSlots[i + j]
         if (!target || target.start_minutes !== (rawSlots[i].start_minutes + j * TIME_SLOT_INTERVAL)) {
-          isValid = false;
-          break;
+          isValid = false
+          break
         }
       }
 
       if (rawSlots[i].start_minutes >= currentLastBooking) {
-        isValid = false;
+        isValid = false
       }
 
-
       if (isValid) {
-        validSlots.push(rawSlots[i]);
+        validSlots.push(rawSlots[i])
       }
     }
 
-    // 存入 Map 以供後續快速讀取
-    bookingCacheSlotMap.set(dateStr, validSlots);
-
-    return validSlots;
-  };
+    return validSlots
+  }, [selectedDate, schedule, bookedCountMap, formData.selectedService])
 
   const handleConfirmBooking = async () => {
     if (!event || !selectedDate || !selectedTimeSlot || !formData.selectedService) return
@@ -369,14 +351,9 @@ export default function BookingClient(props: BookingClientProps) {
 
 
     const startMins = timeToMinutes(startTimePart)
-    const maxCapacityArray = bookingCacheSlotMap.get(dateStr).filter((slot: { start_minutes: number; booked_count: any }) => {
-
-      if (slot.start_minutes >= startMins && slot.start_minutes < startMins + duration) {
-        return slot
-      }
-    }).map((slot: { max_capacity: number; }) => {
-      return slot.max_capacity
-    })
+    const maxCapacityArray = availableSlots
+      .filter((slot: ScheduleSlotProps) => slot.start_minutes >= startMins && slot.start_minutes < startMins + duration)
+      .map((slot: ScheduleSlotProps) => slot.max_capacity)
 
     try {
       const res = await submitBooking(payload, maxCapacityArray, TIME_SLOT_INTERVAL)
@@ -598,7 +575,7 @@ export default function BookingClient(props: BookingClientProps) {
                   </h2>
                   {selectedDate ? (
                     <div className="grid grid-cols-2 gap-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-                      {getAvailableSlots(selectedDate).map((slot: ScheduleSlotProps, idx: React.Key | null | undefined) => (
+                      {availableSlots.map((slot: ScheduleSlotProps, idx: React.Key | null | undefined) => (
                         <button
                           key={idx}
                           onClick={() => setSelectedTimeSlot(slot.uid)}
@@ -611,7 +588,7 @@ export default function BookingClient(props: BookingClientProps) {
                           <span className={`text-[14px] font-bold ${selectedTimeSlot === slot.uid ? 'text-purple-600' : 'text-slate-900'}`} >可預約 {slot.available_capacity} {event.unit || "位"}</span>
                         </button>
                       ))}
-                      {getAvailableSlots(selectedDate).length === 0 && (
+                      {availableSlots.length === 0 && (
                         <div className="col-span-3 py-12 text-center text-slate-900 text-ms font-bold">當日目前無可預約時段</div>
                       )}
                     </div>
