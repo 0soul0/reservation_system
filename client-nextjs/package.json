@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build-cloudflare": "npx @cloudflare/next-on-pages",
-    "build": "next build",
+    "build": "node -v && next build",
     "start": "next start",
     "lint": "eslint"
   },
